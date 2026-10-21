@@ -77,6 +77,9 @@ docker compose up --build             # frontend :3000, backend :8000
 - **Structured everything.** Pydantic models at every boundary; LLM output is schema-validated.
 - **Bounded evidence.** Collectors cap log lines/bytes; never dump an entire cluster into a prompt.
 - **Config via env** (`KUBEIQ_*`, see `backend/.env.example`). No secrets in code or git.
+- **UI follows `docs/design.md`** (black + grid + mint accent, Manrope / JetBrains Mono). Use the
+  Tailwind tokens (`bg-surface`, `text-muted`, `bg-accent`, ...), never hard-coded colors.
+- Frontend uses Next.js 16 — read `frontend/AGENTS.md` and the bundled docs before using new APIs.
 - Keep code simple and modular; match surrounding style; add tests with every feature.
 
 ## Git workflow
