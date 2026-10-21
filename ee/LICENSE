@@ -1,0 +1,24 @@
+KubeiQ Enterprise License
+
+Copyright (c) 2026 KubeiQ
+
+The software and files in this "ee" directory and its subdirectories (the
+"Enterprise Software") are licensed under this KubeiQ Enterprise License, not
+under the Apache License 2.0 that applies to the rest of this repository.
+
+1. You may use, copy, and modify the Enterprise Software for development and
+   testing purposes without a subscription.
+2. Production use of the Enterprise Software requires a valid KubeiQ Pro or
+   Enterprise subscription and license key, used in compliance with its terms.
+3. You may not distribute, sublicense, sell, or offer the Enterprise Software
+   (or modified versions) as a hosted or managed service without a separate
+   written agreement.
+4. All rights not expressly granted are reserved.
+
+THE ENTERPRISE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY ARISING FROM THE USE OF THE
+ENTERPRISE SOFTWARE.
+
+This license is a placeholder and must be reviewed by legal counsel before any
+commercial release.
