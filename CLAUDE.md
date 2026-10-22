@@ -65,6 +65,11 @@ pnpm lint && pnpm build
 
 # Full stack
 docker compose up --build             # frontend :3000, backend :8000
+make check                            # everything CI runs; run before every commit
+make fmt                              # auto-format backend
+
+# Local test cluster
+kind create cluster --name kubeiq-dev # adds context kind-kubeiq-dev
 ```
 
 ## Engineering rules
@@ -91,7 +96,7 @@ docker compose up --build             # frontend :3000, backend :8000
 
 ## Definition of done (per feature)
 
-1. Code + tests pass locally (`pytest`, `ruff`, `mypy`, `pnpm lint/build` as relevant).
+1. `make check` passes (same checks as CI). Never commit unformatted code.
 2. `docs/ROADMAP.md` checkbox ticked; new decisions captured as an ADR.
 3. This file updated if layout, commands, or rules changed.
 4. Committed and pushed.
