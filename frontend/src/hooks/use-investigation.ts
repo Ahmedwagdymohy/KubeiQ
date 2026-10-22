@@ -22,16 +22,42 @@ type State = {
 
 const EMPTY: State = { id: null, status: null, events: [], investigation: null, error: null };
 
+const finished = (status: InvestigationStatus | null) =>
+  status === "completed" || status === "failed";
+
 function mergeEvents(current: ProgressEvent[], incoming: ProgressEvent): ProgressEvent[] {
   if (current.some((e) => e.seq === incoming.seq)) return current;
   return [...current, incoming].sort((a, b) => a.seq - b.seq);
+}
+
+function fromInvestigation(investigation: Investigation): State {
+  return {
+    id: investigation.id,
+    status: investigation.status,
+    events: investigation.events,
+    investigation,
+    error: null,
+  };
 }
 
 /** Start an investigation or open a past one, and follow its live progress. */
 export function useInvestigation() {
   const queryClient = useQueryClient();
   const [state, setState] = useState<State>(EMPTY);
+  const [loadingId, setLoadingId] = useState<string | null>(null);
   const closeStream = useRef<(() => void) | null>(null);
+  const latestRequest = useRef<string | null>(null);
+
+  // Finished investigations never change, so cache them forever: switching back is instant.
+  const load = useCallback(
+    (id: string) =>
+      queryClient.fetchQuery({
+        queryKey: ["investigation", id],
+        queryFn: () => api.investigation(id),
+        staleTime: (query) => (finished(query.state.data?.status ?? null) ? Infinity : 0),
+      }),
+    [queryClient],
+  );
 
   const follow = useCallback(
     (id: string) => {
@@ -44,12 +70,9 @@ export function useInvestigation() {
           ),
         async () => {
           try {
-            const investigation = await api.investigation(id);
-            setState((s) =>
-              s.id === id
-                ? { ...s, investigation, status: investigation.status, events: investigation.events }
-                : s,
-            );
+            queryClient.removeQueries({ queryKey: ["investigation", id] });
+            const investigation = await load(id);
+            setState((s) => (s.id === id ? fromInvestigation(investigation) : s));
           } catch (err) {
             setState((s) => (s.id === id ? { ...s, error: (err as Error).message } : s));
           }
@@ -57,11 +80,13 @@ export function useInvestigation() {
         },
       );
     },
-    [queryClient],
+    [load, queryClient],
   );
 
   const start = useCallback(
     async (clusterId: string, namespace: string | null) => {
+      closeStream.current?.();
+      latestRequest.current = null;
       setState({ ...EMPTY, status: "queued" });
       try {
         const created = await api.startInvestigation(clusterId, namespace);
@@ -75,29 +100,28 @@ export function useInvestigation() {
     [follow, queryClient],
   );
 
+  // Keeps the current view on screen until the next investigation has loaded (no flicker).
   const open = useCallback(
     async (id: string) => {
-      closeStream.current?.();
-      setState({ ...EMPTY, id });
+      latestRequest.current = id;
+      setLoadingId(id);
       try {
-        const investigation = await api.investigation(id);
-        setState({
-          id,
-          status: investigation.status,
-          events: investigation.events,
-          investigation,
-          error: null,
-        });
-        if (investigation.status === "queued" || investigation.status === "running") follow(id);
+        const investigation = await load(id);
+        if (latestRequest.current !== id) return; // a newer click won
+        closeStream.current?.();
+        setState(fromInvestigation(investigation));
+        if (!finished(investigation.status)) follow(id);
       } catch (err) {
-        setState({ ...EMPTY, error: (err as Error).message });
+        if (latestRequest.current === id) setState({ ...EMPTY, error: (err as Error).message });
+      } finally {
+        setLoadingId((current) => (current === id ? null : current));
       }
     },
-    [follow],
+    [follow, load],
   );
 
   useEffect(() => () => closeStream.current?.(), []);
 
   const running = state.status === "queued" || state.status === "running";
-  return { ...state, running, start, open };
+  return { ...state, running, loading: loadingId !== null, start, open };
 }

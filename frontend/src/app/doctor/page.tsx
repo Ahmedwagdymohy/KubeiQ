@@ -1,11 +1,14 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 
-import { Dashboard } from "@/components/dashboard/dashboard";
+import { Doctor } from "@/components/doctor/doctor";
 
-export default function DashboardPage() {
+export const metadata: Metadata = { title: "Cluster Doctor · KubeiQ" };
+
+export default function DoctorPage() {
   return (
     <Suspense>
-      <Dashboard />
+      <Doctor />
     </Suspense>
   );
 }

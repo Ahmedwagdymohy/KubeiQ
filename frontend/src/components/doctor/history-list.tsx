@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 
-import { SectionLabel } from "@/components/ui";
+import { Dot, SectionLabel } from "@/components/ui";
 import { api, type InvestigationSummary } from "@/lib/api";
 
 function timeAgo(iso: string): string {
@@ -13,18 +13,18 @@ function timeAgo(iso: string): string {
   return `${Math.floor(seconds / 86400)}d ago`;
 }
 
-function dot(item: InvestigationSummary): string {
-  if (item.status === "failed") return "bg-danger";
-  if (item.status !== "completed") return "bg-accent animate-pulse";
-  if (item.healthy) return "bg-accent";
-  return item.severity === "critical" ? "bg-danger" : "bg-warning";
+function tone(item: InvestigationSummary): string {
+  if (item.status === "failed") return "critical";
+  if (item.status !== "completed") return "healthy";
+  if (item.healthy) return "healthy";
+  return item.severity ?? "warning";
 }
 
-function label(item: InvestigationSummary): string {
-  if (item.status === "failed") return item.error ?? "Failed";
-  if (item.status !== "completed") return "In progress";
-  if (item.healthy) return "No problems found";
-  return item.summary ?? `${item.incident_count} incident(s)`;
+function headline(item: InvestigationSummary): string {
+  if (item.status === "failed") return "Investigation failed";
+  if (item.status !== "completed") return "Investigating";
+  if (item.healthy) return "No issues found";
+  return `${item.incident_count} issue${item.incident_count === 1 ? "" : "s"} found`;
 }
 
 export function HistoryList({
@@ -34,32 +34,39 @@ export function HistoryList({
   activeId: string | null;
   onOpen: (id: string) => void;
 }) {
-  const history = useQuery({ queryKey: ["investigations"], queryFn: () => api.investigations(15) });
+  const history = useQuery({ queryKey: ["investigations"], queryFn: () => api.investigations(20) });
 
   return (
-    <section className="flex flex-col gap-4 bg-bg p-6">
+    <section className="flex flex-col gap-3 bg-bg p-6">
       <SectionLabel>Recent investigations</SectionLabel>
-      {history.data?.length === 0 && <p className="text-sm text-muted">No investigations yet</p>}
-      <ul className="flex flex-col">
+      {history.data?.length === 0 && <p className="text-sm text-subtle">No investigations yet</p>}
+      <ul className="-mx-2 flex flex-col gap-0.5">
         {history.data?.map((item) => (
           <li key={item.id}>
             <button
               type="button"
               onClick={() => onOpen(item.id)}
-              className={`flex w-full items-start gap-3 rounded-md px-2 py-2 text-left transition-colors hover:bg-surface-2 ${
+              className={`flex w-full items-start gap-3 rounded-md px-2 py-2.5 text-left transition-colors hover:bg-surface-2 ${
                 item.id === activeId ? "bg-surface-2" : ""
               }`}
             >
-              <span className={`mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full ${dot(item)}`} />
-              <span className="flex min-w-0 flex-col">
-                <span className="truncate text-sm text-fg">{label(item)}</span>
-                <span className="truncate font-mono text-xs text-subtle">
-                  {item.cluster_id.replace(/^kubeconfig:/, "")}
-                  {item.namespace ? ` / ${item.namespace}` : ""} · {timeAgo(item.created_at)}
-                  {item.status === "completed" && !item.healthy
-                    ? ` · ${item.incident_count} incident(s)`
-                    : ""}
+              <span className="pt-1.5">
+                <Dot tone={tone(item)} pulse={item.status === "running" || item.status === "queued"} />
+              </span>
+              <span className="flex min-w-0 flex-col gap-0.5">
+                <span className="text-sm font-medium text-fg">
+                  {headline(item)}
+                  <span className="font-normal text-subtle"> · {timeAgo(item.created_at)}</span>
                 </span>
+                <span className="text-sm text-muted">
+                  {item.namespace ?? "All namespaces"} on {item.cluster_id.replace(/^kubeconfig:/, "")}
+                </span>
+                {item.status === "completed" && !item.healthy && item.summary && (
+                  <span className="line-clamp-2 text-sm text-subtle">{item.summary}</span>
+                )}
+                {item.status === "failed" && item.error && (
+                  <span className="line-clamp-2 text-sm text-danger/80">{item.error}</span>
+                )}
               </span>
             </button>
           </li>

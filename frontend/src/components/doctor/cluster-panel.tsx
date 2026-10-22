@@ -31,15 +31,15 @@ export function ClusterPanel({
   const current = clusters.data?.find((c) => c.id === selected);
 
   return (
-    <aside className="flex flex-col gap-6 bg-bg p-6">
+    <aside className="flex flex-col gap-5 bg-bg p-6">
       <div className="flex items-center justify-between">
         <SectionLabel>Clusters</SectionLabel>
         <button
           type="button"
           onClick={() => clusters.refetch()}
-          className="font-mono text-xs text-subtle transition-colors hover:text-accent"
+          className="text-sm text-subtle transition-colors hover:text-accent"
         >
-          refresh
+          Refresh
         </button>
       </div>
 
@@ -116,10 +116,10 @@ function ClusterItem({
       <span className="flex items-center gap-2 text-sm font-medium">
         <span className={`h-1.5 w-1.5 rounded-full ${reachable ? "bg-accent" : "bg-danger"}`} />
         <span className="truncate">{cluster.name}</span>
-        {cluster.is_default && <span className="font-mono text-[10px] text-subtle">default</span>}
+        {cluster.is_default && <span className="text-xs text-subtle">default</span>}
       </span>
-      <span className="truncate font-mono text-xs text-subtle">
-        {reachable ? cluster.status?.version : "offline"} · {cluster.method}
+      <span className="truncate text-xs text-subtle">
+        {reachable ? `Kubernetes ${cluster.status?.version}` : "Offline"}
       </span>
     </button>
   );

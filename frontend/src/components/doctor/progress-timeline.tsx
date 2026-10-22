@@ -1,15 +1,21 @@
 "use client";
 
-import { SectionLabel, Spinner } from "@/components/ui";
+import { Spinner } from "@/components/ui";
 import type { InvestigationStatus, ProgressEvent } from "@/lib/api";
 
-const COLLECTORS = ["pods", "events", "workloads", "services", "nodes", "logs"];
+const COLLECTORS: { step: string; label: string }[] = [
+  { step: "pods", label: "Pods" },
+  { step: "events", label: "Events" },
+  { step: "workloads", label: "Workloads" },
+  { step: "services", label: "Services" },
+  { step: "nodes", label: "Nodes" },
+  { step: "logs", label: "Logs" },
+];
 
 type StepState = "pending" | "running" | "done" | "failed";
 
 function stateOf(events: ProgressEvent[], step: string): { state: StepState; detail: string | null } {
-  const mine = events.filter((e) => e.step === step);
-  const last = mine.at(-1);
+  const last = events.filter((e) => e.step === step).at(-1);
   if (!last) return { state: "pending", detail: null };
   if (last.status === "failed") return { state: "failed", detail: last.detail };
   if (last.status === "completed") return { state: "done", detail: last.detail };
@@ -18,20 +24,21 @@ function stateOf(events: ProgressEvent[], step: string): { state: StepState; det
 
 function Marker({ state }: { state: StepState }) {
   if (state === "running") return <Spinner />;
-  const styles: Record<StepState, string> = {
+  const styles: Record<Exclude<StepState, "running">, string> = {
     pending: "border border-border",
-    running: "",
     done: "bg-accent",
     failed: "bg-danger",
   };
-  return <span className={`inline-block h-2 w-2 rounded-full ${styles[state]}`} />;
+  return <span className={`inline-block h-2 w-2 shrink-0 rounded-full ${styles[state]}`} />;
 }
 
-function Row({ label, state, detail }: { label: string; state: StepState; detail: string | null }) {
+function Row({ label, state, detail }: { label: string; state: StepState; detail?: string | null }) {
   return (
     <li className="flex min-w-0 items-baseline gap-3 py-1">
       <Marker state={state} />
-      <span className={`text-sm ${state === "pending" ? "text-subtle" : "text-fg"}`}>{label}</span>
+      <span className={`shrink-0 text-sm ${state === "pending" ? "text-subtle" : "text-fg"}`}>
+        {label}
+      </span>
       {detail && <span className="truncate text-sm text-muted">{detail}</span>}
     </li>
   );
@@ -44,65 +51,54 @@ export function ProgressTimeline({
   events: ProgressEvent[];
   status: InvestigationStatus | null;
 }) {
-  const collectorStates = COLLECTORS.map((step) => ({ step, ...stateOf(events, step) }));
-  const collectState: StepState = collectorStates.every((c) => c.state === "pending")
-    ? status === "queued" || status === "running"
+  const active = status === "queued" || status === "running";
+  const collectors = COLLECTORS.map((c) => ({ ...c, ...stateOf(events, c.step) }));
+  const collectState: StepState = collectors.every((c) => c.state === "done")
+    ? "done"
+    : collectors.some((c) => c.state !== "pending") || active
       ? "running"
-      : "pending"
-    : collectorStates.some((c) => c.state === "running" || c.state === "pending")
-      ? "running"
-      : "done";
+      : "pending";
   const detect = stateOf(events, "detect");
-  const agentEvents = events.filter((e) => e.step === "agent");
   const done = stateOf(events, "done");
-  const agentState: StepState =
-    agentEvents.length === 0
-      ? done.state === "done"
-        ? "done"
-        : "pending"
-      : done.state === "pending"
-        ? "running"
-        : "done";
+  const agentEvents = events.filter((e) => e.step === "agent");
+  const deepState: StepState =
+    agentEvents.length === 0 ? (done.state === "pending" ? "pending" : "done") : done.state === "pending" ? "running" : "done";
 
   return (
-    <div className="flex min-w-0 flex-col gap-3">
-      <SectionLabel>Investigation</SectionLabel>
+    <div className="flex min-w-0 flex-col gap-2">
+      <h2 className="text-base font-semibold">
+        {active ? "Investigating" : done.state === "failed" ? "Investigation failed" : "Investigation"}
+      </h2>
       <ul className="flex flex-col">
-        <Row label="Collecting evidence" state={collectState} detail={null} />
-        <ul className="ml-5 border-l border-border pl-4">
-          {collectorStates.map((c) => (
-            <Row key={c.step} label={c.step} state={c.state} detail={c.detail} />
+        <Row label="Collecting evidence" state={collectState} />
+        <ul className="ml-1 flex flex-col border-l border-border pl-5">
+          {collectors.map((c) => (
+            <Row key={c.step} label={c.label} state={c.state} detail={c.detail} />
           ))}
         </ul>
-        <Row label="Detecting failures" state={detect.state} detail={detect.detail} />
-        <Row
-          label="AI investigation"
-          state={agentState}
-          detail={agentEvents.length === 0 && agentState === "done" ? "not needed" : null}
-        />
-        {agentEvents.length > 0 && (
-          <ul className="ml-5 flex flex-col gap-1 border-l border-border py-1 pl-4">
-            {agentEvents.slice(-10).map((e) => (
-              <li
-                key={e.seq}
-                className={`truncate font-mono text-xs ${
-                  e.status === "failed"
-                    ? "text-danger"
-                    : e.status === "completed"
-                      ? "text-accent"
-                      : "text-muted"
-                }`}
-              >
-                {e.detail?.replaceAll("`", "")}
-              </li>
-            ))}
-          </ul>
+        <Row label="Finding problems" state={detect.state} detail={detect.detail} />
+        {(agentEvents.length > 0 || deepState === "running") && (
+          <>
+            <Row label="Digging deeper" state={deepState} />
+            <ul className="ml-1 flex flex-col gap-1 border-l border-border py-1 pl-5">
+              {agentEvents.slice(-8).map((e) => (
+                <li
+                  key={e.seq}
+                  className={`truncate text-sm ${
+                    e.status === "failed"
+                      ? "text-danger"
+                      : e.status === "completed"
+                        ? "text-fg"
+                        : "text-muted"
+                  }`}
+                >
+                  {e.detail?.replaceAll("`", "")}
+                </li>
+              ))}
+            </ul>
+          </>
         )}
-        <Row
-          label={done.state === "failed" ? "Failed" : "Done"}
-          state={done.state}
-          detail={done.detail}
-        />
+        <Row label={done.state === "failed" ? "Failed" : "Done"} state={done.state} detail={done.detail} />
       </ul>
     </div>
   );

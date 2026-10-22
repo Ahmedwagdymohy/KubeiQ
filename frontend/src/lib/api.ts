@@ -46,6 +46,7 @@ export type Report = {
   healthy: boolean;
   diagnoses: Diagnosis[];
   gaps: { collector: string; error: string }[];
+  checked: Record<string, number>;
   llm_model: string | null;
   duration_seconds: number;
 };
