@@ -1,5 +1,6 @@
 """Loguru setup that also captures stdlib logging (uvicorn, libraries)."""
 
+import inspect
 import logging
 import sys
 
@@ -14,9 +15,10 @@ class InterceptHandler(logging.Handler):
             level: str | int = logger.level(record.levelname).name
         except ValueError:
             level = record.levelno
-        frame, depth = logging.currentframe(), 2
-        while frame and frame.f_code.co_filename == logging.__file__:
-            frame = frame.f_back  # type: ignore[assignment]
+        # Find the caller outside the logging module so loguru reports the real source.
+        frame, depth = inspect.currentframe(), 0
+        while frame and (depth == 0 or frame.f_code.co_filename == logging.__file__):
+            frame = frame.f_back
             depth += 1
         logger.opt(depth=depth, exception=record.exc_info).log(level, record.getMessage())
 
