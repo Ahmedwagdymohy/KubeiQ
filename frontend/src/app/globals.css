@@ -116,3 +116,22 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .scan-bar { animation: none; left: 0; width: 100%; opacity: 0.4; }
 }
+
+/* Cluster Map: React Flow controls in KubeiQ tokens */
+.kube-map .react-flow__controls {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: none;
+}
+.kube-map .react-flow__controls-button {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  color: var(--text-muted);
+  fill: currentColor;
+  width: 30px;
+  height: 30px;
+}
+.kube-map .react-flow__controls-button:hover { background: var(--surface-2); color: var(--text); }
+.kube-map .react-flow__controls-button svg { fill: currentColor; }
+.kube-map .react-flow__node { cursor: default; }

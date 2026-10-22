@@ -51,11 +51,14 @@ Update this file in the same commit that completes a task.
 
 ## Phase 4.6 — Cluster Map (ADR 0007)
 - [x] Decision: own product built on Headlamp's map logic, health from our detectors
-- [ ] Backend `products/map`: resources + relations + health, `GET /api/v1/map`
-- [ ] `/map` UI: React Flow + ELK layout, grouping, collapsed groups, kind icons, details panel
-- [ ] Investigate: unhealthy node opens Cluster Doctor scoped to it, incident expanded
-- [ ] Live refresh, problems-only filter, search
+- [x] Backend `products/map`: resources + relations + health, `GET /api/v1/map`
+- [x] `/map` UI: React Flow + ELK layout, grouping, collapsed groups, kind icons, details panel
+- [x] Investigate: unhealthy node opens Cluster Doctor scoped to it, incident expanded
+- [x] Live refresh, problems-only filter, search
 - [ ] Website product page for Cluster Map
+- [ ] Group by node and by app label (`app.kubernetes.io/instance`), like Headlamp
+- [ ] More kinds: NetworkPolicies, Gateway API routes, StatefulSet volume claims
+- [ ] All-namespaces overview that stays fast on large clusters (Headlamp's graph simplification)
 
 ## Phase 5 — Production & distribution
 - [ ] Helm chart

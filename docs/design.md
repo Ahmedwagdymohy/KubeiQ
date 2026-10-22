@@ -49,6 +49,11 @@ Never hard-code colors; use the Tailwind tokens (`bg-surface`, `text-muted`, `bg
   to one line afterwards (no durations shown).
 - **Healthy state**: always state what was checked ("Checked 8 pods, 3 workloads…") so the
   result is clearly real work, not a placeholder.
+- **Cluster Map**: full-height canvas under a toolbar (cluster, namespace, search, Problems only,
+  Expand all, counts, Live). Overview shows each app as stacked cards; clicking one focuses it.
+  Kind icons are coloured by health (cyan healthy, amber warning, red broken) with no tile behind
+  them; broken nodes get a red border and a badge. Details panel on the right: status, the one-line
+  reason, **Investigate with Cluster Doctor**, facts, connected resources, labels.
 - Landing page feature grid: bento cells with outlined mono tags and dot pills.
 
 ## Copy voice

@@ -83,6 +83,37 @@ export type Investigation = InvestigationSummary & {
   events: ProgressEvent[];
 };
 
+export type MapStatus = "healthy" | "warning" | "error";
+
+export type MapNode = {
+  id: string;
+  kind: string;
+  name: string;
+  namespace: string | null;
+  status: MapStatus;
+  reason: string | null;
+  investigate: string | null;
+  facts: Record<string, string>;
+  labels: Record<string, string>;
+};
+
+export type MapEdge = {
+  id: string;
+  source: string;
+  target: string;
+  shared: "source" | "target" | null;
+};
+
+export type ClusterMap = {
+  cluster_id: string;
+  namespace: string | null;
+  collected_at: string;
+  nodes: MapNode[];
+  edges: MapEdge[];
+  counts: Record<MapStatus, number>;
+  gaps: { collector: string; error: string }[];
+};
+
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -131,6 +162,11 @@ export const api = {
   investigation: (id: string) => request<Investigation>(`/api/v1/investigations/${id}`),
   investigations: (limit = 20) =>
     request<InvestigationSummary[]>(`/api/v1/investigations?limit=${limit}`),
+  map: (clusterId: string, namespace: string | null) =>
+    request<ClusterMap>(
+      `/api/v1/map?cluster_id=${encodeURIComponent(clusterId)}` +
+        (namespace ? `&namespace=${encodeURIComponent(namespace)}` : ""),
+    ),
 };
 
 /** Subscribe to live progress. Returns a function that closes the stream. */

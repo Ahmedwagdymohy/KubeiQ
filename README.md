@@ -12,6 +12,11 @@ actionable fixes — using the LLM provider of your choice, including fully loca
 - **Cluster Doctor**, the AI troubleshooting agent: investigates pods, events, logs, deployments, and networking, then
   produces a root cause, fix steps, and an evidence-based confidence score.
 
+- **Cluster Map**: a live picture of your namespace. Every pod, workload, service, volume claim,
+  config and secret reference, how they connect, and which ones are broken with a one-line reason.
+  Click a broken resource and **Investigate** opens Cluster Doctor on it with the fix ready.
+  Built on [Headlamp](https://github.com/kubernetes-sigs/headlamp)'s map logic (see `NOTICE`).
+
 More products will ship in the same install.
 
 ## Platform
