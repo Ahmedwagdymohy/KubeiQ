@@ -245,3 +245,46 @@ def test_ai_agreement_ignored_when_rules_had_no_cause() -> None:
     score, reasons = score_confidence(incident_of(bundle), bundle, answer, tool_calls=2)
     assert score == 68
     assert "AI agrees with the rule-based cause" not in reasons
+
+
+async def test_service_investigates_unclear_incidents_in_parallel(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    import asyncio
+
+    first, second = unclear_bundle(), unclear_bundle()
+    other = second.pods[0].model_copy(
+        update={
+            "ref": "Pod/shop/mailer-9a9a-b",
+            "name": "mailer-9a9a-b",
+            "owner": "ReplicaSet/mailer-9a9a",
+            "labels": {"app": "mailer", "pod-template-hash": "9a9a"},
+        }
+    )
+    bundle = first.model_copy(update={"pods": [*first.pods, other]})
+
+    async def fake_collect(*args: Any, **kwargs: Any) -> EvidenceBundle:
+        return bundle
+
+    in_flight = 0
+    peak = 0
+
+    class SlowLLM(FakeLLM):
+        async def complete(
+            self, messages: list[dict[str, Any]], tools: list[dict[str, Any]] | None = None
+        ) -> LLMReply:
+            nonlocal in_flight, peak
+            in_flight += 1
+            peak = max(peak, in_flight)
+            await asyncio.sleep(0.05)
+            in_flight -= 1
+            return LLMReply(content=json.dumps(ANSWER))
+
+    monkeypatch.setattr(service, "collect_evidence", fake_collect)
+    monkeypatch.setattr(service, "AgentTools", lambda api: FakeTools())
+    report = await service.diagnose(None, bundle.scope, Settings(), llm=SlowLLM([]))  # type: ignore[arg-type]
+
+    assert peak == 2
+    expected_order = [i.workload for i in correlate(run_detectors(bundle))]
+    assert [d.workload for d in report.diagnoses] == expected_order
+    assert all(d.source == "ai" for d in report.diagnoses)
