@@ -104,10 +104,12 @@ def score_confidence(
         else:
             score = 0.6 * score + 0.4 * answer.confidence
             reasons.append(f"AI analysis self-reported {answer.confidence}%")
-        if answer.agrees_with_rules is True:
+        # Agreement only means something when the rules actually proposed a cause.
+        agrees = answer.agrees_with_rules if root.cause else None
+        if agrees is True:
             score += 5
             reasons.append("AI agrees with the rule-based cause")
-        elif answer.agrees_with_rules is False:
+        elif agrees is False:
             score -= 15
             reasons.append("AI disagrees with the rule-based cause")
         if tool_calls == 0 and root.certainty == Certainty.NONE:
