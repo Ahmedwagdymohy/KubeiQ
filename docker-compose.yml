@@ -13,6 +13,8 @@ services:
     volumes:
       # Read-only access to local kubeconfig for the kubeconfig ClusterSource
       - ${KUBECONFIG_DIR:-~/.kube}:/home/kubeiq/.kube:ro
+      # Investigation history (SQLite). Set KUBEIQ_DATABASE_URL to use Postgres instead.
+      - kubeiq-data:/data
     restart: unless-stopped
 
   frontend:
@@ -25,3 +27,6 @@ services:
     depends_on:
       - backend
     restart: unless-stopped
+
+volumes:
+  kubeiq-data:

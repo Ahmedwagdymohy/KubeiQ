@@ -9,10 +9,12 @@ COPY src ./src
 RUN uv sync --frozen --no-dev
 
 FROM python:3.12-slim
-RUN useradd --create-home --uid 10001 kubeiq
+RUN useradd --create-home --uid 10001 kubeiq && mkdir /data && chown kubeiq:kubeiq /data
 WORKDIR /app
 COPY --from=builder --chown=kubeiq:kubeiq /app /app
-ENV PATH="/app/.venv/bin:$PATH" PYTHONUNBUFFERED=1
+ENV PATH="/app/.venv/bin:$PATH" PYTHONUNBUFFERED=1 \
+    KUBEIQ_DATABASE_URL=sqlite+aiosqlite:////data/kubeiq.db
+VOLUME ["/data"]
 USER kubeiq
 EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=3s CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz')"
