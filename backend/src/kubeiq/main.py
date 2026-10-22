@@ -12,6 +12,10 @@ from kubeiq.api import health
 from kubeiq.api.v1.router import router as v1_router
 from kubeiq.core.config import Settings, get_settings
 from kubeiq.core.logging import setup_logging
+from kubeiq.db.migrate import upgrade_database
+from kubeiq.db.session import get_sessionmaker
+from kubeiq.investigations import repository
+from kubeiq.investigations.runner import get_runner
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -21,8 +25,14 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @asynccontextmanager
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         logger.info("KubeiQ {} starting (env={})", __version__, settings.env)
+        await upgrade_database()
+        async with get_sessionmaker()() as session:
+            interrupted = await repository.fail_interrupted(session)
+        if interrupted:
+            logger.warning("Marked {} interrupted investigation(s) as failed", interrupted)
         yield
         logger.info("KubeiQ shutting down")
+        await get_runner().shutdown()
 
     app = FastAPI(title="KubeiQ", version=__version__, lifespan=lifespan)
     app.add_middleware(
