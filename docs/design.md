@@ -19,7 +19,7 @@ as `kubeiq-theme`, applied before paint by `src/lib/theme.ts`).
 | `--bg` | `#000000` | `#ffffff` | page background |
 | `--surface` | `#0a0b0c` | `#f7f9fa` | hover rows, panels |
 | `--surface-2` | `#14171a` | `#eef2f4` | selected items, inputs |
-| `--border` | `#262a2e` | `#e1e6ea` | dividers, hairline grid |
+| `--border` | `#3a4046` | `#cdd4da` | dividers between sections, columns, cards |
 | `--text` | `#f5f7f8` | `#0b1115` | primary text |
 | `--text-muted` | `#a1a9b0` | `#4b5661` | secondary text |
 | `--text-subtle` | `#6b747c` | `#87929c` | captions, metadata |
