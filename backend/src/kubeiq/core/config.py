@@ -15,6 +15,8 @@ class Settings(BaseSettings):
     cors_origins: list[str] = ["http://localhost:3000"]
 
     kubeconfig: str | None = None
+    # Set to host.docker.internal when running in Docker against kind/minikube/k3d clusters.
+    kubeconfig_localhost_alias: str | None = None
     llm_model: str | None = None
 
 

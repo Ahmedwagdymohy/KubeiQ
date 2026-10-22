@@ -8,6 +8,7 @@ services:
         required: false
     environment:
       KUBEIQ_KUBECONFIG: /home/kubeiq/.kube/config
+      KUBEIQ_KUBECONFIG_LOCALHOST_ALIAS: host.docker.internal
       KUBEIQ_CORS_ORIGINS: '["http://localhost:${KUBEIQ_FRONTEND_PORT:-3000}"]'
     volumes:
       # Read-only access to local kubeconfig for the kubeconfig ClusterSource
