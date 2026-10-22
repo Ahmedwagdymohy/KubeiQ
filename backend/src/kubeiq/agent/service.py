@@ -43,9 +43,11 @@ async def diagnose(
 
     await emit("detect", "started")
     incidents = correlate(run_detectors(bundle))
-    unclear = sum(i.needs_ai for i in incidents)
+    found = len(incidents)
     await emit(
-        "detect", "completed", f"{len(incidents)} incident(s), {unclear} need deeper analysis"
+        "detect",
+        "completed",
+        f"{found} problem{'' if found == 1 else 's'} found" if found else "No problems found",
     )
 
     tools = AgentTools(api)

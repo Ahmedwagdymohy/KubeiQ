@@ -20,22 +20,28 @@ from kubeiq.collectors.models import EvidenceBundle, Gap, ProgressEvent, Scope
 ProgressCallback = Callable[[ProgressEvent], Awaitable[None]]
 
 
+def _plural(count: int, word: str) -> str:
+    return f"{count} {word}{'' if count == 1 else 's'}"
+
+
 def _summary(name: str, items: Sequence[Any]) -> str:
     match name:
         case "pods":
-            return f"{len(items)} checked, {sum(p.unhealthy for p in items)} unhealthy"
+            return (
+                f"{_plural(len(items), 'pod')} checked, {sum(p.unhealthy for p in items)} unhealthy"
+            )
         case "events":
-            return f"{len(items)} warning events in the last hour"
+            return f"{_plural(len(items), 'warning event')} in the last hour"
         case "workloads":
             not_ready = sum(w.ready < w.desired for w in items)
-            return f"{len(items)} workloads, {not_ready} not fully ready"
+            return f"{_plural(len(items), 'workload')}, {not_ready} not fully ready"
         case "services":
-            return f"{len(items)} services"
+            return _plural(len(items), "service")
         case "nodes":
-            return f"{len(items)} nodes, {sum(not n.ready for n in items)} not ready"
+            return f"{_plural(len(items), 'node')}, {sum(not n.ready for n in items)} not ready"
         case "logs":
-            return f"{len(items)} log excerpts from unhealthy containers"
-    return f"{len(items)} items"
+            return f"{_plural(len(items), 'log excerpt')} from unhealthy containers"
+    return _plural(len(items), "item")
 
 
 async def collect_evidence(

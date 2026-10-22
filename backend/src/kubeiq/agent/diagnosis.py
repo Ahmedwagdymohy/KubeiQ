@@ -123,11 +123,10 @@ def score_confidence(
 def from_rules(incident: Incident, bundle: EvidenceBundle, note: str | None = None) -> Diagnosis:
     root = incident.root
     confidence, reasons = score_confidence(incident, bundle)
+    # Impact is listed separately, so the explanation stays focused on the cause.
     explanation = root.summary + "."
     if root.cause:
         explanation += f" {root.cause}."
-    if incident.related:
-        explanation += " Impact: " + "; ".join(f.summary for f in incident.related[:3]) + "."
     return Diagnosis(
         incident_id=incident.id,
         title=incident.title,

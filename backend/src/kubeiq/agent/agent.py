@@ -76,7 +76,7 @@ async def investigate(
             if (
                 call.name in known_tools
             ):  # unknown tools still get an error reply, but no progress line
-                await emit(f"{name}: {call.name}({_args(call.arguments)})")
+                await emit(f"{name}: {describe_call(call.name, call.arguments)}")
             result = await tools.run(call.name, call.arguments)
             steps.append(
                 ToolStep(
@@ -106,5 +106,21 @@ async def _finalize(
         raise AgentFailedError("The AI did not return a valid diagnosis") from exc
 
 
-def _args(arguments: dict[str, Any]) -> str:
-    return ", ".join(f"{k}={v}" for k, v in arguments.items() if k != "namespace")
+def describe_call(tool: str, args: dict[str, Any]) -> str:
+    """Plain-language progress line for a tool call, e.g. 'Reading logs of pod web-1'."""
+    previous = " (previous run)" if args.get("previous") else ""
+    phrases = {
+        "get_pod_logs": f"Reading logs of pod {args.get('pod', '')}{previous}",
+        "describe_pod": f"Inspecting pod {args.get('pod', '')}",
+        "get_events": f"Checking events for {args['name']}"
+        if args.get("name")
+        else "Checking events",
+        "describe_workload": f"Inspecting {args.get('kind', 'workload')} {args.get('name', '')}",
+        "list_pods": f"Listing pods {args['label_selector']}"
+        if args.get("label_selector")
+        else "Listing pods",
+        "describe_service": f"Checking Service {args.get('name', '')}",
+        "get_configmap": f"Reading ConfigMap {args.get('name', '')}",
+        "describe_node": f"Inspecting node {args.get('name', '')}",
+    }
+    return phrases.get(tool, tool).strip()

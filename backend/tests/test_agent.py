@@ -301,3 +301,15 @@ def test_wordy_root_cause_is_trimmed_to_first_sentence() -> None:
         concise(wordy) == "ConfigMap queue-worker-config sets queue.concurrency to 0 in config.yaml"
     )
     assert concise("Short cause.") == "Short cause"
+
+
+def test_tool_calls_are_described_in_plain_language() -> None:
+    from kubeiq.agent.agent import describe_call
+
+    assert describe_call("get_pod_logs", {"pod": "web-1", "previous": True}) == (
+        "Reading logs of pod web-1 (previous run)"
+    )
+    assert (
+        describe_call("get_configmap", {"namespace": "x", "name": "cfg"}) == "Reading ConfigMap cfg"
+    )
+    assert describe_call("list_pods", {"namespace": "x"}) == "Listing pods"

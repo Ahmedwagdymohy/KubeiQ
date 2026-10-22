@@ -80,10 +80,11 @@ class InvestigationRunner:
                 logger.exception("Investigation {} failed", investigation_id)
                 await self._fail(session, investigation, describe_error(exc))
             else:
+                count = len(report.diagnoses)
                 detail = (
                     "No problems found. The cluster looks healthy"
                     if report.healthy
-                    else f"{len(report.diagnoses)} incident(s) diagnosed"
+                    else f"{count} issue{'' if count == 1 else 's'} diagnosed"
                 )
                 # Final event first, then status: anyone who sees a finished status
                 # is guaranteed to find the complete timeline.

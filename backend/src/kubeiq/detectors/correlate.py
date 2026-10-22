@@ -30,7 +30,12 @@ def correlate(findings: list[Finding]) -> list[Incident]:
     for workload, group in groups.items():
         ranked = sorted(group, key=_root_rank, reverse=True)
         root = _merge_same_cause(ranked)
-        related = [f for f in ranked if f is not root and f.id != root.id]
+        # Same cause on other pods counts as occurrences of the root, not as extra impact.
+        related = [
+            f
+            for f in ranked
+            if f.id != root.id and not (f.type == root.type and f.cause == root.cause)
+        ]
         affected = sorted({f.resource for f in group})
         severity = max((f.severity for f in group), key=_SEVERITY_RANK.__getitem__)
         incidents.append(

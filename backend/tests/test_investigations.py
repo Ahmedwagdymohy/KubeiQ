@@ -145,7 +145,7 @@ def test_events_stream_replays_and_ends(
 
     events = sse_events(client, investigation_id)
     assert [name for name, _ in events] == ["progress", "progress", "progress", "end"]
-    assert events[-2][1]["detail"] == "1 incident(s) diagnosed"
+    assert events[-2][1]["detail"] == "1 issue diagnosed"
     assert events[-1][1] == {"status": "completed"}
 
 
