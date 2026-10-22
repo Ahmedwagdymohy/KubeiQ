@@ -20,7 +20,7 @@ Update this file in the same commit that completes a task.
 - [x] Read-only RBAC manifest (`deploy/rbac/kubeiq-readonly.yaml`)
 
 ## Phase 3 — Diagnosis engine
-- [ ] Deterministic detectors: CrashLoopBackOff, ImagePullBackOff, OOMKilled, Pending/FailedScheduling, probe failures, rollout stuck, selector mismatch / no endpoints
+- [x] Deterministic detectors: CrashLoopBackOff, ImagePullBackOff, OOMKilled, Pending/FailedScheduling, probe failures, rollout stuck, selector mismatch / no endpoints
 - [ ] LiteLLM client (timeouts, retries, model config)
 - [ ] Tool-calling agent with read-only tools; structured `Diagnosis` output
 - [ ] Evidence-based confidence scoring
