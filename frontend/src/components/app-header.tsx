@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import { ChevronDownIcon, GitHubIcon } from "@/components/icons";
+import { ChevronDownIcon, GitHubIcon, SettingsIcon } from "@/components/icons";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { GITHUB_URL, PRODUCTS } from "@/lib/products";
@@ -57,6 +57,14 @@ export function AppHeader() {
           >
             <GitHubIcon />
           </a>
+          <Link
+            href="/settings"
+            aria-label="Settings"
+            title="Settings"
+            className="rounded-md p-2 transition-colors hover:bg-surface-2 hover:text-fg"
+          >
+            <SettingsIcon />
+          </Link>
           <ThemeToggle />
         </div>
       </nav>

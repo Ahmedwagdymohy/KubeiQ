@@ -38,7 +38,8 @@ Update this file in the same commit that completes a task.
 - [x] `GET /api/v1/clusters/{id}/namespaces`
 - [x] Cluster Doctor UI: cluster picker, live progress, incident list, history, shareable links
 - [x] Light/dark themes, logo, Products menu
-- [ ] Local auth (single admin bootstrap, sessions)
+- [x] Settings page: AI provider, model, endpoint and key; kubeconfig uploads; limits (secrets encrypted at rest)
+- [ ] Local auth (single admin bootstrap, sessions). **Needed before exposing KubeiQ beyond localhost**: Settings holds keys and cluster credentials
 - [ ] Broken-workload scenarios in `examples/` + kind-based e2e test
 
 ## Phase 4.5 — Platform shape (ADR 0006)
@@ -72,7 +73,7 @@ Update this file in the same commit that completes a task.
 - [ ] One-command Job re-run (re-create a failed Job from its own spec) once tested across Kubernetes versions
 
 ## Later — LLM configuration
-- [ ] Provider picker in the UI (model, endpoint, key) instead of env vars only
+- [x] Provider picker in the UI (model, endpoint, key) instead of env vars only
 - [ ] Per-organization LLM keys and model settings (Enterprise)
 - [ ] Model routing: a cheaper/faster model for simple tasks (summaries, explanations), the strong model for investigations
 

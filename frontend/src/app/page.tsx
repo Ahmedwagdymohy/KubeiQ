@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { AppHeader } from "@/components/app-header";
+import { AINotice } from "@/components/home/ai-notice";
 import { RecentInvestigations } from "@/components/home/recent-investigations";
 import { SystemStatus } from "@/components/system-status";
 import { PRODUCTS } from "@/lib/products";
@@ -15,6 +16,7 @@ export default function Home() {
           <SystemStatus />
           <h1 className="text-3xl font-medium tracking-tight sm:text-4xl">Welcome to KubeiQ</h1>
           <p className="max-w-2xl text-muted">Pick a product to start working on your clusters</p>
+          <AINotice />
         </section>
 
         <section className="grid border-b border-border md:grid-cols-2 xl:grid-cols-3">

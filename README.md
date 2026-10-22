@@ -36,8 +36,9 @@ One command installs KubeiQ with every product included (needs Docker, git and a
 curl -fsSL https://raw.githubusercontent.com/Ahmedwagdymohy/KubeiQ/main/deploy/install.sh | sh
 ```
 
-Then open http://localhost:3000. To enable AI investigations, set a model in `~/kubeiq/backend/.env`
-and run `cd ~/kubeiq && docker compose up -d`.
+Then open http://localhost:3000. Open **Settings** (gear icon) to choose your AI provider and model,
+paste your key, and add kubeconfig files for more clusters. Keys and kubeconfigs are encrypted at rest.
+Environment variables in `backend/.env` still work and are used until a model is saved in Settings.
 
 Port 3000 in use? `export KUBEIQ_FRONTEND_PORT=3001` before running the installer.
 

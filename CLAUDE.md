@@ -46,6 +46,7 @@ backend/            FastAPI service (Python 3.12, uv). Package: backend/src/kube
     agent/          LLM agent: tools, prompts, structured output
     investigations/ orchestration, async jobs, progress events
     security/       redaction of secrets/PII before anything reaches an LLM
+    settings/       Settings page backend: AI model + kubeconfig uploads, Fernet-encrypted, override env
     db/             persistence models, sessions, Alembic migrations (applied at startup)
     products/map/   Cluster Map: extra collectors, relations (ported from Headlamp), health, /api/v1/map
   tests/
@@ -53,6 +54,7 @@ frontend/           The self-hosted app: Next.js (TypeScript, Tailwind, App Rout
   src/app/page.tsx    App Home: product tiles and recent investigations (not marketing)
   src/app/doctor/     Cluster Doctor (/doctor?id=<investigation>; ?cluster=&namespace=&focus=<ref> starts a scan)
   src/app/map/        Cluster Map (React Flow + ELK); graph logic in src/lib/map (adapted from Headlamp)
+  src/app/settings/   Settings (gear icon in the header): AI model, clusters, about
   src/components/     UI building blocks (ui.tsx, icons.tsx), header, doctor/ components
   src/hooks/          use-investigation: start/open runs and follow SSE progress
   src/lib/api.ts      typed API client and SSE helper
@@ -102,6 +104,8 @@ kind create cluster --name kubeiq-dev # adds context kind-kubeiq-dev
 - **Structured everything.** Pydantic models at every boundary; LLM output is schema-validated.
 - **Bounded evidence.** Collectors cap log lines/bytes; never dump an entire cluster into a prompt.
 - **Config via env** (`KUBEIQ_*`, see `backend/.env.example`). No secrets in code or git.
+  Values saved in Settings override env. Secrets saved there are encrypted (`settings/crypto.py`)
+  and are write-only: APIs return `*_set` / last-4 hints, never the value.
 - **UI follows `docs/design.md`**: logo-cyan accent, dark + light themes, Manrope for all text
   (mono only for commands/resource refs), concise root causes, no internals shown to users.
   Use the Tailwind tokens (`bg-surface`, `text-muted`, `bg-accent`, ...), never hard-coded colors.

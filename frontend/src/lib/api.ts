@@ -9,7 +9,7 @@ export type Health = {
 export type Cluster = {
   id: string;
   name: string;
-  method: "kubeconfig" | "token" | "agent";
+  method: "kubeconfig" | "upload" | "token" | "agent";
   server: string | null;
   namespace: string | null;
   is_default: boolean;
@@ -114,6 +114,61 @@ export type ClusterMap = {
   gaps: { collector: string; error: string }[];
 };
 
+export type Provider = {
+  id: string;
+  label: string;
+  prefix: string;
+  needs_key: boolean;
+  needs_base: boolean;
+  base_placeholder: string | null;
+  needs_api_version: boolean;
+  model_placeholder: string;
+  help: string | null;
+};
+
+export type AISettings = {
+  enabled: boolean;
+  provider: string;
+  model: string;
+  api_base: string | null;
+  api_version: string | null;
+  api_key_set: boolean;
+  api_key_hint: string | null;
+  max_incidents: number;
+  max_steps: number;
+  active_source: "settings" | "environment" | "none";
+  active_model: string | null;
+};
+
+/** What the form sends. api_key: undefined keeps the saved key, "" removes it. */
+export type AISettingsInput = {
+  enabled: boolean;
+  provider: string;
+  model: string;
+  api_base: string | null;
+  api_version: string | null;
+  api_key?: string;
+  max_incidents: number;
+  max_steps: number;
+};
+
+export type TestResult = { ok: boolean; model: string | null; message: string; latency_ms: number | null };
+
+export type StoredKubeconfig = {
+  id: string;
+  name: string;
+  contexts: string[];
+  warnings: string[];
+  created_at: string;
+};
+
+export type About = {
+  version: string;
+  database: string;
+  secrets: string;
+  local_kubeconfig: { path: string; contexts: number };
+};
+
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -144,6 +199,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     }
     throw new ApiError(detail, response.status);
   }
+  if (response.status === 204) return undefined as T;
   return response.json() as Promise<T>;
 }
 
@@ -162,6 +218,21 @@ export const api = {
   investigation: (id: string) => request<Investigation>(`/api/v1/investigations/${id}`),
   investigations: (limit = 20) =>
     request<InvestigationSummary[]>(`/api/v1/investigations?limit=${limit}`),
+  providers: () => request<Provider[]>("/api/v1/settings/providers"),
+  aiSettings: () => request<AISettings>("/api/v1/settings/ai"),
+  saveAISettings: (body: AISettingsInput) =>
+    request<AISettings>("/api/v1/settings/ai", { method: "PUT", body: JSON.stringify(body) }),
+  testAISettings: (body: AISettingsInput) =>
+    request<TestResult>("/api/v1/settings/ai/test", { method: "POST", body: JSON.stringify(body) }),
+  kubeconfigs: () => request<StoredKubeconfig[]>("/api/v1/settings/kubeconfigs"),
+  addKubeconfig: (name: string, content: string) =>
+    request<StoredKubeconfig>("/api/v1/settings/kubeconfigs", {
+      method: "POST",
+      body: JSON.stringify({ name, content }),
+    }),
+  deleteKubeconfig: (id: string) =>
+    request<void>(`/api/v1/settings/kubeconfigs/${id}`, { method: "DELETE" }),
+  about: () => request<About>("/api/v1/settings/about"),
   map: (clusterId: string, namespace: string | null) =>
     request<ClusterMap>(
       `/api/v1/map?cluster_id=${encodeURIComponent(clusterId)}` +
