@@ -1,0 +1,43 @@
+# CrashLoopBackOff with an error no rule recognizes: needs the AI agent.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: queue-worker-config
+  namespace: kubeiq-demo
+data:
+  config.yaml: |
+    queue:
+      name: orders
+      concurrency: 0
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: queue-worker
+  namespace: kubeiq-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: queue-worker}
+  template:
+    metadata:
+      labels: {app: queue-worker}
+    spec:
+      containers:
+        - name: worker
+          image: busybox:1.36
+          command: ["sh", "-c"]
+          args:
+            - |
+              echo "queue-worker v2.3.0"
+              echo "reading /etc/worker/config.yaml"
+              cat /etc/worker/config.yaml
+              echo "panic: config validation failed: queue.concurrency must be between 1 and 64 (got 0)"
+              echo "goroutine 1 [running]:"
+              echo "main.loadConfig(0xc000010000)"
+              exit 2
+          volumeMounts:
+            - {name: config, mountPath: /etc/worker}
+      volumes:
+        - name: config
+          configMap: {name: queue-worker-config}

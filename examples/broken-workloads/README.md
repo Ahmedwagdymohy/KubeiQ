@@ -10,6 +10,7 @@ Intentionally failing workloads for testing KubeiQ diagnoses. Everything lives i
 | `selector-mismatch.yaml` | Service without endpoints | selector `app=checkut` vs pod label `app=checkout` |
 | `pending-insufficient-cpu.yaml` | Pending | requests 64 CPUs, no node fits |
 | `readiness-probe-failure.yaml` | Not ready | probe targets port 8081, app listens on 80 |
+| `crashloop-unknown-error.yaml` | CrashLoopBackOff | `queue.concurrency: 0` in ConfigMap (no rule matches; AI agent investigates) |
 
 ```bash
 kind create cluster --name kubeiq-dev
