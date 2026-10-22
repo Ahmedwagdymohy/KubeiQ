@@ -20,7 +20,10 @@ _PATTERNS: list[tuple[re.Pattern[str], str]] = [
         MASK,
     ),
     # Credentials embedded in URLs: scheme://user:password@host
-    (re.compile(r"(?P<pre>\b[a-zA-Z][a-zA-Z0-9+.-]*://[^\s:/@]+:)[^\s@/]+(?=@)"), rf"\g<pre>{MASK}"),
+    (
+        re.compile(r"(?P<pre>\b[a-zA-Z][a-zA-Z0-9+.-]*://[^\s:/@]+:)[^\s@/]+(?=@)"),
+        rf"\g<pre>{MASK}",
+    ),
     # Authorization headers
     (re.compile(r"(?i)(?P<pre>\b(?:bearer|basic)\s+)[A-Za-z0-9._~+/=-]{8,}"), rf"\g<pre>{MASK}"),
     # JSON Web Tokens
