@@ -10,6 +10,9 @@ Intentionally failing workloads for testing KubeiQ diagnoses. Everything lives i
 | `selector-mismatch.yaml` | Service without endpoints | selector `app=checkut` vs pod label `app=checkout` |
 | `pending-insufficient-cpu.yaml` | Pending | requests 64 CPUs, no node fits |
 | `readiness-probe-failure.yaml` | Not ready | probe targets port 8081, app listens on 80 |
+| `missing-secret-key.yaml` | CreateContainerConfigError | Secret `billing-db` has no key `password` |
+| `init-container-crash.yaml` | Init:CrashLoopBackOff | init container cannot resolve `postgres-orders` |
+| `failed-job.yaml` | Job failed | unrecognized migration error (catch-all, AI investigates) |
 | `crashloop-unknown-error.yaml` | CrashLoopBackOff | `queue.concurrency: 0` in ConfigMap (no rule matches; AI agent investigates) |
 
 ```bash
