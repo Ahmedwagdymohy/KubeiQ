@@ -42,8 +42,8 @@ backend/            FastAPI service (Python 3.12, uv). Package: backend/src/kube
     db/             persistence models, sessions, Alembic migrations (applied at startup)
   tests/
 frontend/           Next.js (TypeScript, Tailwind, App Router, React Query)
-  src/app/dashboard/  investigation dashboard (/dashboard?id=<investigation> is shareable)
-  src/components/     UI building blocks (ui.tsx) and dashboard components
+  src/app/doctor/     Cluster Doctor product (/doctor?id=<investigation> is shareable)
+  src/components/     UI building blocks (ui.tsx, icons.tsx), header, doctor/ components
   src/hooks/          use-investigation: start/open runs and follow SSE progress
   src/lib/api.ts      typed API client and SSE helper
 ee/                 Commercial features (separate license)
@@ -87,11 +87,15 @@ kind create cluster --name kubeiq-dev # adds context kind-kubeiq-dev
 - **Structured everything.** Pydantic models at every boundary; LLM output is schema-validated.
 - **Bounded evidence.** Collectors cap log lines/bytes; never dump an entire cluster into a prompt.
 - **Config via env** (`KUBEIQ_*`, see `backend/.env.example`). No secrets in code or git.
-- **UI follows `docs/design.md`** (black + grid + mint accent, Manrope / JetBrains Mono). Use the
-  Tailwind tokens (`bg-surface`, `text-muted`, `bg-accent`, ...), never hard-coded colors.
+- **UI follows `docs/design.md`**: logo-cyan accent, dark + light themes, Manrope for all text
+  (mono only for commands/resource refs), concise root causes, no internals shown to users.
+  Use the Tailwind tokens (`bg-surface`, `text-muted`, `bg-accent`, ...), never hard-coded colors.
+- Products live under the header "Products" menu; Cluster Doctor (`/doctor`) is the first.
 - Frontend uses Next.js 16 — read `frontend/AGENTS.md` and the bundled docs before using new APIs.
-- Verify UI changes visually: headless Chrome screenshots (`--headless=new --screenshot`). Its minimum
-  width is 500px, so test phone layouts inside a 390px iframe.
+- Verify UI changes visually: headless Chrome screenshots (`--headless=new --screenshot`, add
+  `--force-dark-mode` for dark). Minimum width is 500px, so test phone layouts in a 390px iframe.
+  After renaming/moving files, restart `next dev` with a clean `.next` (stale cache causes
+  false hydration errors).
 - Keep `.gitignore` patterns narrow. A broad glob (`kubeconfig*`) once hid `kubeconfig.py` from git
   *and* from ruff. For risky changes, verify on a fresh clone: `git clone . /tmp/k && make -C /tmp/k check-backend`.
 - Keep code simple and modular; match surrounding style; add tests with every feature.

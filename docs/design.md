@@ -1,64 +1,74 @@
 # Design System
 
-Mood: **dark, technical, calm.** Pure black canvas, a faint engineering grid, one mint-green accent,
-crisp sans-serif type. Think "terminal meets blueprint" — confident and minimal, never flashy.
+Mood: **technical, calm, human.** A faint engineering grid, one cyan accent taken from the logo,
+crisp Manrope type. Confident and minimal, never "AI-generated looking".
 
-## Colors
+## Brand
 
-| Token | Value | Use |
-|-------|-------|-----|
-| `--bg` | `#000000` | page background |
-| `--surface` | `#0a0a0a` | cards, panels |
-| `--surface-2` | `#141414` | hover, inputs |
-| `--border` | `#262626` | card borders, dividers |
-| `--grid` | `rgba(255,255,255,0.05)` | background grid lines |
-| `--text` | `#fafafa` | primary text |
-| `--text-muted` | `#a3a3a3` | secondary text, nav |
-| `--text-subtle` | `#737373` | captions, hints |
-| `--accent` | `#6ee7b7` | brand mint: primary buttons, highlights, headline accent |
-| `--accent-strong` | `#34d399` | accent hover |
-| `--accent-ink` | `#04150e` | text on accent buttons |
-| `--warning` | `#fbbf24` | degraded / warnings |
-| `--danger` | `#f87171` | failures, critical findings |
+- Logo: `frontend/public/logo.png` (helm wheel + cube, silver and cyan). Transparent background,
+  works on dark and light. Favicons: `frontend/src/app/icon.png`, `apple-icon.png`.
+- Accent: logo cyan.
 
-Status mapping: healthy → accent, warning → warning, critical/failed → danger, unknown → text-subtle.
+## Themes
+
+Dark is the default; light follows the system or the header toggle (stored in `localStorage`
+as `kubeiq-theme`, applied before paint by `src/lib/theme.ts`).
+
+| Token | Dark | Light | Use |
+|-------|------|-------|-----|
+| `--bg` | `#000000` | `#ffffff` | page background |
+| `--surface` | `#0a0b0c` | `#f7f9fa` | hover rows, panels |
+| `--surface-2` | `#14171a` | `#eef2f4` | selected items, inputs |
+| `--border` | `#262a2e` | `#e1e6ea` | dividers, hairline grid |
+| `--text` | `#f5f7f8` | `#0b1115` | primary text |
+| `--text-muted` | `#a1a9b0` | `#4b5661` | secondary text |
+| `--text-subtle` | `#6b747c` | `#87929c` | captions, metadata |
+| `--accent` | `#39c1db` | `#0e8fa8` | buttons, highlights (darker in light for contrast) |
+| `--warning` | `#fbbf24` | `#b45309` | warnings |
+| `--danger` | `#f87171` | `#dc2626` | critical issues, failures |
+| `--terminal` | `#0b0e11` | `#0f1418` | command blocks (dark in both themes) |
+
+Never hard-code colors; use the Tailwind tokens (`bg-surface`, `text-muted`, `bg-accent`, ...).
 
 ## Typography
 
-- **Sans:** [Manrope](https://fonts.google.com/specimen/Manrope) — headings and UI. Headings weight 500–600, tight tracking.
-- **Mono:** [JetBrains Mono](https://fonts.google.com/specimen/JetBrains+Mono) — kubectl commands, logs, resource names, small uppercase labels.
-- Hero headline: two lines, first line in `--accent`, second in `--text`.
+- **Manrope for everything users read**: headings, labels, lists, progress, history.
+- Labels are normal case (`text-sm font-medium text-muted`), never mono uppercase.
+- **Mono (JetBrains Mono) only for things users copy or match exactly**: commands and resource refs.
 
-## Surfaces & shapes
+## Layout patterns
 
-- Background: black with a 48px grid of `--grid` lines, framed content column with 1px `--border` side rails.
-- Cards: `--surface`, 1px `--border`, radius 8px, no heavy shadows.
-- Primary button: `--accent` fill, `--accent-ink` text, radius 6px.
-- Secondary button: transparent, 1px `--text` / `--border` outline.
-- Pills/badges: small, rounded-full, subtle tinted background of the status color.
-- Segmented toggles (e.g. HUMAN / AGENT): pill track with accent-filled active segment, uppercase mono labels.
-
-## Feature grid (bento)
-
-- Hairline grid: cells separated by 1px `--border` lines (`gap-px` on a `bg-border` container).
-- Leading cell: large Title Case heading + one-line subtitle, `bg-grid` background, spans two rows.
-- Each cell: title (`text-lg`, medium) → one plain description line (muted) → a small visual:
-  outlined mono **tags** (`<get_logs>`, `pods`), status **pills** with a colored dot, or icons.
+- **App shell**: header (logo, Products menu, Docs, GitHub, theme toggle), hairline grid layout.
+- **Resizable sidebar** (Cluster Doctor): drag the divider; width remembered per browser.
+- **Incident list**: one row per issue — severity dot, workload name, "Kind in namespace",
+  short root cause, confidence number, chevron. Click to expand: How to fix → commands →
+  Why it happens → Prevent it next time → Impact → Affected resources.
+- **Terminal block**: dark box, `$` prompt, one command per line, copy icon per line.
+- **Progress**: live step list while running; a one-line "finished in Xs" summary afterwards.
+- **Healthy state**: always state what was checked ("Checked 8 pods, 3 workloads…") so the
+  result is clearly real work, not a placeholder.
+- Landing page feature grid: bento cells with outlined mono tags and dot pills.
 
 ## Copy voice
 
 Write like a person, not a brochure.
 
-- Headings in Title Case, no numbering or prefixes (`Failure Detection`, not `02 · Detect`).
+- Headings in Title Case, no numbering or prefixes.
 - Descriptions are one short, plain sentence with no trailing period.
-- No em dashes, no buzzwords ("seamless", "leverage", "deterministic"), no "not X but Y" phrasing.
+- No em dashes, no buzzwords, no "not X but Y" phrasing.
 - Prefer concrete nouns users recognize: pods, logs, kubeconfig, commands.
+- **Do not expose internals**: no "rules vs AI", no model names in results, no tool-call syntax.
+
+## Diagnosis content
+
+The goal: a DevOps engineer can fix the issue without asking another tool.
+
+- **Root cause**: one short line naming the exact resource and setting
+  (`ConfigMap queue-worker-config: queue.concurrency is 0 (allowed 1-64)`). No "because".
+- **Fix**: short imperative steps plus exact, runnable commands with real names; placeholders only
+  for values KubeiQ cannot know (passwords).
+- **Confidence**: a small number, no bars.
 
 ## Motion
 
-Subtle only: 150ms color/opacity transitions, a gentle pulse on "investigating" states. No bouncing.
-
-## Implementation
-
-Tokens live as CSS variables in `frontend/src/app/globals.css` and are exposed to Tailwind as
-`bg-bg`, `text-muted`, `border-border`, `bg-accent`, etc. Use tokens — never hard-code colors.
+Subtle only: 150ms color/opacity transitions, a gentle pulse on running states. No bouncing.
