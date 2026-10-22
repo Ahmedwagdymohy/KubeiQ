@@ -32,10 +32,15 @@ spec:
               echo "queue-worker v2.3.0"
               echo "reading /etc/worker/config.yaml"
               cat /etc/worker/config.yaml
-              echo "panic: config validation failed: queue.concurrency must be between 1 and 64 (got 0)"
-              echo "goroutine 1 [running]:"
-              echo "main.loadConfig(0xc000010000)"
-              exit 2
+              c=$(sed -n 's/^ *concurrency: *//p' /etc/worker/config.yaml)
+              if [ "${c:-0}" -lt 1 ] || [ "${c:-0}" -gt 64 ]; then
+                echo "panic: config validation failed: queue.concurrency must be between 1 and 64 (got ${c:-0})"
+                echo "goroutine 1 [running]:"
+                echo "main.loadConfig(0xc000010000)"
+                exit 2
+              fi
+              echo "worker started: queue=orders concurrency=$c"
+              exec sleep 3600
           volumeMounts:
             - {name: config, mountPath: /etc/worker}
       volumes:
