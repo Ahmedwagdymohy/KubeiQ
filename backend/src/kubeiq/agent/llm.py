@@ -11,6 +11,7 @@ from typing import Any, Protocol
 from loguru import logger
 
 from kubeiq.core.config import Settings
+from kubeiq.security.redaction import redact
 
 
 @dataclass
@@ -55,7 +56,7 @@ class LiteLLMClient:
     def __init__(self, settings: Settings) -> None:
         if not settings.llm_model:
             raise ValueError("KUBEIQ_LLM_MODEL is not set")
-        self.model = settings.llm_model
+        self.model = resolve_model(settings.llm_model, settings.llm_api_base)
         self._settings = settings
 
     async def complete(
@@ -63,6 +64,7 @@ class LiteLLMClient:
     ) -> LLMReply:
         import litellm  # heavy import; only load when an LLM is actually used
 
+        litellm.suppress_debug_info = True
         s = self._settings
         kwargs: dict[str, Any] = {
             "model": self.model,
@@ -96,17 +98,44 @@ class LiteLLMClient:
         return LLMReply(content=message.content, tool_calls=calls)
 
 
+def resolve_model(model: str, api_base: str | None) -> str:
+    """Make provider-less model names work against a custom endpoint.
+
+    LiteLLM needs a provider prefix (``openai/``, ``anthropic/``, ...). A bare alias such as
+    ``my-claude`` with an API base set is almost always a LiteLLM proxy or another
+    OpenAI-compatible gateway (vLLM, LM Studio, ...), so route it through the generic
+    OpenAI-compatible client. (``litellm_proxy/`` needs optional extras we do not install.)
+    """
+    import litellm
+
+    litellm.suppress_debug_info = True
+    try:
+        litellm.get_llm_provider(model)
+        return model
+    except Exception:
+        if api_base:
+            logger.info("Model '{}' has no provider prefix; using openai/{}", model, model)
+            return f"openai/{model}"
+        return model
+
+
+_HINTS = {
+    "AuthenticationError": "LLM authentication failed. Check KUBEIQ_LLM_API_KEY",
+    "PermissionDeniedError": "The LLM key is not allowed to use this model",
+    "NotFoundError": "LLM model not found. Check KUBEIQ_LLM_MODEL",
+    "RateLimitError": "LLM rate limit reached. Try again shortly",
+    "Timeout": "LLM request timed out",
+    "APIConnectionError": "Cannot reach the LLM endpoint. Check KUBEIQ_LLM_API_BASE",
+    "BadRequestError": "The LLM rejected the request",
+}
+
+
 def _describe(exc: Exception) -> str:
     name = type(exc).__name__
-    hints = {
-        "AuthenticationError": "LLM authentication failed. Check KUBEIQ_LLM_API_KEY",
-        "NotFoundError": "LLM model not found. Check KUBEIQ_LLM_MODEL",
-        "RateLimitError": "LLM rate limit reached. Try again shortly",
-        "Timeout": "LLM request timed out",
-        "APIConnectionError": "Cannot reach the LLM endpoint. Check KUBEIQ_LLM_API_BASE",
-        "BadRequestError": "The LLM rejected the request (model may not support tool calling)",
-    }
-    return hints.get(name, f"LLM call failed ({name})")
+    hint = _HINTS.get(name, f"LLM call failed ({name})")
+    # Provider messages are often the most useful part; keep them short and scrubbed.
+    detail = redact(" ".join(str(exc).split()))[:240]
+    return f"{hint}: {detail}" if detail else hint
 
 
 def get_llm(settings: Settings) -> LLMClient | None:

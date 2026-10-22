@@ -12,6 +12,7 @@ dependencies = [
     "loguru>=0.7",
     "kubernetes>=31",
     "litellm>=1.60,!=1.82.7,!=1.82.8",  # 1.82.7/1.82.8 were compromised on PyPI
+    "mcp>=1.0",  # LiteLLM imports mcp on every tool-calling request
 ]
 
 [dependency-groups]

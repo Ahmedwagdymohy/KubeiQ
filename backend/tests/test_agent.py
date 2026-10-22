@@ -217,3 +217,31 @@ def test_confidence_penalizes_missing_logs() -> None:
     gapped, reasons = score_confidence(incident_of(gapped_bundle), gapped_bundle)
     assert gapped < clean
     assert "Container logs could not be collected" in reasons
+
+
+def test_bare_model_alias_with_api_base_uses_proxy() -> None:
+    from kubeiq.agent.llm import resolve_model
+
+    assert resolve_model("my-claude", "https://llm.example.com") == "openai/my-claude"
+    assert resolve_model("my-claude", None) == "my-claude"
+    assert resolve_model("anthropic/claude-x", "https://x") == "anthropic/claude-x"
+    assert resolve_model("gpt-4o", None) == "gpt-4o"
+
+
+def test_llm_errors_are_redacted() -> None:
+    from kubeiq.agent.llm import _describe
+
+    class AuthenticationError(Exception):
+        pass
+
+    message = _describe(AuthenticationError("invalid api_key=sk-abcdefghijklmnopqrstuvwxyz"))
+    assert message.startswith("LLM authentication failed")
+    assert "sk-abcdefghij" not in message
+
+
+def test_ai_agreement_ignored_when_rules_had_no_cause() -> None:
+    bundle = unclear_bundle()
+    answer = AgentAnswer.model_validate(ANSWER | {"agrees_with_rules": True})
+    score, reasons = score_confidence(incident_of(bundle), bundle, answer, tool_calls=2)
+    assert score == 68
+    assert "AI agrees with the rule-based cause" not in reasons
