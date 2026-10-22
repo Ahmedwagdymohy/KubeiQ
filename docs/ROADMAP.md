@@ -21,9 +21,10 @@ Update this file in the same commit that completes a task.
 
 ## Phase 3 — Diagnosis engine
 - [x] Deterministic detectors: CrashLoopBackOff, ImagePullBackOff, OOMKilled, Pending/FailedScheduling, probe failures, rollout stuck, selector mismatch / no endpoints
-- [ ] LiteLLM client (timeouts, retries, model config)
-- [ ] Tool-calling agent with read-only tools; structured `Diagnosis` output
-- [ ] Evidence-based confidence scoring
+- [x] LiteLLM client (timeouts, retries, any provider incl. LiteLLM proxy)
+- [~] Tool-calling agent with read-only tools; structured `Diagnosis` output (unit-tested; live LLM run pending)
+- [x] Evidence-based confidence scoring
+- [x] `POST /api/v1/diagnose` — synchronous end-to-end diagnosis
 
 ## Phase 4 — Product experience
 - [ ] Persistence (SQLAlchemy + Alembic; Postgres / SQLite) with `org_id`
