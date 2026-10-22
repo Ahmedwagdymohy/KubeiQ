@@ -30,8 +30,15 @@ Write for a busy DevOps engineer who must fix this in minutes:
 - explanation: 2-3 short sentences on what breaks and why.
 - fix_steps: short imperative steps, one action each, using real resource names.
 - commands: exact, runnable kubectl commands with real names and namespaces. Start with the
-  command that applies the fix (patch, set, edit, rollout restart), then one that verifies it.
-  Use <placeholders> only for values you cannot know, such as a password.
+  commands that apply the fix (patch, set, create, rollout restart), then one that verifies it.
+  The user copies them as-is, so they must be complete:
+  - Fill in every value you can find in the evidence or with the tools (image names with
+    tags, ports, label values, sizes). Use full image references such as nginx:1.27-alpine.
+  - Use <placeholders> only for values you cannot know, such as a password, and name them
+    after what they hold: <database-url>, not <value>.
+  - Verify against the workload (kubectl rollout status deployment/x, kubectl get pods -l
+    app=x), never a pod name: the fix replaces the pods, so an old pod name shows the old state.
+  - A Job cannot be edited or restarted. After fixing the cause, say how to re-create it.
 
 When you are done, reply with only a JSON object, no prose and no code fences:
 {

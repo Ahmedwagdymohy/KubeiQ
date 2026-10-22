@@ -90,6 +90,8 @@ kind create cluster --name kubeiq-dev # adds context kind-kubeiq-dev
 - **UI follows `docs/design.md`**: logo-cyan accent, dark + light themes, Manrope for all text
   (mono only for commands/resource refs), concise root causes, no internals shown to users.
   Use the Tailwind tokens (`bg-surface`, `text-muted`, `bg-accent`, ...), never hard-coded colors.
+- **Fix commands must be complete.** Users copy them as-is. Build them with `detectors/commands.py`:
+  fill values from evidence, named placeholders only for unknowable values, verify on the workload.
 - Products live under the header "Products" menu; Cluster Doctor (`/doctor`) is the first.
 - Frontend uses Next.js 16 — read `frontend/AGENTS.md` and the bundled docs before using new APIs.
 - Verify UI changes visually: headless Chrome screenshots (`--headless=new --screenshot`, add

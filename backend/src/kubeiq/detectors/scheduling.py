@@ -3,9 +3,12 @@
 import re
 
 from kubeiq.collectors.models import EvidenceBundle
+from kubeiq.detectors.commands import fitting_request, target
 from kubeiq.detectors.helpers import events_for, workload_of
 from kubeiq.detectors.models import Certainty, Finding, Severity
 from kubeiq.detectors.registry import detector
+
+_CONTROLLERS = {"Deployment", "StatefulSet", "DaemonSet"}
 
 _REASONS: list[tuple[str, str, str]] = [
     (
@@ -76,13 +79,13 @@ def detect_pending(bundle: EvidenceBundle) -> list[Finding]:
                             f"Pod requests {' + '.join(asked)} {value}; no node has that free"
                         )
                     workload = finding.workload or pod.ref
-                    kind, _, rest = workload.partition("/")
                     container = next((c for c, v in requests.items() if v), None)
-                    if kind in {"Deployment", "StatefulSet", "DaemonSet"} and container:
+                    fits = fitting_request(value, bundle.nodes) or "<lower-value>"
+                    if workload.split("/")[0] in _CONTROLLERS and container:
                         finding.commands.insert(
                             0,
-                            f"kubectl set resources {kind.lower()}/{rest.split('/')[-1]} "
-                            f"-c {container} --requests={value}=<lower> -n {pod.namespace}",
+                            f"kubectl set resources {target(workload)} "
+                            f"-c {container} --requests={value}={fits} -n {pod.namespace}",
                         )
                 break
         findings.append(finding)

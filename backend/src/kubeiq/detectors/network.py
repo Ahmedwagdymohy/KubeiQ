@@ -62,6 +62,10 @@ def _selector_mismatch(svc: ServiceSnapshot, pods: list[PodSnapshot]) -> Finding
             f"kubectl get pods -n {svc.namespace} --show-labels",
             f"kubectl edit service {svc.name} -n {svc.namespace}",
         ],
+        verify=[
+            f"kubectl get endpointslices -n {svc.namespace} "
+            f"-l kubernetes.io/service-name={svc.name}"
+        ],
         details={"selector": svc.selector},
     )
     near = _closest_labels(svc.selector, pods)
@@ -71,11 +75,10 @@ def _selector_mismatch(svc: ServiceSnapshot, pods: list[PodSnapshot]) -> Finding
         finding.fix = f"Change the Service selector to {key}={actual}"
         finding.certainty = Certainty.HIGH
         finding.workload = workload_of(pod)
-        finding.commands.insert(
-            0,
+        finding.commands = [
             f"kubectl patch service {svc.name} -n {svc.namespace} "
-            f'-p \'{{"spec":{{"selector":{{"{key}":"{actual}"}}}}}}\'',
-        )
+            f'-p \'{{"spec":{{"selector":{{"{key}":"{actual}"}}}}}}\''
+        ]
         finding.details["suggested_selector"] = {key: actual}
     return finding
 

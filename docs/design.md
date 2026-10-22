@@ -42,9 +42,11 @@ Never hard-code colors; use the Tailwind tokens (`bg-surface`, `text-muted`, `bg
 - **Resizable sidebar** (Cluster Doctor): drag the divider; width remembered per browser.
 - **Incident list**: one row per issue — severity dot, workload name, "Kind in namespace",
   short root cause, confidence number, chevron. Click to expand: How to fix → commands →
-  Why it happens → Prevent it next time → Impact → Affected resources.
+  Check that it worked → Why it happens → Prevent it next time → Impact → Affected resources.
 - **Terminal block**: dark box, `$` prompt, one command per line, copy icon per line.
-- **Progress**: live step list while running; a one-line "finished in Xs" summary afterwards.
+  `<placeholders>` are highlighted (`text-terminal-warn`) with a "Replace the highlighted values" note.
+- **Progress**: live step list while running, paced so fast scans still read as a scan; collapses
+  to one line afterwards (no durations shown).
 - **Healthy state**: always state what was checked ("Checked 8 pods, 3 workloads…") so the
   result is clearly real work, not a placeholder.
 - Landing page feature grid: bento cells with outlined mono tags and dot pills.
@@ -65,8 +67,11 @@ The goal: a DevOps engineer can fix the issue without asking another tool.
 
 - **Root cause**: one short line naming the exact resource and setting
   (`ConfigMap queue-worker-config: queue.concurrency is 0 (allowed 1-64)`). No "because".
-- **Fix**: short imperative steps plus exact, runnable commands with real names; placeholders only
-  for values KubeiQ cannot know (passwords).
+- **Fix**: short imperative steps plus exact, runnable commands with real names. Fill values from
+  the cluster (an image tag already running, a request that fits a node). Placeholders only for
+  values KubeiQ cannot know, named for what they hold: `<database-url>`, never `<value>`.
+- **Check that it worked**: commands against the workload (`rollout status`, `get pods -l`),
+  never a pod name: the fix replaces pods, and the old pod still shows the old state.
 - **Confidence**: a small number, no bars.
 
 ## Motion

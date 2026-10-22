@@ -1,8 +1,16 @@
 """Container failures: CrashLoopBackOff, OOMKilled, image pull and config errors."""
 
+import json
 import re
 
 from kubeiq.collectors.models import ContainerSnapshot, EvidenceBundle, PodSnapshot
+from kubeiq.detectors.commands import (
+    image_repository,
+    placeholder,
+    raised_memory,
+    running_image,
+    target,
+)
 from kubeiq.detectors.helpers import events_for, has_env, logs_for, workload_of
 from kubeiq.detectors.models import Certainty, Finding, Severity
 from kubeiq.detectors.patterns import match_logs
@@ -101,9 +109,6 @@ def _crashloop_finding(bundle: EvidenceBundle, pod: PodSnapshot, c: ContainerSna
 def _refine_missing_env(
     finding: Finding, pod: PodSnapshot, c: ContainerSnapshot, name: str
 ) -> None:
-    workload = finding.workload or pod.ref
-    kind, _, rest = workload.partition("/")
-    target = f"{kind.lower()}/{rest.split('/')[-1]}"
     if has_env(c, name):
         finding.cause = (
             f"{name} is defined in the pod spec but the app reports it as missing or empty"
@@ -118,7 +123,8 @@ def _refine_missing_env(
     else:
         finding.commands.insert(
             0,
-            f"kubectl set env {target} {name}=<value> -c {c.name} {_kubectl_ns(pod)}",
+            f"kubectl set env {target(finding.workload or pod.ref)} {name}={placeholder(name)} "
+            f"-c {c.name} {_kubectl_ns(pod)}",
         )
 
 
@@ -131,7 +137,14 @@ def detect_oom(bundle: EvidenceBundle) -> list[Finding]:
                 continue
             limit = c.limits.get("memory")
             workload = workload_of(pod)
-            kind, _, rest = workload.partition("/")
+            raised = raised_memory(limit)
+            commands = [f"kubectl describe pod {pod.name} {_kubectl_ns(pod)}"]
+            if raised:
+                commands.insert(
+                    0,
+                    f"kubectl set resources {target(workload)} -c {c.name} "
+                    f"--limits=memory={raised} {_kubectl_ns(pod)}",
+                )
             findings.append(
                 Finding(
                     detector="oom",
@@ -147,15 +160,12 @@ def detect_oom(bundle: EvidenceBundle) -> list[Finding]:
                     ),
                     certainty=Certainty.HIGH,
                     fix=(
-                        "Raise the memory limit (and request) or reduce the app's memory usage"
-                        if limit
+                        f"Raise the memory limit to {raised}. If it is killed again, raise it "
+                        "further or reduce the app's memory usage"
+                        if raised
                         else "Set memory requests/limits and check node memory pressure"
                     ),
-                    commands=[
-                        f"kubectl set resources {kind.lower()}/{rest.split('/')[-1]} -c {c.name} "
-                        f"--limits=memory={_double(limit)} {_kubectl_ns(pod)}",
-                        f"kubectl top pod {pod.name} {_kubectl_ns(pod)}",
-                    ],
+                    commands=commands,
                     details={
                         "container": c.name,
                         "memory_limit": limit,
@@ -182,7 +192,6 @@ def detect_image_pull(bundle: EvidenceBundle) -> list[Finding]:
             text = " ".join([c.message or "", *(e.message for e in events)])
             cause, fix, certainty = _classify_pull_error(c, text)
             workload = workload_of(pod)
-            kind, _, rest = workload.partition("/")
             findings.append(
                 Finding(
                     detector="image_pull",
@@ -196,14 +205,35 @@ def detect_image_pull(bundle: EvidenceBundle) -> list[Finding]:
                     fix=fix,
                     evidence=[e.ref for e in events],
                     commands=[
-                        f"kubectl set image {kind.lower()}/{rest.split('/')[-1]} "
-                        f"{c.name}=<valid-image> {_kubectl_ns(pod)}",
+                        *_pull_fix_commands(bundle, pod, c, workload, cause),
                         f"kubectl describe pod {pod.name} {_kubectl_ns(pod)}",
                     ],
                     details={"container": c.name, "image": c.image, "message": text.strip()[:500]},
                 )
             )
     return findings
+
+
+def _pull_fix_commands(
+    bundle: EvidenceBundle, pod: PodSnapshot, c: ContainerSnapshot, workload: str, cause: str
+) -> list[str]:
+    ns = _kubectl_ns(pod)
+    if "pull secret" in cause:
+        registry = c.image.split("/")[0] if "." in c.image.split("/")[0] else "docker.io"
+        patch = json.dumps(
+            {"spec": {"template": {"spec": {"imagePullSecrets": [{"name": "regcred"}]}}}},
+            separators=(",", ":"),
+        )
+        return [
+            f"kubectl create secret docker-registry regcred --docker-server={registry} "
+            f"--docker-username=<registry-username> --docker-password=<registry-password> {ns}",
+            f"kubectl patch {target(workload)} {ns} -p '{patch}'",
+        ]
+    if "not found" in cause or "Invalid image" in cause:
+        repository = image_repository(c.image)
+        image = running_image(bundle, repository, exclude=c.image) or f"{repository}:<existing-tag>"
+        return [f"kubectl set image {target(workload)} {c.name}={image} {ns}"]
+    return []
 
 
 def _classify_pull_error(c: ContainerSnapshot, text: str) -> tuple[str, str, Certainty]:
@@ -216,7 +246,7 @@ def _classify_pull_error(c: ContainerSnapshot, text: str) -> tuple[str, str, Cer
     if re.search(r"(?i)not found|manifest unknown|does not exist|no such manifest", text):
         return (
             f"Image {c.image} not found in the registry (wrong tag or name)",
-            "Use an existing image tag; check the registry for available tags",
+            "Set the full image name with a tag that exists in the registry",
             Certainty.HIGH,
         )
     if re.search(r"(?i)unauthorized|authentication required|denied|forbidden|401|403", text):
@@ -293,24 +323,23 @@ def detect_config_errors(bundle: EvidenceBundle) -> list[Finding]:
 
 def _config_fix_commands(groups: list[str], pod: PodSnapshot) -> list[str]:
     ns = _kubectl_ns(pod)
+    workload = workload_of(pod)
+    # The kubelet retries config errors on its own; a restart just makes it immediate.
+    restart = (
+        [f"kubectl rollout restart {target(workload)} {ns}"]
+        if workload.split("/")[0] in {"Deployment", "StatefulSet", "DaemonSet"}
+        else []
+    )
     if len(groups) == 4:  # missing key: [key, kind, namespace, name]
         key, kind, _, name = groups
         field = "stringData" if kind == "Secret" else "data"
         return [
             f"kubectl patch {kind.lower()} {name} {ns} --type merge "
-            f'-p \'{{"{field}":{{"{key}":"<value>"}}}}\'',
-            f"kubectl rollout restart deployment -l app={pod.labels.get('app', '<app>')} {ns}",
+            f'-p \'{{"{field}":{{"{key}":"{placeholder(key)}"}}}}\'',
+            *restart,
         ]
     if len(groups) == 2:  # missing object: [kind, name]
         kind, name = groups
         create = "secret generic" if kind == "Secret" else "configmap"
-        return [f"kubectl create {create} {name} {ns} --from-literal=<key>=<value>"]
+        return [f"kubectl create {create} {name} {ns} --from-literal=<key>=<value>", *restart]
     return []
-
-
-def _double(limit: str | None) -> str:
-    """Suggest twice the current memory limit, e.g. 64Mi -> 128Mi."""
-    match = re.fullmatch(r"(\d+)(Ki|Mi|Gi|M|G)?", limit or "")
-    if not match:
-        return "<higher>"
-    return f"{int(match.group(1)) * 2}{match.group(2) or ''}"

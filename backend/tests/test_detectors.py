@@ -115,7 +115,7 @@ def test_oom_uses_memory_limit() -> None:
     incident = only_incident(bundle(pods=[p]))
     assert incident.root.type == "OOMKilled"
     assert incident.root.cause == "Memory limit 64Mi is too low (container OOMKilled)"
-    assert "--limits=memory=128Mi" in incident.root.commands[0]
+    assert "--limits=memory=256Mi" in incident.root.commands[0]
 
 
 def test_image_pull_wrong_tag_vs_auth() -> None:

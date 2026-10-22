@@ -29,6 +29,7 @@ Update this file in the same commit that completes a task.
 - [x] Run AI investigations for multiple incidents in parallel
 - [x] Evidence-based confidence scoring
 - [x] `POST /api/v1/diagnose` — synchronous end-to-end diagnosis
+- [x] Complete fix commands: values filled from the cluster, named placeholders only for unknowable values, separate workload-level "check that it worked" commands
 
 ## Phase 4 — Product experience
 - [x] Persistence (SQLAlchemy + Alembic; Postgres / SQLite) with `org_id`, migrations on startup
@@ -48,6 +49,8 @@ Update this file in the same commit that completes a task.
 ## Later — Cluster Doctor features
 - [ ] "Explain" chat on each incident: ask follow-up questions with the incident's evidence as context
 - [ ] PDF reports: download a professional investigation report in the KubeiQ theme
+- [ ] Registry tag lookup: when no running image of the same repository exists, suggest the nearest existing tag from the registry (optional, off in air-gapped installs)
+- [ ] One-command Job re-run (re-create a failed Job from its own spec) once tested across Kubernetes versions
 
 ## Later — LLM configuration
 - [ ] Provider picker in the UI (model, endpoint, key) instead of env vars only

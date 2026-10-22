@@ -29,6 +29,7 @@ export type Diagnosis = {
   explanation: string;
   fix_steps: string[];
   commands: string[];
+  verify?: string[]; // missing on reports saved before it existed
   prevention: string | null;
   confidence: number;
   confidence_reasons: string[];

@@ -50,6 +50,13 @@ function CopyButton({ text }: { text: string }) {
 }
 
 /** Terminal-style block: one runnable command per line, each with its own copy button. */
+/** Values the user must fill in, such as `<database-url>`. */
+const PLACEHOLDER = /(<[a-z][a-z0-9-]*>)/;
+
+export function hasPlaceholder(command: string) {
+  return PLACEHOLDER.test(command);
+}
+
 export function Terminal({ commands }: { commands: string[] }) {
   return (
     <div className="overflow-hidden rounded-lg border border-border bg-terminal">
@@ -63,7 +70,15 @@ export function Terminal({ commands }: { commands: string[] }) {
           <li key={command} className="flex items-start gap-3 px-4 py-1.5 hover:bg-white/[0.03]">
             <span className="select-none font-mono text-sm leading-6 text-accent">$</span>
             <code className="min-w-0 flex-1 whitespace-pre-wrap break-words font-mono text-sm leading-6 text-terminal-fg">
-              {command}
+              {command.split(PLACEHOLDER).map((part, i) =>
+                i % 2 ? (
+                  <span key={i} className="text-terminal-warn">
+                    {part}
+                  </span>
+                ) : (
+                  part
+                ),
+              )}
             </code>
             <CopyButton text={command} />
           </li>

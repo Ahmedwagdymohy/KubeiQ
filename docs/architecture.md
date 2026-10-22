@@ -35,6 +35,8 @@
    2. **Detect** — deterministic detectors produce `Finding`s with evidence references. Obvious cases are resolved here without an LLM.
    3. **Reason** — the agent receives findings + summarized evidence and may call read-only tools (`get_pod`, `get_logs`, `get_events`, `describe_deployment`, ...) to dig deeper.
    4. **Diagnose** — schema-validated `Diagnosis`: root cause, explanation, fix steps, commands, prevention, confidence + supporting evidence.
+      Commands are split by `detectors/commands.py` into **fix** commands (change the cluster) and **verify**
+      commands that check the workload (`rollout status`, `get pods -l ...`), never a pod name the fix replaces.
 4. Result persisted; final SSE event emitted.
 
 ## Inside the pipeline: collectors → detectors → diagnosis

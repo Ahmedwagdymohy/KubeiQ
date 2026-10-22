@@ -32,6 +32,7 @@ class Finding(BaseModel):
     certainty: Certainty = Certainty.NONE
     fix: str | None = None
     commands: list[str] = Field(default_factory=list)
+    verify: list[str] = Field(default_factory=list)  # overrides the default workload check
     evidence: list[str] = Field(default_factory=list)  # refs to events, log lines, objects
     symptom: bool = False  # True when this is a consequence of another problem
     details: dict[str, Any] = Field(default_factory=dict)

@@ -5,6 +5,7 @@ from typing import Literal
 from pydantic import BaseModel, Field
 
 from kubeiq.collectors.models import EvidenceBundle, Gap
+from kubeiq.detectors.commands import arrange, verify_commands
 from kubeiq.detectors.models import Certainty, Incident, Severity
 
 
@@ -36,6 +37,7 @@ class Diagnosis(BaseModel):
     explanation: str
     fix_steps: list[str] = Field(default_factory=list)
     commands: list[str] = Field(default_factory=list)
+    verify: list[str] = Field(default_factory=list)  # confirms the fix worked
     prevention: str | None = None
     confidence: int
     confidence_reasons: list[str] = Field(default_factory=list)
@@ -120,6 +122,13 @@ def score_confidence(
     return max(5, min(97, round(score))), reasons
 
 
+def _commands(
+    incident: Incident, bundle: EvidenceBundle, commands: list[str]
+) -> tuple[list[str], list[str]]:
+    check = incident.root.verify or verify_commands(incident.workload, bundle)
+    return arrange(commands, check)
+
+
 def from_rules(incident: Incident, bundle: EvidenceBundle, note: str | None = None) -> Diagnosis:
     root = incident.root
     confidence, reasons = score_confidence(incident, bundle)
@@ -127,6 +136,7 @@ def from_rules(incident: Incident, bundle: EvidenceBundle, note: str | None = No
     explanation = root.summary + "."
     if root.cause:
         explanation += f" {root.cause}."
+    commands, verify = _commands(incident, bundle, root.commands)
     return Diagnosis(
         incident_id=incident.id,
         title=incident.title,
@@ -135,7 +145,8 @@ def from_rules(incident: Incident, bundle: EvidenceBundle, note: str | None = No
         root_cause=root.cause or root.summary,
         explanation=explanation,
         fix_steps=[root.fix] if root.fix else [],
-        commands=root.commands,
+        commands=commands,
+        verify=verify,
         prevention=_PREVENTION.get(root.type),
         confidence=confidence,
         confidence_reasons=reasons,
@@ -151,6 +162,7 @@ def from_agent(
     incident: Incident, bundle: EvidenceBundle, answer: AgentAnswer, steps: list[ToolStep]
 ) -> Diagnosis:
     confidence, reasons = score_confidence(incident, bundle, answer, tool_calls=len(steps))
+    commands, verify = _commands(incident, bundle, answer.commands or incident.root.commands)
     return Diagnosis(
         incident_id=incident.id,
         title=incident.title,
@@ -159,7 +171,8 @@ def from_agent(
         root_cause=answer.root_cause,
         explanation=answer.explanation,
         fix_steps=answer.fix_steps,
-        commands=answer.commands or incident.root.commands,
+        commands=commands,
+        verify=verify,
         prevention=answer.prevention,
         confidence=confidence,
         confidence_reasons=reasons,

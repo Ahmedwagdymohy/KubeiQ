@@ -18,6 +18,7 @@
   --danger: #f87171;
   --terminal: #0b0e11;
   --terminal-text: #e3e9ee;
+  --terminal-warn: #fbbf24;
 }
 
 @media (prefers-color-scheme: light) {
@@ -38,6 +39,7 @@
     --danger: #dc2626;
     --terminal: #0f1418;
     --terminal-text: #e3e9ee;
+    --terminal-warn: #fbbf24;
   }
 }
 
@@ -58,6 +60,7 @@
   --danger: #dc2626;
   --terminal: #0f1418;
   --terminal-text: #e3e9ee;
+  --terminal-warn: #fbbf24;
 }
 
 @theme inline {
@@ -75,6 +78,7 @@
   --color-danger: var(--danger);
   --color-terminal: var(--terminal);
   --color-terminal-fg: var(--terminal-text);
+  --color-terminal-warn: var(--terminal-warn);
   --font-sans: var(--font-manrope);
   --font-mono: var(--font-jetbrains-mono);
 }

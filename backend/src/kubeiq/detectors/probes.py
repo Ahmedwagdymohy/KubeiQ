@@ -1,6 +1,7 @@
 """Readiness and liveness probe failures."""
 
 from kubeiq.collectors.models import ContainerSnapshot, EvidenceBundle, PodSnapshot, Probe
+from kubeiq.detectors.commands import target
 from kubeiq.detectors.helpers import app_containers, events_for, workload_of
 from kubeiq.detectors.models import Certainty, Finding, Severity
 from kubeiq.detectors.registry import detector
@@ -88,8 +89,11 @@ def _port_patch(
     ):
         return None
     workload = workload_of(pod)
-    w_kind, _, rest = workload.partition("/")
-    if w_kind not in {"Deployment", "StatefulSet", "DaemonSet"} or probe.kind not in {
+    if workload.split("/")[0] not in {
+        "Deployment",
+        "StatefulSet",
+        "DaemonSet",
+    } or probe.kind not in {
         "http-get",
         "tcp",
     }:
@@ -98,6 +102,6 @@ def _port_patch(
     field = "httpGet" if probe.kind == "http-get" else "tcpSocket"
     path = f"/spec/template/spec/containers/{index}/{kind.lower()}Probe/{field}/port"
     return (
-        f"kubectl patch {w_kind.lower()} {rest.split('/')[-1]} -n {pod.namespace} --type json "
+        f"kubectl patch {target(workload)} -n {pod.namespace} --type json "
         f'-p \'[{{"op":"replace","path":"{path}","value":{container.ports[0]}}}]\''
     )

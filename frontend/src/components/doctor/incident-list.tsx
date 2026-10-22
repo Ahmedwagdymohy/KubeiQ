@@ -3,7 +3,7 @@
 import { useState, type ReactNode } from "react";
 
 import { ChevronIcon } from "@/components/icons";
-import { Dot, RichText, Terminal } from "@/components/ui";
+import { Dot, hasPlaceholder, RichText, Terminal } from "@/components/ui";
 import type { Diagnosis } from "@/lib/api";
 
 function parseWorkload(ref: string): { kind: string; namespace: string | null; name: string } {
@@ -88,7 +88,23 @@ function IncidentRow({
             </Block>
           )}
 
-          {diagnosis.commands.length > 0 && <Terminal commands={diagnosis.commands} />}
+          {diagnosis.commands.length > 0 && (
+            <div className="flex flex-col gap-2">
+              <Terminal commands={diagnosis.commands} />
+              {diagnosis.commands.some(hasPlaceholder) && (
+                <p className="text-sm text-muted">
+                  Replace the <span className="text-warning">highlighted</span> values before
+                  running.
+                </p>
+              )}
+            </div>
+          )}
+
+          {(diagnosis.verify ?? []).length > 0 && (
+            <Block title="Check that it worked">
+              <Terminal commands={diagnosis.verify ?? []} />
+            </Block>
+          )}
 
           <Block title="Why it happens">
             <p className="text-muted">
