@@ -55,7 +55,7 @@ def _selector_mismatch(svc: ServiceSnapshot, pods: list[PodSnapshot]) -> Finding
         resource=svc.ref,
         workload=svc.ref,
         summary=f"Service {svc.name} selects no pods (selector {selector})",
-        cause=f"No pod in namespace {svc.namespace} has labels {selector}",
+        cause=f"Service selector {selector} matches no pods",
         certainty=Certainty.MEDIUM,
         fix="Update the Service selector to match the pod labels, or fix the pod labels",
         commands=[
@@ -67,10 +67,7 @@ def _selector_mismatch(svc: ServiceSnapshot, pods: list[PodSnapshot]) -> Finding
     near = _closest_labels(svc.selector, pods)
     if near:
         key, wanted, actual, pod = near
-        finding.cause = (
-            f"Service selects {key}={wanted}, but the pods are labeled {key}={actual} "
-            "(likely a typo)"
-        )
+        finding.cause = f"Service selector {key}={wanted} matches no pods (pods use {key}={actual})"
         finding.fix = f"Change the Service selector to {key}={actual}"
         finding.certainty = Certainty.HIGH
         finding.workload = workload_of(pod)

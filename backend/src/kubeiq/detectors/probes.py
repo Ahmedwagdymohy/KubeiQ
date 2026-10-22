@@ -1,6 +1,6 @@
 """Readiness and liveness probe failures."""
 
-from kubeiq.collectors.models import ContainerSnapshot, EvidenceBundle, Probe
+from kubeiq.collectors.models import ContainerSnapshot, EvidenceBundle, PodSnapshot, Probe
 from kubeiq.detectors.helpers import app_containers, events_for, workload_of
 from kubeiq.detectors.models import Certainty, Finding, Severity
 from kubeiq.detectors.registry import detector
@@ -38,6 +38,9 @@ def detect_probe_failures(bundle: EvidenceBundle) -> list[Finding]:
             )
             if container and probe:
                 _explain(finding, container, probe, failing[0].message, kind)
+                fix = _port_patch(pod, container, probe, kind)
+                if fix:
+                    finding.commands.insert(0, fix)
             findings.append(finding)
     return findings
 
@@ -53,22 +56,48 @@ def _explain(
     lower = message.lower()
     if isinstance(probe.port, int) and container.ports and probe.port not in container.ports:
         finding.cause = (
-            f"{kind} probe checks port {probe.port}, but the container listens on "
+            f"{kind} probe uses port {probe.port}; container listens on "
             f"{', '.join(map(str, container.ports))}"
         )
         finding.fix = f"Point the {kind.lower()} probe at the port the app actually serves"
         finding.certainty = Certainty.HIGH
     elif "statuscode: 404" in lower or "404" in lower:
-        finding.cause = f"{kind} probe path {probe.path} returns 404 (endpoint does not exist)"
+        finding.cause = f"{kind} probe path {probe.path} returns 404"
         finding.fix = "Use a health endpoint the app actually exposes"
         finding.certainty = Certainty.HIGH
     elif "connection refused" in lower:
-        finding.cause = f"Nothing is listening on the probed port {probe.port}"
+        finding.cause = f"Nothing listens on probe port {probe.port}"
         finding.fix = (
             "Check the app's listen port or increase initialDelaySeconds if it starts slowly"
         )
         finding.certainty = Certainty.MEDIUM
     elif "timeout" in lower or "deadline exceeded" in lower:
-        finding.cause = f"{kind} probe times out ({probe.summary})"
+        finding.cause = f"{kind} probe times out"
         finding.fix = "Raise timeoutSeconds or investigate why the health endpoint is slow"
         finding.certainty = Certainty.MEDIUM
+
+
+def _port_patch(
+    pod: PodSnapshot, container: ContainerSnapshot, probe: Probe, kind: str
+) -> str | None:
+    """Ready-to-run patch pointing the probe at the container's real port."""
+    if not (
+        isinstance(probe.port, int)
+        and len(container.ports) == 1
+        and probe.port not in container.ports
+    ):
+        return None
+    workload = workload_of(pod)
+    w_kind, _, rest = workload.partition("/")
+    if w_kind not in {"Deployment", "StatefulSet", "DaemonSet"} or probe.kind not in {
+        "http-get",
+        "tcp",
+    }:
+        return None
+    index = app_containers(pod).index(container)
+    field = "httpGet" if probe.kind == "http-get" else "tcpSocket"
+    path = f"/spec/template/spec/containers/{index}/{kind.lower()}Probe/{field}/port"
+    return (
+        f"kubectl patch {w_kind.lower()} {rest.split('/')[-1]} -n {pod.namespace} --type json "
+        f'-p \'[{{"op":"replace","path":"{path}","value":{container.ports[0]}}}]\''
+    )

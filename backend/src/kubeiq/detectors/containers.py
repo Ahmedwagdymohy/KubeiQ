@@ -10,17 +10,17 @@ from kubeiq.detectors.registry import detector
 
 _EXIT_CODES: dict[int, tuple[str, str, Certainty]] = {
     126: (
-        "The container command is not executable",
+        "Container command is not executable",
         "Check the entrypoint file permissions in the image",
         Certainty.HIGH,
     ),
     127: (
-        "The container command was not found in the image",
+        "Container command not found in the image",
         "Fix the command/args or the image entrypoint",
         Certainty.HIGH,
     ),
     139: (
-        "The process crashed with a segmentation fault",
+        "Process crashed (segmentation fault)",
         "Check native dependencies and the image architecture",
         Certainty.MEDIUM,
     ),
@@ -141,9 +141,9 @@ def detect_oom(bundle: EvidenceBundle) -> list[Finding]:
                     workload=workload,
                     summary=f"Container '{c.name}' was killed for using too much memory",
                     cause=(
-                        f"Container exceeded its memory limit of {limit}"
+                        f"Memory limit {limit} is too low (container OOMKilled)"
                         if limit
-                        else "Container ran out of memory on the node (no memory limit set)"
+                        else "Container ran out of memory (no memory limit set)"
                     ),
                     certainty=Certainty.HIGH,
                     fix=(
@@ -153,7 +153,7 @@ def detect_oom(bundle: EvidenceBundle) -> list[Finding]:
                     ),
                     commands=[
                         f"kubectl set resources {kind.lower()}/{rest.split('/')[-1]} -c {c.name} "
-                        f"--limits=memory=<higher> {_kubectl_ns(pod)}",
+                        f"--limits=memory={_double(limit)} {_kubectl_ns(pod)}",
                         f"kubectl top pod {pod.name} {_kubectl_ns(pod)}",
                     ],
                     details={
@@ -209,30 +209,30 @@ def detect_image_pull(bundle: EvidenceBundle) -> list[Finding]:
 def _classify_pull_error(c: ContainerSnapshot, text: str) -> tuple[str, str, Certainty]:
     if c.reason == "InvalidImageName":
         return (
-            f"Image reference '{c.image}' is not a valid image name",
+            f"Invalid image name: {c.image}",
             "Fix the image field in the pod spec",
             Certainty.HIGH,
         )
     if re.search(r"(?i)not found|manifest unknown|does not exist|no such manifest", text):
         return (
-            f"Image '{c.image}' does not exist in the registry (wrong name or tag)",
+            f"Image {c.image} not found in the registry (wrong tag or name)",
             "Use an existing image tag; check the registry for available tags",
             Certainty.HIGH,
         )
     if re.search(r"(?i)unauthorized|authentication required|denied|forbidden|401|403", text):
         return (
-            f"The registry rejected the pull for '{c.image}' (missing or invalid credentials)",
+            f"Registry denied pulling {c.image} (missing or invalid pull secret)",
             "Create an imagePullSecret with valid registry credentials and reference it in the pod",
             Certainty.HIGH,
         )
     if re.search(r"(?i)no such host|i/o timeout|connection refused|dial tcp|tls", text):
         return (
-            "The node cannot reach the image registry",
+            "Node cannot reach the image registry",
             "Check node egress, proxy settings, DNS and the registry address",
             Certainty.MEDIUM,
         )
     return (
-        f"Image '{c.image}' cannot be pulled",
+        f"Image {c.image} cannot be pulled",
         "Check the image name, tag and registry access",
         Certainty.LOW,
     )
@@ -241,17 +241,17 @@ def _classify_pull_error(c: ContainerSnapshot, text: str) -> tuple[str, str, Cer
 _CONFIG_ERRORS: list[tuple[str, str, str]] = [
     (
         r"couldn't find key (\S+) in (Secret|ConfigMap) ([\w.-]+)/([\w.-]+)",
-        "{1} {3} exists but has no key '{0}' that the container references",
+        "{1} {3} is missing key '{0}'",
         "Add key '{0}' to {1} {3}, or fix the key name in the pod spec",
     ),
     (
         r"(secret|configmap) \"([\w.-]+)\" not found",
-        "{0} '{1}' referenced by the container does not exist",
+        "{0} {1} does not exist",
         "Create the {0} '{1}' in this namespace, or fix its name in the pod spec",
     ),
     (
         r"runAsNonRoot and image will run as root",
-        "securityContext requires a non-root user, but the image runs as root",
+        "Image runs as root but runAsNonRoot is required",
         "Set runAsUser to a non-zero UID or use an image built to run as non-root",
     ),
 ]
@@ -285,14 +285,32 @@ def detect_config_errors(bundle: EvidenceBundle) -> list[Finding]:
                 groups = [_KINDS.get(g.lower(), g) for g in found.groups()]
                 finding.cause, finding.fix = cause.format(*groups), fix.format(*groups)
                 finding.certainty = Certainty.HIGH
-                if groups and groups[0] in {"Secret", "ConfigMap"}:
-                    finding.commands.insert(
-                        0, f"kubectl get {groups[0].lower()} {groups[1]} {_kubectl_ns(pod)}"
-                    )
-                elif len(groups) == 4:
-                    finding.commands.insert(
-                        0, f"kubectl describe {groups[1].lower()} {groups[3]} {_kubectl_ns(pod)}"
-                    )
+                finding.commands[0:0] = _config_fix_commands(groups, pod)
                 break
             findings.append(finding)
     return findings
+
+
+def _config_fix_commands(groups: list[str], pod: PodSnapshot) -> list[str]:
+    ns = _kubectl_ns(pod)
+    if len(groups) == 4:  # missing key: [key, kind, namespace, name]
+        key, kind, _, name = groups
+        field = "stringData" if kind == "Secret" else "data"
+        return [
+            f"kubectl patch {kind.lower()} {name} {ns} --type merge "
+            f'-p \'{{"{field}":{{"{key}":"<value>"}}}}\'',
+            f"kubectl rollout restart deployment -l app={pod.labels.get('app', '<app>')} {ns}",
+        ]
+    if len(groups) == 2:  # missing object: [kind, name]
+        kind, name = groups
+        create = "secret generic" if kind == "Secret" else "configmap"
+        return [f"kubectl create {create} {name} {ns} --from-literal=<key>=<value>"]
+    return []
+
+
+def _double(limit: str | None) -> str:
+    """Suggest twice the current memory limit, e.g. 64Mi -> 128Mi."""
+    match = re.fullmatch(r"(\d+)(Ki|Mi|Gi|M|G)?", limit or "")
+    if not match:
+        return "<higher>"
+    return f"{int(match.group(1)) * 2}{match.group(2) or ''}"

@@ -87,7 +87,7 @@ def test_crashloop_missing_env_from_previous_logs() -> None:
     incident = only_incident(bundle(pods=[p], logs=[logs]))
 
     assert incident.root.type == "CrashLoopBackOff"
-    assert incident.root.cause == "Required environment variable DATABASE_URL is not set"
+    assert incident.root.cause == "Environment variable DATABASE_URL is missing"
     assert incident.root.certainty is Certainty.HIGH
     assert incident.root.commands[0].startswith("kubectl set env deployment/payment DATABASE_URL")
     assert not incident.needs_ai
@@ -114,7 +114,8 @@ def test_oom_uses_memory_limit() -> None:
     )
     incident = only_incident(bundle(pods=[p]))
     assert incident.root.type == "OOMKilled"
-    assert "64Mi" in (incident.root.cause or "")
+    assert incident.root.cause == "Memory limit 64Mi is too low (container OOMKilled)"
+    assert "--limits=memory=128Mi" in incident.root.commands[0]
 
 
 def test_image_pull_wrong_tag_vs_auth() -> None:
@@ -124,8 +125,8 @@ def test_image_pull_wrong_tag_vs_auth() -> None:
         )
         return only_incident(bundle(pods=[p], events=[event(p.ref, "Failed", message)])).root
 
-    assert "does not exist" in (run("manifest unknown: manifest unknown").cause or "")
-    assert "credentials" in (run("pull access denied, authorization failed: 401").cause or "")
+    assert "not found in the registry" in (run("manifest unknown: manifest unknown").cause or "")
+    assert "pull secret" in (run("pull access denied, authorization failed: 401").cause or "")
 
 
 def test_pending_insufficient_memory() -> None:
@@ -142,7 +143,10 @@ def test_pending_insufficient_memory() -> None:
         containers=[container(requests={"memory": "64Gi"})],
     )
     root = only_incident(bundle(pods=[p])).root
-    assert root.cause == "No node has enough free memory for the pod's request"
+    assert root.cause == "Pod requests 64Gi memory; no node has that free"
+    assert root.commands[0].startswith(
+        "kubectl set resources deployment/payment -c app --requests=memory="
+    )
     assert root.details["requests"] == {"app": "64Gi"}
 
 
@@ -151,7 +155,11 @@ def test_readiness_probe_wrong_port() -> None:
     p = pod(unhealthy=False, containers=[container(ports=[80], readiness_probe=probe)])
     message = "Readiness probe failed: Get http://10.0.0.1:8081/healthz: connection refused"
     root = only_incident(bundle(pods=[p], events=[event(p.ref, "Unhealthy", message)])).root
-    assert root.cause == "Readiness probe checks port 8081, but the container listens on 80"
+    assert root.cause == "Readiness probe uses port 8081; container listens on 80"
+    assert (
+        '"path":"/spec/template/spec/containers/0/readinessProbe/httpGet/port","value":80'
+        in root.commands[0]
+    )
 
 
 def test_service_selector_typo() -> None:
@@ -207,7 +215,7 @@ def test_same_cause_on_many_pods_is_one_incident() -> None:
 
     incident = only_incident(bundle(pods=[crashing("payment-7f9c-a"), crashing("payment-7f9c-b")]))
     assert incident.root.details["occurrences"] == 2
-    assert incident.root.cause == "The container command was not found in the image"
+    assert incident.root.cause == "Container command not found in the image"
 
 
 def test_healthy_bundle_has_no_incidents() -> None:
@@ -234,10 +242,8 @@ def test_missing_secret_key() -> None:
     )
     root = only_incident(bundle(pods=[p])).root
     assert root.type == "CreateContainerConfigError"
-    assert (
-        root.cause
-        == "Secret db-secret exists but has no key 'password' that the container references"
-    )
+    assert root.cause == "Secret db-secret is missing key 'password'"
+    assert root.commands[0].startswith("kubectl patch secret db-secret -n shop --type merge")
     assert root.certainty is Certainty.HIGH
 
 
@@ -249,8 +255,8 @@ def test_missing_configmap() -> None:
         ]
     )
     root = only_incident(bundle(pods=[p])).root
-    assert root.cause == "ConfigMap 'app-config' referenced by the container does not exist"
-    assert root.commands[0] == "kubectl get configmap app-config -n shop"
+    assert root.cause == "ConfigMap app-config does not exist"
+    assert root.commands[0].startswith("kubectl create configmap app-config -n shop")
 
 
 def test_init_container_crashloop() -> None:
@@ -274,7 +280,7 @@ def test_init_container_crashloop() -> None:
     )
     root = only_incident(bundle(pods=[p], logs=[logs])).root
     assert root.summary.startswith("Init container 'wait-for-db' keeps crashing")
-    assert root.cause == "A hostname the app depends on cannot be resolved"
+    assert root.cause == "A hostname the app needs cannot be resolved (DNS)"
 
 
 def test_unrecognized_failure_goes_to_catch_all() -> None:

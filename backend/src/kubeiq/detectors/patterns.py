@@ -36,7 +36,7 @@ PATTERNS: list[LogPattern] = [
             rf"(?i)(?:env(?:ironment)?\s*var(?:iable)?|config(?:uration)?\s*key)s?\s*{_ENV}\s*"
             r"(?:is\s+)?(?:not\s+set|missing|undefined|required|empty|not\s+defined)"
         ),
-        "Required environment variable {0} is not set",
+        "Environment variable {0} is missing",
         "Add {0} to the container env, usually from a Secret or ConfigMap",
         Certainty.HIGH,
     ),
@@ -45,21 +45,21 @@ PATTERNS: list[LogPattern] = [
         re.compile(
             rf"(?i)(?:missing|required|undefined)\s+(?:env(?:ironment)?\s*var(?:iable)?)\s*:?\s*{_ENV}"
         ),
-        "Required environment variable {0} is not set",
+        "Environment variable {0} is missing",
         "Add {0} to the container env, usually from a Secret or ConfigMap",
         Certainty.HIGH,
     ),
     LogPattern(
         "missing_env",
         re.compile(r"KeyError: ['\"]([A-Z][A-Z0-9_]{2,})['\"]"),
-        "Environment variable {0} is read by the app but not set",
+        "Environment variable {0} is missing",
         "Add {0} to the container env, usually from a Secret or ConfigMap",
         Certainty.MEDIUM,
     ),
     LogPattern(
         "exec_format",
         re.compile(r"(?i)exec format error"),
-        "Image was built for a different CPU architecture than the node",
+        "Image architecture does not match the node (amd64 vs arm64)",
         "Build or pull a multi-arch image that matches the node architecture (amd64/arm64)",
         Certainty.HIGH,
     ),
@@ -68,7 +68,7 @@ PATTERNS: list[LogPattern] = [
         re.compile(
             r"(?i)(password authentication failed|access denied for user|authentication failed)"
         ),
-        "The app was rejected by a dependency because of invalid credentials",
+        "Database or dependency rejected the app's credentials",
         "Check the username and password in the Secret the app uses",
         Certainty.MEDIUM,
     ),
@@ -78,35 +78,35 @@ PATTERNS: list[LogPattern] = [
             r"(?i)(no such host|could not resolve host|name or service not known|"
             r"getaddrinfo ENOTFOUND|temporary failure in name resolution)"
         ),
-        "A hostname the app depends on cannot be resolved",
+        "A hostname the app needs cannot be resolved (DNS)",
         "Verify the service name and namespace in the app config and that CoreDNS is healthy",
         Certainty.MEDIUM,
     ),
     LogPattern(
         "connection_refused",
         re.compile(r"(?i)(connection refused|ECONNREFUSED)"),
-        "A dependency the app connects to at startup is refusing connections",
+        "A dependency refuses connections at startup",
         "Check that the dependency is running and its Service has endpoints",
         Certainty.MEDIUM,
     ),
     LogPattern(
         "port_in_use",
         re.compile(r"(?i)address already in use"),
-        "The app tries to bind a port that is already in use",
+        "Port already in use inside the pod",
         "Check for duplicate listeners or a sidecar using the same port",
         Certainty.MEDIUM,
     ),
     LogPattern(
         "permission",
         re.compile(r"(?i)(permission denied|EACCES|read-only file system)"),
-        "The app is not allowed to access a file or directory it needs",
+        "Permission denied on a file or directory",
         "Check securityContext (runAsUser, readOnlyRootFilesystem) and volume permissions",
         Certainty.MEDIUM,
     ),
     LogPattern(
         "file_missing",
         re.compile(r"(?i)no such file or directory"),
-        "The app expects a file that does not exist in the container",
+        "Expected file is missing in the container",
         "Check volume mounts, ConfigMap keys and the image contents",
         Certainty.LOW,
     ),

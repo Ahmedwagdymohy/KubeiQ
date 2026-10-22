@@ -10,27 +10,27 @@ from kubeiq.detectors.registry import detector
 _REASONS: list[tuple[str, str, str]] = [
     (
         r"Insufficient (cpu|memory|nvidia\.com/gpu|ephemeral-storage|pods)",
-        "No node has enough free {0} for the pod's request",
+        "No node has enough free {0} for this pod",
         "Lower the {0} request, add nodes, or free capacity on existing nodes",
     ),
     (
         r"didn't match Pod's node affinity/selector|node\(s\) didn't match node selector",
-        "No node matches the pod's nodeSelector or node affinity",
+        "No node matches the pod's nodeSelector or affinity",
         "Fix the nodeSelector/affinity or label a node to match",
     ),
     (
         r"untolerated taint",
-        "All candidate nodes have taints the pod does not tolerate",
+        "Nodes have taints the pod does not tolerate",
         "Add a matching toleration or remove the taint from a node",
     ),
     (
         r"unbound immediate PersistentVolumeClaims|persistentvolumeclaim .* not found",
-        "The pod's PersistentVolumeClaim is not bound to a volume",
+        "PersistentVolumeClaim is not bound",
         "Check the PVC status, its StorageClass and the storage provisioner",
     ),
     (
         r"Too many pods",
-        "Nodes have reached their maximum pod count",
+        "Nodes are at their maximum pod count",
         "Add nodes or raise max pods per node",
     ),
 ]
@@ -68,9 +68,22 @@ def detect_pending(bundle: EvidenceBundle) -> list[Finding]:
                 finding.cause, finding.fix = cause.format(value), fix.format(value)
                 finding.certainty = Certainty.HIGH
                 if value in {"cpu", "memory"}:
-                    finding.details["requests"] = {
-                        c.name: c.requests.get(value) for c in pod.containers if c.requests
-                    }
+                    requests = {c.name: c.requests.get(value) for c in pod.containers if c.requests}
+                    finding.details["requests"] = requests
+                    asked = [f"{v}" for v in requests.values() if v]
+                    if asked:
+                        finding.cause = (
+                            f"Pod requests {' + '.join(asked)} {value}; no node has that free"
+                        )
+                    workload = finding.workload or pod.ref
+                    kind, _, rest = workload.partition("/")
+                    container = next((c for c, v in requests.items() if v), None)
+                    if kind in {"Deployment", "StatefulSet", "DaemonSet"} and container:
+                        finding.commands.insert(
+                            0,
+                            f"kubectl set resources {kind.lower()}/{rest.split('/')[-1]} "
+                            f"-c {container} --requests={value}=<lower> -n {pod.namespace}",
+                        )
                 break
         findings.append(finding)
     return findings
