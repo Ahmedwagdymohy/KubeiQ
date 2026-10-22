@@ -24,9 +24,9 @@ Update this file in the same commit that completes a task.
 - [x] Catch-all for unexplained unhealthy pods; config-error and init-container detectors
 - [x] LiteLLM client (timeouts, retries, any provider incl. LiteLLM proxy)
 - [x] Tool-calling agent with read-only tools; structured `Diagnosis` output (verified live via LiteLLM proxy)
-- [ ] Agent tool: read ConfigMap contents (redacted; needs `configmaps` in RBAC)
-- [ ] Agent tools: Job/CronJob support in `describe_workload`
-- [ ] Run AI investigations for multiple incidents in parallel
+- [x] Agent tool: read ConfigMap contents (redacted; `configmaps` added to RBAC)
+- [x] Agent tools: Job/CronJob support in `describe_workload`
+- [x] Run AI investigations for multiple incidents in parallel
 - [x] Evidence-based confidence scoring
 - [x] `POST /api/v1/diagnose` — synchronous end-to-end diagnosis
 
