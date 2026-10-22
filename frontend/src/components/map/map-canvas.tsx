@@ -8,6 +8,7 @@ import {
   Controls,
   ReactFlow,
   ReactFlowProvider,
+  useReactFlow,
   type Edge,
   type Node,
 } from "@xyflow/react";
@@ -24,7 +25,24 @@ const edgeTypes = { kube: KubeEdge };
 
 function Canvas({ graph, layoutKey }: { graph: GraphNode; layoutKey: string }) {
   const { select } = useMapSelection();
+  const { fitView } = useReactFlow();
   const box = useRef<HTMLDivElement>(null);
+
+  // Re-fit when the canvas changes size, e.g. when the details panel opens or closes.
+  useEffect(() => {
+    const el = box.current;
+    if (!el) return;
+    let timer: ReturnType<typeof setTimeout>;
+    const observer = new ResizeObserver(() => {
+      clearTimeout(timer);
+      timer = setTimeout(() => fitView({ padding: 0.12, maxZoom: 1.1, duration: 200 }), 80);
+    });
+    observer.observe(el);
+    return () => {
+      clearTimeout(timer);
+      observer.disconnect();
+    };
+  }, [fitView]);
   const [flow, setFlow] = useState<{
     nodes: Node<FlowNodeData>[];
     edges: Edge<FlowEdgeData>[];
