@@ -5,7 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Dot, SectionLabel } from "@/components/ui";
 import { api, type InvestigationSummary } from "@/lib/api";
 
-function timeAgo(iso: string): string {
+export function timeAgo(iso: string): string {
   const seconds = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
   if (seconds < 60) return "just now";
   if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
@@ -13,14 +13,14 @@ function timeAgo(iso: string): string {
   return `${Math.floor(seconds / 86400)}d ago`;
 }
 
-function tone(item: InvestigationSummary): string {
+export function tone(item: InvestigationSummary): string {
   if (item.status === "failed") return "critical";
   if (item.status !== "completed") return "healthy";
   if (item.healthy) return "healthy";
   return item.severity ?? "warning";
 }
 
-function headline(item: InvestigationSummary): string {
+export function headline(item: InvestigationSummary): string {
   if (item.status === "failed") return "Investigation failed";
   if (item.status !== "completed") return "Investigating";
   if (item.healthy) return "No issues found";

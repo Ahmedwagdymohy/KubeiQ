@@ -1,19 +1,9 @@
 import Link from "next/link";
 
-import { ChevronDownIcon, GitHubIcon, StethoscopeIcon } from "@/components/icons";
+import { ChevronDownIcon, GitHubIcon } from "@/components/icons";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
-
-export const GITHUB_URL = "https://github.com/Ahmedwagdymohy/KubeiQ";
-
-const PRODUCTS = [
-  {
-    href: "/doctor",
-    name: "Cluster Doctor",
-    description: "Find out why workloads fail and how to fix them",
-    icon: StethoscopeIcon,
-  },
-];
+import { GITHUB_URL, PRODUCTS } from "@/lib/products";
 
 export function AppHeader() {
   return (
