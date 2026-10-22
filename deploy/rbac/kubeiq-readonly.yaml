@@ -1,5 +1,6 @@
 # Read-only access for KubeiQ running inside a cluster (or for a ServiceAccount token connection).
 # Grants list/get/watch on troubleshooting resources and pod logs. Secrets are intentionally excluded.
+# ConfigMap values are read only by the AI agent and redacted before reaching any model.
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -12,7 +13,7 @@ metadata:
   name: kubeiq-readonly
 rules:
   - apiGroups: [""]
-    resources: [pods, pods/log, events, services, endpoints, nodes, namespaces, persistentvolumeclaims]
+    resources: [pods, pods/log, events, services, endpoints, nodes, namespaces, persistentvolumeclaims, configmaps]
     verbs: [get, list, watch]
   - apiGroups: [apps]
     resources: [deployments, replicasets, statefulsets, daemonsets]

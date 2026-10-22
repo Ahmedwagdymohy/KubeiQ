@@ -10,15 +10,17 @@ from collections.abc import Callable
 from datetime import UTC, datetime
 from typing import Any
 
-from kubernetes.client import ApiClient, AppsV1Api, CoreV1Api
+from kubernetes.client import ApiClient, AppsV1Api, BatchV1Api, CoreV1Api
 from kubernetes.client.exceptions import ApiException
 from pydantic import BaseModel
 
 from kubeiq.clusters.errors import describe_error
 from kubeiq.collectors import events, logs, nodes, pods, services, workloads
 from kubeiq.core.k8s import REQUEST_TIMEOUT
+from kubeiq.security.redaction import redact, redact_env_value
 
 MAX_OUTPUT_CHARS = 6000
+MAX_CONFIG_VALUE_CHARS = 2000
 
 
 def _spec(
@@ -62,10 +64,14 @@ TOOL_SPECS: list[dict[str, Any]] = [
     ),
     _spec(
         "describe_workload",
-        "Replica counts, selector and rollout conditions of a Deployment/StatefulSet/DaemonSet.",
+        "Status of a Deployment, StatefulSet, DaemonSet (replicas, rollout conditions), "
+        "Job (succeeded/failed, backoff limit) or CronJob (schedule, last run).",
         {
             "namespace": _NS,
-            "kind": {"type": "string", "enum": ["Deployment", "StatefulSet", "DaemonSet"]},
+            "kind": {
+                "type": "string",
+                "enum": ["Deployment", "StatefulSet", "DaemonSet", "Job", "CronJob"],
+            },
             "name": {"type": "string"},
         },
         ["namespace", "kind", "name"],
@@ -79,6 +85,13 @@ TOOL_SPECS: list[dict[str, Any]] = [
     _spec(
         "describe_service",
         "Service selector, ports and endpoint readiness.",
+        {"namespace": _NS, "name": {"type": "string"}},
+        ["namespace", "name"],
+    ),
+    _spec(
+        "get_configmap",
+        "Read a ConfigMap's keys and values (secrets inside values are redacted). "
+        "Use it to inspect app config files mounted into pods.",
         {"namespace": _NS, "name": {"type": "string"}},
         ["namespace", "name"],
     ),
@@ -109,6 +122,7 @@ class AgentTools:
     def __init__(self, api: ApiClient) -> None:
         self.core = CoreV1Api(api)
         self.apps = AppsV1Api(api)
+        self.batch = BatchV1Api(api)
         self._handlers: dict[str, Callable[..., Any]] = {
             "get_pod_logs": self.get_pod_logs,
             "describe_pod": self.describe_pod,
@@ -116,6 +130,7 @@ class AgentTools:
             "describe_workload": self.describe_workload,
             "list_pods": self.list_pods,
             "describe_service": self.describe_service,
+            "get_configmap": self.get_configmap,
             "describe_node": self.describe_node,
         }
 
@@ -164,6 +179,16 @@ class AgentTools:
         return records[:30]
 
     def describe_workload(self, namespace: str, kind: str, name: str) -> Any:
+        if kind == "Job":
+            return _job(
+                self.batch.read_namespaced_job(name, namespace, _request_timeout=REQUEST_TIMEOUT)
+            )
+        if kind == "CronJob":
+            return _cronjob(
+                self.batch.read_namespaced_cron_job(
+                    name, namespace, _request_timeout=REQUEST_TIMEOUT
+                )
+            )
         readers = {
             "Deployment": (self.apps.read_namespaced_deployment, workloads.from_deployment),
             "StatefulSet": (self.apps.read_namespaced_stateful_set, workloads.from_statefulset),
@@ -206,6 +231,14 @@ class AgentTools:
         )
         return services.build([svc], slices)[0]
 
+    def get_configmap(self, namespace: str, name: str) -> dict[str, Any]:
+        cm = self.core.read_namespaced_config_map(name, namespace, _request_timeout=REQUEST_TIMEOUT)
+        data = {
+            key: redact_env_value(key, redact(value))[:MAX_CONFIG_VALUE_CHARS]
+            for key, value in (cm.data or {}).items()
+        }
+        return {"name": name, "data": data, "binary_keys": sorted((cm.binary_data or {}).keys())}
+
     def describe_node(self, name: str) -> Any:
         return nodes.to_snapshot(self.core.read_node(name, _request_timeout=REQUEST_TIMEOUT))
 
@@ -213,3 +246,40 @@ class AgentTools:
         from kubernetes.client import DiscoveryV1Api
 
         return DiscoveryV1Api(self.core.api_client)
+
+
+def _conditions(obj: Any) -> list[dict[str, Any]]:
+    return [
+        {"type": c.type, "status": c.status, "reason": c.reason, "message": c.message}
+        for c in (obj.status.conditions or [])
+    ]
+
+
+def _job(job: Any) -> dict[str, Any]:
+    status = job.status
+    return {
+        "kind": "Job",
+        "name": job.metadata.name,
+        "completions": job.spec.completions,
+        "backoff_limit": job.spec.backoff_limit,
+        "active": status.active or 0,
+        "succeeded": status.succeeded or 0,
+        "failed": status.failed or 0,
+        "start_time": status.start_time,
+        "completion_time": status.completion_time,
+        "conditions": _conditions(job),
+    }
+
+
+def _cronjob(cron: Any) -> dict[str, Any]:
+    status = cron.status
+    return {
+        "kind": "CronJob",
+        "name": cron.metadata.name,
+        "schedule": cron.spec.schedule,
+        "suspend": bool(cron.spec.suspend),
+        "concurrency_policy": cron.spec.concurrency_policy,
+        "last_schedule_time": status.last_schedule_time,
+        "last_successful_time": getattr(status, "last_successful_time", None),
+        "active_jobs": [ref.name for ref in status.active or []],
+    }
