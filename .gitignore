@@ -8,8 +8,11 @@
 .env
 .env.*
 !.env.example
+# Kubeconfig files with credentials (but not source files like kubeconfig.py)
 *.kubeconfig
-kubeconfig*
+kubeconfig
+kubeconfig.yaml
+kubeconfig.yml
 
 # Python
 __pycache__/
