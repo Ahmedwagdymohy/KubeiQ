@@ -11,6 +11,7 @@ from kubeiq.collectors.models import (
     EnvSource,
     EnvVar,
     PodSnapshot,
+    Probe,
     Scope,
     make_ref,
 )
@@ -72,6 +73,8 @@ def is_unhealthy(pod: PodSnapshot, now: datetime) -> bool:
     age = now - pod.created_at if pod.created_at else timedelta(0)
     if pod.phase == "Pending" and age > STUCK_AFTER:
         return True
+    if any(c.type == "PodScheduled" and c.reason == "Unschedulable" for c in pod.conditions):
+        return True
     for c in pod.containers:
         if c.state == "waiting" and (c.reason not in _TRANSIENT_WAITING or age > STUCK_AFTER):
             return True
@@ -93,6 +96,7 @@ def _container(spec: Any, status: Any, init: bool) -> ContainerSnapshot:
         limits=dict((spec.resources and spec.resources.limits) or {}),
         env=[_env_var(e) for e in spec.env or []],
         env_from=[_env_from(e) for e in spec.env_from or []],
+        ports=[p.container_port for p in spec.ports or []],
         liveness_probe=_probe(spec.liveness_probe),
         readiness_probe=_probe(spec.readiness_probe),
     )
@@ -163,20 +167,25 @@ def _env_from(env_from: Any) -> str:
     return "unknown"
 
 
-def _probe(probe: Any) -> str | None:
+def _probe(probe: Any) -> Probe | None:
     if probe is None:
         return None
+    kind: Any
+    port: int | str | None = None
+    path: str | None = None
     if probe.http_get:
-        target = f"http-get :{probe.http_get.port}{probe.http_get.path or '/'}"
+        kind, port, path = "http-get", probe.http_get.port, probe.http_get.path or "/"
     elif probe.tcp_socket:
-        target = f"tcp :{probe.tcp_socket.port}"
+        kind, port = "tcp", probe.tcp_socket.port
     elif probe._exec:
-        target = "exec"
+        kind = "exec"
     elif probe.grpc:
-        target = f"grpc :{probe.grpc.port}"
+        kind, port = "grpc", probe.grpc.port
     else:
-        target = "unknown"
-    return (
+        kind = "unknown"
+    target = f"{kind} :{port}{path or ''}" if port is not None else kind
+    summary = (
         f"{target} delay={probe.initial_delay_seconds or 0}s period={probe.period_seconds or 10}s "
         f"timeout={probe.timeout_seconds or 1}s failure={probe.failure_threshold or 3}"
     )
+    return Probe(kind=kind, port=port, path=path, summary=summary)

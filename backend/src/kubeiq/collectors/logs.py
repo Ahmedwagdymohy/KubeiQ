@@ -63,7 +63,7 @@ def _fetch(core: CoreV1Api, pod: PodSnapshot, container: str, previous: bool) ->
     except ApiException as exc:
         excerpt.error = f"{exc.status} {exc.reason}"
         return excerpt
-    excerpt.lines, excerpt.truncated = condense(raw.splitlines())
+    excerpt.lines, excerpt.truncated = condense((raw or "").splitlines())
     return excerpt
 
 

@@ -216,3 +216,14 @@ class TestLogs:
         assert "hunter2" not in kept[1]
         assert kept[-1] == "info line 299"
         assert len(kept) == logs.KEEP_TAIL + 2
+
+
+def test_logs_handle_empty_output() -> None:
+    class EmptyLogs:
+        def read_namespaced_pod_log(self, *args: Any, **kwargs: Any) -> None:
+            return None
+
+    snap = pods.to_snapshot(crashloop_pod(), NOW)
+    excerpt = logs._fetch(EmptyLogs(), snap, "app", previous=True)  # type: ignore[arg-type]
+    assert excerpt.lines == []
+    assert excerpt.error is None

@@ -35,6 +35,13 @@ class EnvVar(BaseModel):
     optional: bool = False
 
 
+class Probe(BaseModel):
+    kind: Literal["http-get", "tcp", "exec", "grpc", "unknown"]
+    port: int | str | None = None
+    path: str | None = None
+    summary: str
+
+
 class ContainerSnapshot(BaseModel):
     name: str
     image: str
@@ -52,8 +59,9 @@ class ContainerSnapshot(BaseModel):
     limits: dict[str, str] = Field(default_factory=dict)
     env: list[EnvVar] = Field(default_factory=list)
     env_from: list[str] = Field(default_factory=list)  # e.g. "secret/app-env"
-    liveness_probe: str | None = None
-    readiness_probe: str | None = None
+    ports: list[int] = Field(default_factory=list)
+    liveness_probe: Probe | None = None
+    readiness_probe: Probe | None = None
 
 
 class Condition(BaseModel):
