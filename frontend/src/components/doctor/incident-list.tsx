@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 
 import { ChevronIcon } from "@/components/icons";
 import { Dot, hasPlaceholder, RichText, Terminal } from "@/components/ui";
@@ -13,14 +13,29 @@ function parseWorkload(ref: string): { kind: string; namespace: string | null; n
     : { kind: parts[0], namespace: null, name: parts.at(-1) ?? ref };
 }
 
-export function IncidentList({ diagnoses }: { diagnoses: Diagnosis[] }) {
-  const [open, setOpen] = useState<string | null>(diagnoses[0]?.incident_id ?? null);
+/** The incident a resource belongs to: its own workload, or one it affects. */
+function matches(diagnosis: Diagnosis, ref: string): boolean {
+  return diagnosis.workload === ref || diagnosis.affected.includes(ref);
+}
+
+export function IncidentList({
+  diagnoses,
+  focus = null,
+}: {
+  diagnoses: Diagnosis[];
+  focus?: string | null;
+}) {
+  const focused = focus ? diagnoses.find((d) => matches(d, focus)) : undefined;
+  const [open, setOpen] = useState<string | null>(
+    (focused ?? diagnoses[0])?.incident_id ?? null,
+  );
   return (
     <ul className="flex flex-col gap-px">
       {diagnoses.map((diagnosis) => (
         <IncidentRow
           key={diagnosis.incident_id}
           diagnosis={diagnosis}
+          focused={diagnosis === focused}
           expanded={open === diagnosis.incident_id}
           onToggle={() =>
             setOpen((current) => (current === diagnosis.incident_id ? null : diagnosis.incident_id))
@@ -33,16 +48,25 @@ export function IncidentList({ diagnoses }: { diagnoses: Diagnosis[] }) {
 
 function IncidentRow({
   diagnosis,
+  focused,
   expanded,
   onToggle,
 }: {
   diagnosis: Diagnosis;
+  focused: boolean;
   expanded: boolean;
   onToggle: () => void;
 }) {
   const { kind, namespace, name } = parseWorkload(diagnosis.workload);
+  const row = useRef<HTMLLIElement>(null);
+  useEffect(() => {
+    if (focused) row.current?.scrollIntoView({ block: "start", behavior: "smooth" });
+  }, [focused]);
   return (
-    <li className="bg-bg">
+    <li
+      ref={row}
+      className={`scroll-mt-4 bg-bg ${focused ? "shadow-[inset_2px_0_0_var(--accent)]" : ""}`}
+    >
       <button
         type="button"
         onClick={onToggle}

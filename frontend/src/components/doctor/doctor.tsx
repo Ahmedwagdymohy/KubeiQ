@@ -82,14 +82,24 @@ function useSidebarWidth() {
 
 export function Doctor() {
   const clusters = useQuery({ queryKey: ["clusters"], queryFn: api.clusters });
-  const [chosen, setChosen] = useState<string | null>(null);
-  const [namespace, setNamespace] = useState("");
-  const investigation = useInvestigation();
-  const { width, startDrag } = useSidebarWidth();
   const router = useRouter();
   const params = useSearchParams();
+  // Deep link from Cluster Map: ?cluster=..&namespace=..&focus=<workload ref> starts a scan.
+  const [chosen, setChosen] = useState<string | null>(() => params.get("cluster"));
+  const [namespace, setNamespace] = useState(() => params.get("namespace") ?? "");
+  const [focus] = useState(() => params.get("focus"));
+  const investigation = useInvestigation();
+  const { width, startDrag } = useSidebarWidth();
   const linkedId = params.get("id");
   const openedLink = useRef(false);
+
+  useEffect(() => {
+    const cluster = params.get("cluster");
+    if (cluster && !linkedId && !openedLink.current) {
+      openedLink.current = true;
+      investigation.start(cluster, params.get("namespace") || null);
+    }
+  }, [params, linkedId, investigation]);
 
   // Open an investigation from a shared link (?id=...) once on load.
   useEffect(() => {
@@ -102,9 +112,10 @@ export function Doctor() {
   // Keep the URL in sync so the current investigation can be shared.
   useEffect(() => {
     if (investigation.id && investigation.id !== linkedId) {
-      router.replace(`/doctor?id=${investigation.id}`, { scroll: false });
+      const keep = focus ? `&focus=${encodeURIComponent(focus)}` : "";
+      router.replace(`/doctor?id=${investigation.id}${keep}`, { scroll: false });
     }
-  }, [investigation.id, linkedId, router]);
+  }, [investigation.id, linkedId, router, focus]);
 
   const selected =
     chosen ?? clusters.data?.find((c) => c.is_default)?.id ?? clusters.data?.[0]?.id ?? null;
@@ -165,7 +176,9 @@ export function Doctor() {
                   status={investigation.status}
                 />
               )}
-              {investigation.investigation && <Results investigation={investigation.investigation} />}
+              {investigation.investigation && (
+                <Results investigation={investigation.investigation} focus={focus} />
+              )}
               <div className="flex-1 bg-bg" />
             </>
           )}
@@ -240,7 +253,7 @@ function checkedSummary(checked: Record<string, number>): string[] {
   );
 }
 
-function Results({ investigation }: { investigation: Investigation }) {
+function Results({ investigation, focus }: { investigation: Investigation; focus: string | null }) {
   const report = investigation.report;
   if (investigation.status === "failed") {
     return (
@@ -280,7 +293,7 @@ function Results({ investigation }: { investigation: Investigation }) {
           Checked {checked.slice(0, 3).join(", ")} in {scope}
         </span>
       </div>
-      <IncidentList key={investigation.id} diagnoses={report.diagnoses} />
+      <IncidentList key={investigation.id} diagnoses={report.diagnoses} focus={focus} />
     </>
   );
 }
