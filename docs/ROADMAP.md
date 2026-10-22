@@ -12,10 +12,10 @@ Update this file in the same commit that completes a task.
 - [x] CI: backend lint/type/test, frontend lint/build
 
 ## Phase 2 — Cluster access & evidence
-- [ ] `ClusterSource` abstraction + kubeconfig implementation (list contexts, per-context client)
-- [ ] `GET /api/v1/clusters` — list clusters from kubeconfig with reachability/version
+- [x] `ClusterSource` abstraction + kubeconfig implementation (list contexts, per-context client)
+- [x] `GET /api/v1/clusters` — list clusters from kubeconfig with reachability/version
 - [ ] Collectors (read-only, bounded): pods, events, logs, deployments, services/endpoints
-- [ ] Redaction module for secrets/tokens in logs and env
+- [x] Redaction module for secrets/tokens in logs and env
 - [ ] Read-only RBAC manifest (ClusterRole) for in-cluster use
 
 ## Phase 3 — Diagnosis engine
@@ -26,6 +26,7 @@ Update this file in the same commit that completes a task.
 
 ## Phase 4 — Product experience
 - [ ] Persistence (SQLAlchemy + Alembic; Postgres / SQLite) with `org_id`
+- [ ] Bearer-token cluster connection (`token` ClusterSource, token encrypted at rest)
 - [ ] Async investigations: `POST /api/v1/investigations`, SSE progress stream
 - [ ] Dashboard: cluster picker, investigate, live progress, diagnosis card, history
 - [ ] Local auth (single admin bootstrap, sessions)
