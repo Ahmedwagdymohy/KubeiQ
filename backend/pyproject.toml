@@ -11,11 +11,13 @@ dependencies = [
     "pydantic-settings>=2.6",
     "loguru>=0.7",
     "kubernetes>=31",
+    "litellm>=1.60,!=1.82.7,!=1.82.8",  # 1.82.7/1.82.8 were compromised on PyPI
 ]
 
 [dependency-groups]
 dev = [
     "pytest>=8.3",
+    "pytest-asyncio>=0.24",
     "httpx>=0.28",
     "ruff>=0.8",
     "mypy>=1.13",
@@ -55,3 +57,4 @@ ignore_missing_imports = true
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-ra"
+asyncio_mode = "auto"
