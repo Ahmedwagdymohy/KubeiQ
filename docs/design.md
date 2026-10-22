@@ -38,6 +38,22 @@ Status mapping: healthy → accent, warning → warning, critical/failed → dan
 - Pills/badges: small, rounded-full, subtle tinted background of the status color.
 - Segmented toggles (e.g. HUMAN / AGENT): pill track with accent-filled active segment, uppercase mono labels.
 
+## Feature grid (bento)
+
+- Hairline grid: cells separated by 1px `--border` lines (`gap-px` on a `bg-border` container).
+- Leading cell: large Title Case heading + one-line subtitle, `bg-grid` background, spans two rows.
+- Each cell: title (`text-lg`, medium) → one plain description line (muted) → a small visual:
+  outlined mono **tags** (`<get_logs>`, `pods`), status **pills** with a colored dot, or icons.
+
+## Copy voice
+
+Write like a person, not a brochure.
+
+- Headings in Title Case, no numbering or prefixes (`Failure Detection`, not `02 · Detect`).
+- Descriptions are one short, plain sentence with no trailing period.
+- No em dashes, no buzzwords ("seamless", "leverage", "deterministic"), no "not X but Y" phrasing.
+- Prefer concrete nouns users recognize: pods, logs, kubeconfig, commands.
+
 ## Motion
 
 Subtle only: 150ms color/opacity transitions, a gentle pulse on "investigating" states. No bouncing.

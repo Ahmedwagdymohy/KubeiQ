@@ -1,14 +1,8 @@
+import { FeatureGrid } from "@/components/feature-grid";
 import { Logo } from "@/components/logo";
 import { SystemStatus } from "@/components/system-status";
 
 const GITHUB_URL = "https://github.com/Ahmedwagdymohy/KubeiQ";
-
-const steps = [
-  { label: "01 · Collect", text: "Pods, events, logs, workloads and services — read-only." },
-  { label: "02 · Detect", text: "Deterministic rules catch known failures instantly." },
-  { label: "03 · Reason", text: "An AI agent digs into the unclear cases with safe tools." },
-  { label: "04 · Diagnose", text: "Root cause, fix commands and evidence-based confidence." },
-];
 
 export default function Home() {
   return (
@@ -36,8 +30,8 @@ export default function Home() {
             for Kubernetes Clusters
           </h1>
           <p className="mt-6 max-w-2xl text-lg text-muted">
-            KubeiQ investigates failing workloads, correlates logs, events and cluster state, and
-            explains the root cause with actionable fixes. Self-hosted, any LLM.
+            Find out why your workloads are failing. KubeiQ reads your cluster, finds the root cause
+            and shows you how to fix it, running on your own servers with any AI model
           </p>
           <div className="mt-10 flex flex-col gap-3 sm:flex-row">
             <button
@@ -57,17 +51,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="grid border-t border-border sm:grid-cols-2 lg:grid-cols-4">
-          {steps.map((step) => (
-            <div
-              key={step.label}
-              className="border-b border-border p-6 sm:border-r lg:border-b-0 lg:last:border-r-0"
-            >
-              <p className="font-mono text-xs uppercase tracking-wider text-accent">{step.label}</p>
-              <p className="mt-3 text-sm text-muted">{step.text}</p>
-            </div>
-          ))}
-        </section>
+        <FeatureGrid />
       </main>
     </div>
   );
