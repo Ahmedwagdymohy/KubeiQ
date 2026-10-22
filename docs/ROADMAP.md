@@ -49,6 +49,14 @@ Update this file in the same commit that completes a task.
 - [ ] Product modules in the backend (`products/doctor/`) with enable flags (`KUBEIQ_PRODUCTS`)
 - [ ] Deploy the website (static export) to kubeiq.io
 
+## Phase 4.6 — Cluster Map (ADR 0007)
+- [x] Decision: own product built on Headlamp's map logic, health from our detectors
+- [ ] Backend `products/map`: resources + relations + health, `GET /api/v1/map`
+- [ ] `/map` UI: React Flow + ELK layout, grouping, collapsed groups, kind icons, details panel
+- [ ] Investigate: unhealthy node opens Cluster Doctor scoped to it, incident expanded
+- [ ] Live refresh, problems-only filter, search
+- [ ] Website product page for Cluster Map
+
 ## Phase 5 — Production & distribution
 - [ ] Helm chart
 - [ ] In-cluster agent (outbound connection, no open ports) as a second `ClusterSource`

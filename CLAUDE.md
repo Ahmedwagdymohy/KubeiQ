@@ -28,6 +28,7 @@ features (teams, SSO, RBAC, audit, more clusters), never core usefulness.
 | 0003 | Cluster access via official Kubernetes Python client behind a `ClusterSource` abstraction (kubeconfig now, in-cluster agent later). No `kubectl` subprocess |
 | 0004 | LLM access via LiteLLM (provider-agnostic: OpenRouter, OpenAI, Anthropic, Bedrock, Azure, Ollama) |
 | 0005 | Hybrid diagnosis: deterministic detectors first, then tool-calling LLM agent; async investigations streamed over SSE |
+| 0007 | Cluster Map (`/map`): our own product reusing Headlamp's map logic (Apache-2.0, credited in `NOTICE`); health from our detectors |
 | 0006 | One platform, one install; products are modules (own route, API, enable flag). Marketing site in `website/` is separate from the app |
 
 Do not reverse an ADR silently — write a new ADR that supersedes it.

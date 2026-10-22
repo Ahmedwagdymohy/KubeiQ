@@ -10,3 +10,4 @@ Short records of significant decisions. To change a decision, add a new ADR that
 | [0004](0004-litellm-provider-agnostic-llm.md) | LiteLLM for provider-agnostic LLM access | Accepted |
 | [0005](0005-hybrid-diagnosis-async-investigations.md) | Hybrid diagnosis and async investigations | Accepted |
 | [0006](0006-one-platform-products-as-modules.md) | One platform, products as modules | Accepted |
+| [0007](0007-cluster-map-built-on-headlamp-logic.md) | Cluster Map built on Headlamp's map logic | Accepted |

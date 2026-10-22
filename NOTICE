@@ -1,0 +1,15 @@
+KubeiQ
+Copyright 2026 The KubeiQ Authors
+
+This product includes software developed by third parties:
+
+Headlamp (https://github.com/kubernetes-sigs/headlamp)
+  Copyright 2025 The Kubernetes Authors. Licensed under the Apache License, Version 2.0.
+  Cluster Map adapts Headlamp's resource map logic (relations, grouping, layout, edges and node
+  design). Adapted files keep the original copyright header and describe the changes.
+
+Kubernetes community icons (https://github.com/kubernetes/community/tree/master/icons)
+  Copyright The Kubernetes Authors. Licensed under CC BY 4.0.
+
+React Flow (https://github.com/xyflow/xyflow), MIT License.
+elkjs (https://github.com/kieler/elkjs), Eclipse Public License 2.0, used unmodified.
