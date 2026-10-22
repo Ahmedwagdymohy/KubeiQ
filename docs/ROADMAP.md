@@ -31,9 +31,10 @@ Update this file in the same commit that completes a task.
 - [x] `POST /api/v1/diagnose` — synchronous end-to-end diagnosis
 
 ## Phase 4 — Product experience
-- [ ] Persistence (SQLAlchemy + Alembic; Postgres / SQLite) with `org_id`
+- [x] Persistence (SQLAlchemy + Alembic; Postgres / SQLite) with `org_id`, migrations on startup
 - [ ] Bearer-token cluster connection (`token` ClusterSource, token encrypted at rest)
-- [ ] Async investigations: `POST /api/v1/investigations`, SSE progress stream
+- [x] Async investigations: `POST /api/v1/investigations`, SSE progress stream with replay, history API
+- [x] `GET /api/v1/clusters/{id}/namespaces`
 - [ ] Dashboard: cluster picker, investigate, live progress, diagnosis card, history
 - [ ] Local auth (single admin bootstrap, sessions)
 - [ ] Broken-workload scenarios in `examples/` + kind-based e2e test

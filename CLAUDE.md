@@ -39,7 +39,7 @@ backend/            FastAPI service (Python 3.12, uv). Package: backend/src/kube
     agent/          LLM agent: tools, prompts, structured output
     investigations/ orchestration, async jobs, progress events
     security/       redaction of secrets/PII before anything reaches an LLM
-    db/             persistence models and sessions
+    db/             persistence models, sessions, Alembic migrations (applied at startup)
   tests/
 frontend/           Next.js (TypeScript, Tailwind, App Router)
 ee/                 Commercial features (separate license)
@@ -67,6 +67,7 @@ pnpm lint && pnpm build
 docker compose up --build             # frontend :3000, backend :8000
 make check                            # everything CI runs; run before every commit
 make fmt                              # auto-format backend
+cd backend && uv run alembic revision --autogenerate -m "..."   # new DB migration
 
 # Local test cluster
 kind create cluster --name kubeiq-dev # adds context kind-kubeiq-dev
