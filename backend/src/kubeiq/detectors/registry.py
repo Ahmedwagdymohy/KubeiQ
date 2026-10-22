@@ -5,6 +5,7 @@ from collections.abc import Callable
 from loguru import logger
 
 from kubeiq.collectors.models import EvidenceBundle
+from kubeiq.detectors.fallback import unexplained_pods
 from kubeiq.detectors.models import Finding
 
 Detector = Callable[[EvidenceBundle], list[Finding]]
@@ -31,4 +32,5 @@ def run_detectors(bundle: EvidenceBundle) -> list[Finding]:
         except Exception:
             # A buggy detector must never break an investigation.
             logger.exception("Detector {} failed", name)
-    return findings
+    # Safety net: every unhealthy pod must end up in at least one finding.
+    return findings + unexplained_pods(bundle, findings)

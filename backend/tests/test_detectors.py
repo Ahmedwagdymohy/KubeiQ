@@ -1,6 +1,8 @@
 from datetime import UTC, datetime
 from typing import Any
 
+import pytest
+
 from kubeiq.collectors.models import (
     Condition,
     ContainerSnapshot,
@@ -221,3 +223,120 @@ def test_log_patterns_prefer_specific_causes() -> None:
     [best, *_] = match_logs(["dial tcp: connection refused", "KeyError: 'REDIS_URL'"])
     assert best.pattern.key == "missing_env"
     assert best.value == "REDIS_URL"
+
+
+def test_missing_secret_key() -> None:
+    message = "couldn't find key password in Secret shop/db-secret"
+    p = pod(
+        containers=[
+            container(state="waiting", reason="CreateContainerConfigError", message=message)
+        ]
+    )
+    root = only_incident(bundle(pods=[p])).root
+    assert root.type == "CreateContainerConfigError"
+    assert (
+        root.cause
+        == "Secret db-secret exists but has no key 'password' that the container references"
+    )
+    assert root.certainty is Certainty.HIGH
+
+
+def test_missing_configmap() -> None:
+    message = 'configmap "app-config" not found'
+    p = pod(
+        containers=[
+            container(state="waiting", reason="CreateContainerConfigError", message=message)
+        ]
+    )
+    root = only_incident(bundle(pods=[p])).root
+    assert root.cause == "ConfigMap 'app-config' referenced by the container does not exist"
+    assert root.commands[0] == "kubectl get configmap app-config -n shop"
+
+
+def test_init_container_crashloop() -> None:
+    init = container(
+        name="wait-for-db",
+        init=True,
+        state="waiting",
+        reason="CrashLoopBackOff",
+        restart_count=3,
+        last_exit_code=1,
+    )
+    p = pod(
+        phase="Pending", containers=[init, container(state="waiting", reason="PodInitializing")]
+    )
+    logs = LogExcerpt(
+        ref=f"{p.ref}/wait-for-db",
+        pod=p.ref,
+        container="wait-for-db",
+        previous=True,
+        lines=["could not resolve host postgres: Name or service not known"],
+    )
+    root = only_incident(bundle(pods=[p], logs=[logs])).root
+    assert root.summary.startswith("Init container 'wait-for-db' keeps crashing")
+    assert root.cause == "A hostname the app depends on cannot be resolved"
+
+
+def test_unrecognized_failure_goes_to_catch_all() -> None:
+    p = pod(
+        name="db-migrate-x",
+        owner="Job/db-migrate",
+        labels={},
+        phase="Failed",
+        containers=[container(state="terminated", reason="Error", exit_code=3)],
+    )
+    incident = only_incident(bundle(pods=[p]))
+    assert incident.root.detector == "unexplained"
+    assert "exit code 3" in incident.root.summary
+    assert incident.workload == "Job/shop/db-migrate"
+    assert incident.needs_ai
+
+
+def test_catch_all_beats_rollout_symptom_as_root() -> None:
+    deployment = WorkloadSnapshot(
+        ref="Deployment/shop/payment",
+        kind="Deployment",
+        name="payment",
+        namespace="shop",
+        desired=1,
+        ready=0,
+        available=0,
+        updated=1,
+    )
+    p = pod(
+        containers=[container(state="waiting", reason="RunContainerError", message="mount failed")]
+    )
+    incident = only_incident(bundle(pods=[p], workloads=[deployment]))
+    assert incident.root.detector == "unexplained"
+    assert "RunContainerError" in incident.root.summary
+    assert [f.type for f in incident.related] == ["ReplicasUnavailable"]
+
+
+def test_catch_all_does_not_duplicate_explained_pods() -> None:
+    p = pod(containers=[container(state="running", restart_count=2, last_reason="OOMKilled")])
+    findings = run_detectors(bundle(pods=[p]))
+    assert [f.detector for f in findings] == ["oom"]
+
+
+@pytest.mark.parametrize(
+    "state",
+    [
+        {
+            "phase": "Failed",
+            "reason": "Evicted",
+            "message": "The node was low on resource: memory.",
+        },
+        {"phase": "Unknown"},
+        {"phase": "Pending"},
+        {"containers": [{"state": "waiting", "reason": "RunContainerError"}]},
+        {"containers": [{"state": "waiting", "reason": "CreateContainerError"}]},
+        {"containers": [{"state": "terminated", "reason": "ContainerCannotRun", "exit_code": 128}]},
+        {"containers": [{"state": "waiting", "reason": "SomethingNewInK8s2030"}]},
+        {"containers": [{"ready": False, "state": "running"}]},
+    ],
+)
+def test_unhealthy_pod_never_reported_healthy(state: dict[str, Any]) -> None:
+    """Guard: whatever the failure, an unhealthy pod must produce an incident."""
+    containers = [container(**c) for c in state.pop("containers", [{}])]
+    p = pod(name="weird-pod", owner=None, labels={}, containers=containers, **state)
+    assert correlate(run_detectors(bundle(pods=[p]))), f"unhealthy pod dropped: {state}"

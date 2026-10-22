@@ -1,9 +1,9 @@
-"""Container failures: CrashLoopBackOff, OOMKilled, image pull errors."""
+"""Container failures: CrashLoopBackOff, OOMKilled, image pull and config errors."""
 
 import re
 
 from kubeiq.collectors.models import ContainerSnapshot, EvidenceBundle, PodSnapshot
-from kubeiq.detectors.helpers import app_containers, events_for, has_env, logs_for, workload_of
+from kubeiq.detectors.helpers import events_for, has_env, logs_for, workload_of
 from kubeiq.detectors.models import Certainty, Finding, Severity
 from kubeiq.detectors.patterns import match_logs
 from kubeiq.detectors.registry import detector
@@ -37,9 +37,11 @@ def _kubectl_ns(pod: PodSnapshot) -> str:
 def detect_crashloop(bundle: EvidenceBundle) -> list[Finding]:
     findings = []
     for pod in bundle.unhealthy_pods:
-        for c in app_containers(pod):
+        # Init containers included: a crashing init container blocks the whole pod.
+        for c in pod.containers:
+            completed = c.init and c.state == "terminated" and c.exit_code == 0
             crashing = c.reason == "CrashLoopBackOff" or (
-                c.restart_count > 0 and c.state != "running" and c.last_reason != "OOMKilled"
+                c.restart_count > 0 and c.state != "running" and not completed
             )
             if not crashing or c.last_reason == "OOMKilled":
                 continue
@@ -56,11 +58,17 @@ def _crashloop_finding(bundle: EvidenceBundle, pod: PodSnapshot, c: ContainerSna
         resource=pod.ref,
         workload=workload_of(pod),
         summary=(
-            f"Container '{c.name}' keeps crashing ({c.restart_count} restarts, "
-            f"last exit code {exit_code})"
+            f"{'Init container' if c.init else 'Container'} '{c.name}' keeps crashing "
+            f"({c.restart_count} restarts, last exit code {exit_code})"
+            + (", so the app containers cannot start" if c.init else "")
         ),
         evidence=[e.ref for e in events_for(bundle, pod.ref) if e.reason == "BackOff"],
-        details={"container": c.name, "exit_code": exit_code, "restarts": c.restart_count},
+        details={
+            "container": c.name,
+            "init": c.init,
+            "exit_code": exit_code,
+            "restarts": c.restart_count,
+        },
         commands=[
             f"kubectl logs {pod.name} -c {c.name} --previous {_kubectl_ns(pod)}",
             f"kubectl describe pod {pod.name} {_kubectl_ns(pod)}",
@@ -118,7 +126,7 @@ def _refine_missing_env(
 def detect_oom(bundle: EvidenceBundle) -> list[Finding]:
     findings = []
     for pod in bundle.unhealthy_pods:
-        for c in app_containers(pod):
+        for c in pod.containers:
             if "OOMKilled" not in (c.reason, c.last_reason):
                 continue
             limit = c.limits.get("memory")
@@ -228,3 +236,63 @@ def _classify_pull_error(c: ContainerSnapshot, text: str) -> tuple[str, str, Cer
         "Check the image name, tag and registry access",
         Certainty.LOW,
     )
+
+
+_CONFIG_ERRORS: list[tuple[str, str, str]] = [
+    (
+        r"couldn't find key (\S+) in (Secret|ConfigMap) ([\w.-]+)/([\w.-]+)",
+        "{1} {3} exists but has no key '{0}' that the container references",
+        "Add key '{0}' to {1} {3}, or fix the key name in the pod spec",
+    ),
+    (
+        r"(secret|configmap) \"([\w.-]+)\" not found",
+        "{0} '{1}' referenced by the container does not exist",
+        "Create the {0} '{1}' in this namespace, or fix its name in the pod spec",
+    ),
+    (
+        r"runAsNonRoot and image will run as root",
+        "securityContext requires a non-root user, but the image runs as root",
+        "Set runAsUser to a non-zero UID or use an image built to run as non-root",
+    ),
+]
+
+
+_KINDS = {"secret": "Secret", "configmap": "ConfigMap"}
+
+
+@detector("container_config")
+def detect_config_errors(bundle: EvidenceBundle) -> list[Finding]:
+    findings = []
+    for pod in bundle.unhealthy_pods:
+        for c in pod.containers:
+            if c.reason != "CreateContainerConfigError":
+                continue
+            message = c.message or ""
+            finding = Finding(
+                detector="container_config",
+                type="CreateContainerConfigError",
+                severity=Severity.CRITICAL,
+                resource=pod.ref,
+                workload=workload_of(pod),
+                summary=f"Container '{c.name}' cannot be created: {message[:200]}",
+                commands=[f"kubectl describe pod {pod.name} {_kubectl_ns(pod)}"],
+                details={"container": c.name, "message": message},
+            )
+            for pattern, cause, fix in _CONFIG_ERRORS:
+                found = re.search(pattern, message, re.IGNORECASE)
+                if not found:
+                    continue
+                groups = [_KINDS.get(g.lower(), g) for g in found.groups()]
+                finding.cause, finding.fix = cause.format(*groups), fix.format(*groups)
+                finding.certainty = Certainty.HIGH
+                if groups and groups[0] in {"Secret", "ConfigMap"}:
+                    finding.commands.insert(
+                        0, f"kubectl get {groups[0].lower()} {groups[1]} {_kubectl_ns(pod)}"
+                    )
+                elif len(groups) == 4:
+                    finding.commands.insert(
+                        0, f"kubectl describe {groups[1].lower()} {groups[3]} {_kubectl_ns(pod)}"
+                    )
+                break
+            findings.append(finding)
+    return findings
