@@ -14,9 +14,10 @@ Update this file in the same commit that completes a task.
 ## Phase 2 — Cluster access & evidence
 - [x] `ClusterSource` abstraction + kubeconfig implementation (list contexts, per-context client)
 - [x] `GET /api/v1/clusters` — list clusters from kubeconfig with reachability/version
-- [ ] Collectors (read-only, bounded): pods, events, logs, deployments, services/endpoints
+- [x] Collectors (read-only, bounded): pods, events, logs, workloads, services/endpoints, nodes
+- [x] `POST /api/v1/evidence` — raw evidence bundle for debugging
 - [x] Redaction module for secrets/tokens in logs and env
-- [ ] Read-only RBAC manifest (ClusterRole) for in-cluster use
+- [x] Read-only RBAC manifest (`deploy/rbac/kubeiq-readonly.yaml`)
 
 ## Phase 3 — Diagnosis engine
 - [ ] Deterministic detectors: CrashLoopBackOff, ImagePullBackOff, OOMKilled, Pending/FailedScheduling, probe failures, rollout stuck, selector mismatch / no endpoints
