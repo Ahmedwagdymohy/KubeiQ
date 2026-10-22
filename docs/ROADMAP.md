@@ -55,7 +55,7 @@ Update this file in the same commit that completes a task.
 - [x] `/map` UI: React Flow + ELK layout, grouping, collapsed groups, kind icons, details panel
 - [x] Investigate: unhealthy node opens Cluster Doctor scoped to it, incident expanded
 - [x] Live refresh, problems-only filter, search
-- [ ] Website product page for Cluster Map
+- [x] Website product page for Cluster Map
 - [ ] Group by node and by app label (`app.kubernetes.io/instance`), like Headlamp
 - [ ] More kinds: NetworkPolicies, Gateway API routes, StatefulSet volume claims
 - [ ] All-namespaces overview that stays fast on large clusters (Headlamp's graph simplification)

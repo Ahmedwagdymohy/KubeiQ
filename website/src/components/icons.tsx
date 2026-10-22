@@ -72,3 +72,12 @@ export const StethoscopeIcon = (props: IconProps) => (
     <circle cx="20" cy="11" r="2" />
   </Icon>
 );
+
+export const MapIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <circle cx="5" cy="6" r="2.5" />
+    <circle cx="19" cy="6" r="2.5" />
+    <circle cx="12" cy="18" r="2.5" />
+    <path d="M7.5 6h9M6.3 8.2l4.4 7.6M17.7 8.2l-4.4 7.6" />
+  </Icon>
+);

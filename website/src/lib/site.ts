@@ -1,6 +1,6 @@
 import type { ComponentType } from "react";
 
-import { StethoscopeIcon } from "@/components/icons";
+import { MapIcon, StethoscopeIcon } from "@/components/icons";
 
 export const GITHUB_URL = "https://github.com/Ahmedwagdymohy/KubeiQ";
 export const DOCS_URL = `${GITHUB_URL}#readme`;
@@ -23,5 +23,11 @@ export const PRODUCTS: Product[] = [
     name: "Cluster Doctor",
     description: "Find out why workloads fail and how to fix them",
     icon: StethoscopeIcon,
+  },
+  {
+    slug: "map",
+    name: "Cluster Map",
+    description: "See every resource, how it connects and what is unhealthy",
+    icon: MapIcon,
   },
 ];
