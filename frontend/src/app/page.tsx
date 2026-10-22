@@ -23,7 +23,7 @@ export default function Home() {
           </p>
           <div className="mt-10 flex flex-col gap-3 sm:flex-row">
             <Link
-              href="/dashboard"
+              href="/doctor"
               className="rounded-md bg-accent px-6 py-3 font-medium text-accent-ink transition-colors hover:bg-accent-strong"
             >
               Investigate Cluster
