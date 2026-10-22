@@ -1,0 +1,27 @@
+import type { ComponentType } from "react";
+
+import { StethoscopeIcon } from "@/components/icons";
+
+export const GITHUB_URL = "https://github.com/Ahmedwagdymohy/KubeiQ";
+export const DOCS_URL = `${GITHUB_URL}#readme`;
+
+/** The one install command. Every "Get Started" leads to /install, which shows this. */
+export const INSTALL_COMMAND =
+  "curl -fsSL https://raw.githubusercontent.com/Ahmedwagdymohy/KubeiQ/main/deploy/install.sh | sh";
+
+export type Product = {
+  slug: string;
+  name: string;
+  description: string;
+  icon: ComponentType<{ width?: number; height?: number }>;
+};
+
+/** Every product ships in the same install (ADR 0006). Add new products here and give them a page. */
+export const PRODUCTS: Product[] = [
+  {
+    slug: "doctor",
+    name: "Cluster Doctor",
+    description: "Find out why workloads fail and how to fix them",
+    icon: StethoscopeIcon,
+  },
+];

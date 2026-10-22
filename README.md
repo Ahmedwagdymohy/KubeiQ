@@ -7,10 +7,15 @@ actionable fixes — using the LLM provider of your choice, including fully loca
 
 > Status: early development. See [docs/ROADMAP.md](docs/ROADMAP.md).
 
-## Features (planned for first release)
+## Products
 
-- **AI Troubleshooting Agent** — investigates pods, events, logs, deployments, and networking, then
+- **Cluster Doctor**, the AI troubleshooting agent: investigates pods, events, logs, deployments, and networking, then
   produces a root cause, fix steps, and an evidence-based confidence score.
+
+More products will ship in the same install.
+
+## Platform
+
 - **Multi-cluster** — pick any context from your kubeconfig; private clusters via an in-cluster agent (coming).
 - **Any LLM** — OpenAI, Anthropic, OpenRouter, Azure, Bedrock, or Ollama via LiteLLM.
 - **Safe by default** — read-only access, secret redaction before any model call.
@@ -20,16 +25,24 @@ probe failures, stuck rollouts, service selector mismatches, DNS/networking issu
 
 ## Quick start
 
+One command installs KubeiQ with every product included (needs Docker, git and a kubeconfig):
+
 ```bash
-docker compose up --build
+curl -fsSL https://raw.githubusercontent.com/Ahmedwagdymohy/KubeiQ/main/deploy/install.sh | sh
 ```
 
-- Dashboard: http://localhost:3000
-- API: http://localhost:8000/healthz
+Then open http://localhost:3000. To enable AI investigations, set a model in `~/kubeiq/backend/.env`
+and run `cd ~/kubeiq && docker compose up -d`.
 
-Ports already in use? Override them: `KUBEIQ_FRONTEND_PORT=3001 KUBEIQ_BACKEND_PORT=8001 docker compose up --build`.
+Port 3000 in use? `export KUBEIQ_FRONTEND_PORT=3001` before running the installer.
 
-See [CLAUDE.md](CLAUDE.md) for development commands.
+From a clone instead: `docker compose up --build`. See [CLAUDE.md](CLAUDE.md) for development commands.
+
+## Repository
+
+- `backend/`, `frontend/`: the KubeiQ platform (one install, products as modules)
+- `website/`: the marketing site (landing, product pages, pricing, install)
+- `deploy/`: installer, RBAC, deployment assets
 
 ## Documentation
 

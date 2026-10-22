@@ -44,8 +44,8 @@ const features: { title: string; description: string; visual: ReactNode }[] = [
     description: "Digs into the unclear cases using read-only tools",
     visual: (
       <>
-        <Tag>&lt;get_logs&gt;</Tag>
-        <Tag>&lt;describe_node&gt;</Tag>
+        <Tag>previous logs</Tag>
+        <Tag>configmaps</Tag>
       </>
     ),
   },

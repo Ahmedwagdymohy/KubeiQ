@@ -1,0 +1,118 @@
+@import "tailwindcss";
+
+/* Design tokens — see docs/design.md. Dark is the default; light via system or toggle. */
+:root {
+  color-scheme: dark;
+  --bg: #000000;
+  --surface: #0a0b0c;
+  --surface-2: #14171a;
+  --border: #262a2e;
+  --grid: rgba(255, 255, 255, 0.05);
+  --text: #f5f7f8;
+  --text-muted: #a1a9b0;
+  --text-subtle: #6b747c;
+  --accent: #39c1db;
+  --accent-strong: #66d3e8;
+  --accent-ink: #03161b;
+  --warning: #fbbf24;
+  --danger: #f87171;
+  --terminal: #0b0e11;
+  --terminal-text: #e3e9ee;
+  --terminal-warn: #fbbf24;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    color-scheme: light;
+    --bg: #ffffff;
+    --surface: #f7f9fa;
+    --surface-2: #eef2f4;
+    --border: #e1e6ea;
+    --grid: rgba(15, 23, 42, 0.05);
+    --text: #0b1115;
+    --text-muted: #4b5661;
+    --text-subtle: #87929c;
+    --accent: #0e8fa8;
+    --accent-strong: #0b7a90;
+    --accent-ink: #ffffff;
+    --warning: #b45309;
+    --danger: #dc2626;
+    --terminal: #0f1418;
+    --terminal-text: #e3e9ee;
+    --terminal-warn: #fbbf24;
+  }
+}
+
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #ffffff;
+  --surface: #f7f9fa;
+  --surface-2: #eef2f4;
+  --border: #e1e6ea;
+  --grid: rgba(15, 23, 42, 0.05);
+  --text: #0b1115;
+  --text-muted: #4b5661;
+  --text-subtle: #87929c;
+  --accent: #0e8fa8;
+  --accent-strong: #0b7a90;
+  --accent-ink: #ffffff;
+  --warning: #b45309;
+  --danger: #dc2626;
+  --terminal: #0f1418;
+  --terminal-text: #e3e9ee;
+  --terminal-warn: #fbbf24;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-fg: var(--text);
+  --color-muted: var(--text-muted);
+  --color-subtle: var(--text-subtle);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-accent-ink: var(--accent-ink);
+  --color-warning: var(--warning);
+  --color-danger: var(--danger);
+  --color-terminal: var(--terminal);
+  --color-terminal-fg: var(--terminal-text);
+  --color-terminal-warn: var(--terminal-warn);
+  --font-sans: var(--font-manrope);
+  --font-mono: var(--font-jetbrains-mono);
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Faint engineering grid used behind hero sections */
+.bg-grid {
+  background-image:
+    linear-gradient(to right, var(--grid) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
+
+/* Show the right theme-toggle icon without JS (server and client markup stay identical) */
+.show-in-dark { display: none; }
+.show-in-light { display: block; }
+:root[data-theme="dark"] .show-in-dark { display: block; }
+:root[data-theme="dark"] .show-in-light { display: none; }
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) .show-in-dark { display: block; }
+  :root:not([data-theme="light"]) .show-in-light { display: none; }
+}
+
+/* Indeterminate scanning bar shown while an investigation runs */
+@keyframes scan {
+  from { left: -25%; }
+  to { left: 100%; }
+}
+.scan-bar { animation: scan 1.4s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .scan-bar { animation: none; left: 0; width: 100%; opacity: 0.4; }
+}
