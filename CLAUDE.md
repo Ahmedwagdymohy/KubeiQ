@@ -85,6 +85,8 @@ kind create cluster --name kubeiq-dev # adds context kind-kubeiq-dev
 - **UI follows `docs/design.md`** (black + grid + mint accent, Manrope / JetBrains Mono). Use the
   Tailwind tokens (`bg-surface`, `text-muted`, `bg-accent`, ...), never hard-coded colors.
 - Frontend uses Next.js 16 — read `frontend/AGENTS.md` and the bundled docs before using new APIs.
+- Keep `.gitignore` patterns narrow. A broad glob (`kubeconfig*`) once hid `kubeconfig.py` from git
+  *and* from ruff. For risky changes, verify on a fresh clone: `git clone . /tmp/k && make -C /tmp/k check-backend`.
 - Keep code simple and modular; match surrounding style; add tests with every feature.
 
 ## Git workflow
