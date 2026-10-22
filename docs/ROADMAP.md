@@ -44,6 +44,15 @@ Update this file in the same commit that completes a task.
 - [ ] In-cluster agent (outbound connection, no open ports) as a second `ClusterSource`
 - [ ] Release pipeline: versioned images to GHCR, changelog
 
+## Later — Cluster Doctor features
+- [ ] "Explain" chat on each incident: ask follow-up questions with the incident's evidence as context
+- [ ] PDF reports: download a professional investigation report in the KubeiQ theme
+
+## Later — LLM configuration
+- [ ] Provider picker in the UI (model, endpoint, key) instead of env vars only
+- [ ] Per-organization LLM keys and model settings (Enterprise)
+- [ ] Model routing: a cheaper/faster model for simple tasks (summaries, explanations), the strong model for investigations
+
 ## Later — Learning loop
 - [ ] Record which incidents go to the AI and its conclusions; promote frequent conclusions to new rules
 
