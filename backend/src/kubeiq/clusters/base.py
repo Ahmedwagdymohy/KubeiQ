@@ -13,6 +13,7 @@ from pydantic import BaseModel
 
 class ConnectionMethod(StrEnum):
     KUBECONFIG = "kubeconfig"
+    UPLOAD = "upload"  # kubeconfig files added in Settings, stored encrypted
     TOKEN = "token"  # noqa: S105 - planned: ServiceAccount bearer token (Phase 4)
     AGENT = "agent"  # planned: outbound in-cluster agent (Phase 5)
 

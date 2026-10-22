@@ -5,7 +5,7 @@ from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any, ClassVar
 
-from sqlalchemy import JSON, DateTime, ForeignKey, Index, Integer, String, Text
+from sqlalchemy import JSON, DateTime, ForeignKey, Index, Integer, String, Text, UniqueConstraint
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 DEFAULT_ORG = "default"
@@ -74,3 +74,27 @@ class InvestigationEvent(Base):
     created_at: Mapped[datetime] = mapped_column(default=_now)
 
     investigation: Mapped[Investigation] = relationship(back_populates="events")
+
+
+class AppSetting(Base):
+    """A settings document per org, e.g. key "ai". Secret fields inside are encrypted."""
+
+    __tablename__ = "app_settings"
+
+    org_id: Mapped[str] = mapped_column(String(64), primary_key=True, default=DEFAULT_ORG)
+    key: Mapped[str] = mapped_column(String(64), primary_key=True)
+    value: Mapped[dict[str, Any]]
+    updated_at: Mapped[datetime] = mapped_column(default=_now, onupdate=_now)
+
+
+class StoredKubeconfig(Base):
+    """A kubeconfig file added in Settings. ``content`` is encrypted."""
+
+    __tablename__ = "kubeconfigs"
+    __table_args__ = (UniqueConstraint("org_id", "name", name="uq_kubeconfigs_org_name"),)
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    org_id: Mapped[str] = mapped_column(String(64), default=DEFAULT_ORG, index=True)
+    name: Mapped[str] = mapped_column(String(64))
+    content: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(default=_now)

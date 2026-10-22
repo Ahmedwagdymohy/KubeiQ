@@ -19,6 +19,11 @@ class Settings(BaseSettings):
     database_url: str = "sqlite+aiosqlite:///./kubeiq.db"
     max_concurrent_investigations: int = 4
 
+    # Where KubeiQ keeps local state such as the generated encryption key (/data in Docker).
+    data_dir: str = "."
+    # Encrypts API keys and uploaded kubeconfigs at rest. Generated into data_dir when unset.
+    secret_key: SecretStr | None = None
+
     kubeconfig: str | None = None
     # Set to host.docker.internal when running in Docker against kind/minikube/k3d clusters.
     kubeconfig_localhost_alias: str | None = None
@@ -30,6 +35,7 @@ class Settings(BaseSettings):
     llm_api_key: SecretStr | None = (
         None  # optional; provider env vars (OPENAI_API_KEY, ...) also work
     )
+    llm_api_version: str | None = None  # Azure OpenAI only
     llm_timeout: float = 60.0
     llm_max_retries: int = 2
     llm_temperature: float = 0.0

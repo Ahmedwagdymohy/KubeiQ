@@ -18,6 +18,7 @@ dependencies = [
     "asyncpg>=0.30",
     "alembic>=1.14",
     "sse-starlette>=2.1",
+    "cryptography>=46",
 ]
 
 [dependency-groups]

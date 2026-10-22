@@ -39,3 +39,6 @@ next-env.d.ts
 
 # Claude Code (local only; shared config in .claude/settings.json and .claude/commands)
 .claude/settings.local.json
+
+# Generated encryption key for settings (never commit)
+.kubeiq-secret.key

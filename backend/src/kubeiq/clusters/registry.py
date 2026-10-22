@@ -9,6 +9,7 @@ from loguru import logger
 from kubeiq.clusters.base import ClusterInfo, ClusterNotFoundError, ClusterSource, ClusterStatus
 from kubeiq.clusters.errors import describe_error
 from kubeiq.clusters.kubeconfig import KubeconfigSource
+from kubeiq.clusters.uploaded import UploadedKubeconfigSource
 from kubeiq.core.config import get_settings
 
 PROBE_TIMEOUT_SECONDS = 3
@@ -49,8 +50,16 @@ class ClusterRegistry:
 
 
 @lru_cache
-def get_registry() -> ClusterRegistry:
+def get_local_source() -> KubeconfigSource:
     settings = get_settings()
-    return ClusterRegistry(
-        [KubeconfigSource(settings.kubeconfig, settings.kubeconfig_localhost_alias)]
-    )
+    return KubeconfigSource(settings.kubeconfig, settings.kubeconfig_localhost_alias)
+
+
+@lru_cache
+def get_uploaded_source() -> UploadedKubeconfigSource:
+    return UploadedKubeconfigSource(get_settings().kubeconfig_localhost_alias)
+
+
+@lru_cache
+def get_registry() -> ClusterRegistry:
+    return ClusterRegistry([get_local_source(), get_uploaded_source()])

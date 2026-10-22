@@ -16,6 +16,7 @@ from kubeiq.db.migrate import upgrade_database
 from kubeiq.db.session import get_sessionmaker
 from kubeiq.investigations import repository
 from kubeiq.investigations.runner import get_runner
+from kubeiq.settings.service import sync_uploaded_clusters
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -28,6 +29,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         await upgrade_database()
         async with get_sessionmaker()() as session:
             interrupted = await repository.fail_interrupted(session)
+            await sync_uploaded_clusters(session)
         if interrupted:
             logger.warning("Marked {} interrupted investigation(s) as failed", interrupted)
         yield

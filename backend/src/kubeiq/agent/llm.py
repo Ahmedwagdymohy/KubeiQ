@@ -80,6 +80,8 @@ class LiteLLMClient:
             kwargs["api_base"] = s.llm_api_base
         if s.llm_api_key:
             kwargs["api_key"] = s.llm_api_key.get_secret_value()
+        if s.llm_api_version:
+            kwargs["api_version"] = s.llm_api_version
 
         try:
             response = await litellm.acompletion(**kwargs)

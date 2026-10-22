@@ -23,6 +23,7 @@ from kubeiq.db.session import get_sessionmaker
 from kubeiq.investigations import repository
 from kubeiq.investigations.broker import EventBroker
 from kubeiq.investigations.models import EventOut
+from kubeiq.settings.service import effective_settings
 
 
 class InvestigationRunner:
@@ -63,14 +64,16 @@ class InvestigationRunner:
             investigation = await repository.get(session, investigation_id)
             if investigation is None:
                 return
-            llm = get_llm(self.settings)
+            # Saved Settings (AI model, limits) apply from the next investigation on.
+            settings = await effective_settings(session, self.settings)
+            llm = get_llm(settings)
             await repository.mark_running(session, investigation, llm.model if llm else None)
             try:
                 api = self.registry.api_client(investigation.cluster_id)
                 scope = Scope(
                     cluster_id=investigation.cluster_id, namespace=investigation.namespace
                 )
-                report = await diagnose(api, scope, self.settings, llm, progress)
+                report = await diagnose(api, scope, settings, llm, progress)
             except asyncio.CancelledError:
                 await repository.mark_failed(session, investigation, "Cancelled during shutdown")
                 raise

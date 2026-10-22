@@ -13,7 +13,8 @@ RUN useradd --create-home --uid 10001 kubeiq && mkdir /data && chown kubeiq:kube
 WORKDIR /app
 COPY --from=builder --chown=kubeiq:kubeiq /app /app
 ENV PATH="/app/.venv/bin:$PATH" PYTHONUNBUFFERED=1 \
-    KUBEIQ_DATABASE_URL=sqlite+aiosqlite:////data/kubeiq.db
+    KUBEIQ_DATABASE_URL=sqlite+aiosqlite:////data/kubeiq.db \
+    KUBEIQ_DATA_DIR=/data
 VOLUME ["/data"]
 USER kubeiq
 EXPOSE 8000
