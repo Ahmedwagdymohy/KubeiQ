@@ -1,0 +1,26 @@
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "${KUBEIQ_BACKEND_PORT:-8000}:8000"
+    env_file:
+      - path: ./backend/.env
+        required: false
+    environment:
+      KUBEIQ_KUBECONFIG: /home/kubeiq/.kube/config
+      KUBEIQ_CORS_ORIGINS: '["http://localhost:${KUBEIQ_FRONTEND_PORT:-3000}"]'
+    volumes:
+      # Read-only access to local kubeconfig for the kubeconfig ClusterSource
+      - ${KUBECONFIG_DIR:-~/.kube}:/home/kubeiq/.kube:ro
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        NEXT_PUBLIC_API_BASE_URL: http://localhost:${KUBEIQ_BACKEND_PORT:-8000}
+    ports:
+      - "${KUBEIQ_FRONTEND_PORT:-3000}:3000"
+    depends_on:
+      - backend
+    restart: unless-stopped

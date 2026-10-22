@@ -8,8 +8,8 @@ Update this file in the same commit that completes a task.
 - [x] Design system (`docs/design.md`)
 - [x] Backend skeleton: FastAPI, config, structured logging, `/healthz` `/readyz`, tests
 - [x] Frontend skeleton: Next.js + Tailwind landing/dashboard shell with backend status
-- [ ] Docker images + `docker-compose.yml`
-- [ ] CI: backend lint/type/test, frontend lint/build
+- [x] Docker images + `docker-compose.yml`
+- [x] CI: backend lint/type/test, frontend lint/build
 
 ## Phase 2 — Cluster access & evidence
 - [ ] `ClusterSource` abstraction + kubeconfig implementation (list contexts, per-context client)

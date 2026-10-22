@@ -27,6 +27,8 @@ docker compose up --build
 - Dashboard: http://localhost:3000
 - API: http://localhost:8000/healthz
 
+Ports already in use? Override them: `KUBEIQ_FRONTEND_PORT=3001 KUBEIQ_BACKEND_PORT=8001 docker compose up --build`.
+
 See [CLAUDE.md](CLAUDE.md) for development commands.
 
 ## Documentation
