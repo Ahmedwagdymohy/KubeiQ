@@ -13,6 +13,11 @@ dependencies = [
     "kubernetes>=31",
     "litellm>=1.60,!=1.82.7,!=1.82.8",  # 1.82.7/1.82.8 were compromised on PyPI
     "mcp>=1.0",  # LiteLLM imports mcp on every tool-calling request
+    "sqlalchemy[asyncio]>=2.0",
+    "aiosqlite>=0.20",
+    "asyncpg>=0.30",
+    "alembic>=1.14",
+    "sse-starlette>=2.1",
 ]
 
 [dependency-groups]
@@ -44,6 +49,7 @@ known-first-party = ["kubeiq"]
 
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["S101"]
+"src/kubeiq/db/migrations/versions/**" = ["E501"]
 
 [tool.mypy]
 python_version = "3.12"

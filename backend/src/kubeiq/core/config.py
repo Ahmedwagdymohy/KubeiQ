@@ -15,6 +15,10 @@ class Settings(BaseSettings):
     log_json: bool = False
     cors_origins: list[str] = ["http://localhost:3000"]
 
+    # SQLite by default (zero setup). Postgres: postgresql+asyncpg://user:pass@host/kubeiq
+    database_url: str = "sqlite+aiosqlite:///./kubeiq.db"
+    max_concurrent_investigations: int = 4
+
     kubeconfig: str | None = None
     # Set to host.docker.internal when running in Docker against kind/minikube/k3d clusters.
     kubeconfig_localhost_alias: str | None = None
