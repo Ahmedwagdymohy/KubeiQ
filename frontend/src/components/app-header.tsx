@@ -37,10 +37,10 @@ export function AppHeader() {
                   <Link
                     key={href}
                     href={href}
-                    className="flex items-start gap-3 rounded-md p-3 transition-colors hover:bg-surface-2"
+                    className="flex items-center gap-3 rounded-md p-3 transition-colors hover:bg-surface-2"
                   >
-                    <span className="mt-0.5 text-accent">
-                      <Icon />
+                    <span className="shrink-0 text-accent">
+                      <Icon width={24} height={24} />
                     </span>
                     <span className="flex flex-col">
                       <span className="text-sm font-medium text-fg">{name}</span>
