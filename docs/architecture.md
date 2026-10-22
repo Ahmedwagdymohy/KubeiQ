@@ -106,6 +106,11 @@ Each detector is a small rule: *look at the evidence bundle, return findings*. N
 
 A finding looks like: *"Pod payment-7f9 is CrashLoopBackOff (12 restarts). Likely cause: DATABASE_URL missing. Evidence: BackOff event, log line 41."*
 
+**Safety net:** after all detectors run, a catch-all turns every unhealthy pod that no detector
+explained into a finding with unknown cause. Unknown causes go to the AI agent (or are reported
+as unexplained without an LLM). An unhealthy pod is never dropped, so KubeiQ never reports
+"healthy" while something is broken. A guard test enforces this.
+
 ### 4. Correlate — one problem, not twenty alerts
 - **Group:** 5 crashing replicas of one Deployment → 1 incident.
 - **Cause vs symptom:** Service has no endpoints ← pods not ready ← CrashLoop ← missing `DATABASE_URL`. The deepest clear cause is the root cause; the rest is listed as impact.

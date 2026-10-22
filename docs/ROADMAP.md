@@ -21,6 +21,7 @@ Update this file in the same commit that completes a task.
 
 ## Phase 3 — Diagnosis engine
 - [x] Deterministic detectors: CrashLoopBackOff, ImagePullBackOff, OOMKilled, Pending/FailedScheduling, probe failures, rollout stuck, selector mismatch / no endpoints
+- [x] Catch-all for unexplained unhealthy pods; config-error and init-container detectors
 - [x] LiteLLM client (timeouts, retries, any provider incl. LiteLLM proxy)
 - [~] Tool-calling agent with read-only tools; structured `Diagnosis` output (unit-tested; live LLM run pending)
 - [x] Evidence-based confidence scoring
@@ -38,6 +39,9 @@ Update this file in the same commit that completes a task.
 - [ ] Helm chart
 - [ ] In-cluster agent (outbound connection, no open ports) as a second `ClusterSource`
 - [ ] Release pipeline: versioned images to GHCR, changelog
+
+## Later — Learning loop
+- [ ] Record which incidents go to the AI and its conclusions; promote frequent conclusions to new rules
 
 ## Later — Pro / Enterprise (`ee/`)
 - [ ] License key validation & feature flags
