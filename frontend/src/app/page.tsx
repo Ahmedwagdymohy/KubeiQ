@@ -11,18 +11,18 @@ export default function Home() {
       <AppHeader />
 
       <main className="mx-auto flex w-full max-w-[1680px] flex-1 flex-col border-x border-border">
-        <section className="bg-grid flex flex-col gap-4 border-b border-border px-6 py-14 sm:px-12">
+        <section className="bg-grid flex flex-col items-start gap-4 border-b border-border px-6 py-14 sm:px-12">
           <SystemStatus />
           <h1 className="text-3xl font-medium tracking-tight sm:text-4xl">Welcome to KubeiQ</h1>
           <p className="max-w-2xl text-muted">Pick a product to start working on your clusters</p>
         </section>
 
-        <section className="grid gap-px border-b border-border bg-border md:grid-cols-2 xl:grid-cols-3">
+        <section className="grid border-b border-border md:grid-cols-2 xl:grid-cols-3">
           {PRODUCTS.map(({ href, name, description, icon: Icon }) => (
             <Link
               key={href}
               href={href}
-              className="group flex items-start gap-4 bg-bg p-8 transition-colors hover:bg-surface"
+              className="group -mb-px flex items-start gap-4 border-b border-border p-8 transition-colors hover:bg-surface md:border-r"
             >
               <span className="shrink-0 text-accent">
                 <Icon width={28} height={28} />
