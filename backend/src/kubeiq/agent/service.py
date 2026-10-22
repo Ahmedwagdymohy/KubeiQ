@@ -94,14 +94,15 @@ async def _investigate_one(
     emit: _Emit,
     on_progress: ProgressCallback | None,
 ) -> Diagnosis:
-    await emit("agent", "started", f"Investigating {incident.title}")
+    name = incident.workload.split("/")[-1]
+    await emit("agent", "started", f"{name}: investigating")
     try:
         answer, steps = await investigate(
             incident, bundle, llm, tools, settings.agent_max_steps, on_progress
         )
     except (LLMError, AgentFailedError) as exc:
         logger.warning("AI investigation failed for {}: {}", incident.id, exc)
-        await emit("agent", "failed", f"{incident.title}: {exc}")
+        await emit("agent", "failed", f"{name}: {exc}")
         return from_rules(incident, bundle, note=f"AI investigation failed: {exc}")
-    await emit("agent", "completed", f"{incident.title}: {answer.root_cause}")
+    await emit("agent", "completed", f"{name}: {answer.root_cause}")
     return from_agent(incident, bundle, answer, steps)

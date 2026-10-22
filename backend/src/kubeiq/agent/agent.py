@@ -50,6 +50,8 @@ async def investigate(
         if on_progress:
             await on_progress(ProgressEvent(step="agent", status="started", detail=detail))
 
+    name = incident.workload.split("/")[-1]
+    known_tools = {spec["function"]["name"] for spec in TOOL_SPECS}
     messages: list[dict[str, Any]] = [
         {"role": "system", "content": SYSTEM_PROMPT},
         {"role": "user", "content": build_incident_context(incident, bundle)},
@@ -62,7 +64,10 @@ async def investigate(
             return await _finalize(llm, messages, reply.content), steps
         messages.append(reply.as_message())
         for call in reply.tool_calls:
-            await emit(f"{incident.title}: {call.name}({_args(call.arguments)})")
+            if (
+                call.name in known_tools
+            ):  # unknown tools still get an error reply, but no progress line
+                await emit(f"{name}: {call.name}({_args(call.arguments)})")
             result = await tools.run(call.name, call.arguments)
             steps.append(
                 ToolStep(
