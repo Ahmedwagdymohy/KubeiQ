@@ -41,7 +41,11 @@ backend/            FastAPI service (Python 3.12, uv). Package: backend/src/kube
     security/       redaction of secrets/PII before anything reaches an LLM
     db/             persistence models, sessions, Alembic migrations (applied at startup)
   tests/
-frontend/           Next.js (TypeScript, Tailwind, App Router)
+frontend/           Next.js (TypeScript, Tailwind, App Router, React Query)
+  src/app/dashboard/  investigation dashboard (/dashboard?id=<investigation> is shareable)
+  src/components/     UI building blocks (ui.tsx) and dashboard components
+  src/hooks/          use-investigation: start/open runs and follow SSE progress
+  src/lib/api.ts      typed API client and SSE helper
 ee/                 Commercial features (separate license)
 deploy/             Compose / Helm assets
 examples/           Intentionally broken workloads for testing diagnoses
@@ -86,6 +90,8 @@ kind create cluster --name kubeiq-dev # adds context kind-kubeiq-dev
 - **UI follows `docs/design.md`** (black + grid + mint accent, Manrope / JetBrains Mono). Use the
   Tailwind tokens (`bg-surface`, `text-muted`, `bg-accent`, ...), never hard-coded colors.
 - Frontend uses Next.js 16 — read `frontend/AGENTS.md` and the bundled docs before using new APIs.
+- Verify UI changes visually: headless Chrome screenshots (`--headless=new --screenshot`). Its minimum
+  width is 500px, so test phone layouts inside a 390px iframe.
 - Keep `.gitignore` patterns narrow. A broad glob (`kubeconfig*`) once hid `kubeconfig.py` from git
   *and* from ruff. For risky changes, verify on a fresh clone: `git clone . /tmp/k && make -C /tmp/k check-backend`.
 - Keep code simple and modular; match surrounding style; add tests with every feature.
