@@ -35,7 +35,16 @@ def parse_answer(text: str | None) -> AgentAnswer:
         raise ValueError("no JSON object in reply")
     data = json.loads(cleaned[start : end + 1])
     data["confidence"] = max(0, min(100, int(data.get("confidence", 50))))
-    return AgentAnswer.model_validate(data)
+    answer = AgentAnswer.model_validate(data)
+    answer.root_cause = concise(answer.root_cause)
+    return answer
+
+
+def concise(text: str, limit: int = 160) -> str:
+    """Safety net for wordy models: keep the first sentence of a root cause."""
+    text = " ".join(text.split())
+    first = re.split(r"(?<=[a-z0-9)\]`'\"])\.\s+(?=[A-Z])", text, maxsplit=1)[0].rstrip(".")
+    return first if len(first) <= limit else first[: limit - 1].rstrip() + "…"
 
 
 async def investigate(

@@ -53,6 +53,7 @@ class DiagnosisReport(BaseModel):
     healthy: bool
     diagnoses: list[Diagnosis] = Field(default_factory=list)
     gaps: list[Gap] = Field(default_factory=list)
+    checked: dict[str, int] = Field(default_factory=dict)  # resources inspected, by kind
     llm_model: str | None = None
     duration_seconds: float
 

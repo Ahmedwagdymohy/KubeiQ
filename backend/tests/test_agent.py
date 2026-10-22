@@ -288,3 +288,16 @@ async def test_service_investigates_unclear_incidents_in_parallel(
     expected_order = [i.workload for i in correlate(run_detectors(bundle))]
     assert [d.workload for d in report.diagnoses] == expected_order
     assert all(d.source == "ai" for d in report.diagnoses)
+
+
+def test_wordy_root_cause_is_trimmed_to_first_sentence() -> None:
+    from kubeiq.agent.agent import concise
+
+    wordy = (
+        "ConfigMap queue-worker-config sets queue.concurrency to 0 in config.yaml. "
+        "The worker rejects that value at startup because it must be between 1 and 64."
+    )
+    assert (
+        concise(wordy) == "ConfigMap queue-worker-config sets queue.concurrency to 0 in config.yaml"
+    )
+    assert concise("Short cause.") == "Short cause"

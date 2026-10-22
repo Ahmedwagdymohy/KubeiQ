@@ -80,6 +80,14 @@ async def diagnose(
         healthy=not incidents,
         diagnoses=[d for d in diagnoses if d is not None],
         gaps=bundle.gaps,
+        checked={
+            "pods": len(bundle.pods),
+            "workloads": len(bundle.workloads),
+            "services": len(bundle.services),
+            "nodes": len(bundle.nodes),
+            "events": len(bundle.events),
+            "logs": len(bundle.logs),
+        },
         llm_model=llm.model if llm else None,
         duration_seconds=round(time.monotonic() - started, 2),
     )

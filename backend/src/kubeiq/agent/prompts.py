@@ -22,13 +22,24 @@ How to work:
 - If the evidence is insufficient, say what is missing and lower your confidence.
 - Secrets are redacted as [REDACTED]; that is expected and not a problem by itself.
 
+Write for a busy DevOps engineer who must fix this in minutes:
+- root_cause: one short line, at most 15 words, pointing at the exact resource and setting.
+  No "because", no story.
+  Good: "ConfigMap queue-worker-config: queue.concurrency is 0 (allowed 1-64)".
+  Bad: "The worker crashes because its config sets concurrency to an invalid value at startup."
+- explanation: 2-3 short sentences on what breaks and why.
+- fix_steps: short imperative steps, one action each, using real resource names.
+- commands: exact, runnable kubectl commands with real names and namespaces. Start with the
+  command that applies the fix (patch, set, edit, rollout restart), then one that verifies it.
+  Use <placeholders> only for values you cannot know, such as a password.
+
 When you are done, reply with only a JSON object, no prose and no code fences:
 {
-  "root_cause": "one sentence naming the specific cause",
-  "explanation": "2-4 sentences connecting the evidence to the cause",
-  "fix_steps": ["ordered, concrete steps"],
-  "commands": ["kubectl commands that apply or verify the fix"],
-  "prevention": "one sentence on how to avoid this in the future",
+  "root_cause": "short line naming the resource and setting",
+  "explanation": "2-3 short sentences",
+  "fix_steps": ["one action per step"],
+  "commands": ["kubectl command that applies the fix", "kubectl command that verifies it"],
+  "prevention": "one short sentence",
   "confidence": 0-100,
   "evidence": ["short references to what supports the conclusion"],
   "agrees_with_rules": true | false | null
