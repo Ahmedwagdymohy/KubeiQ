@@ -1,0 +1,22 @@
+# OOMKilled: the process allocates more memory than its limit.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: report-worker
+  namespace: kubeiq-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: report-worker}
+  template:
+    metadata:
+      labels: {app: report-worker}
+    spec:
+      containers:
+        - name: worker
+          image: polinux/stress:1.0.4
+          command: ["stress"]
+          args: ["--vm", "1", "--vm-bytes", "150M", "--vm-hang", "1"]
+          resources:
+            requests: {memory: 32Mi}
+            limits: {memory: 64Mi}

@@ -1,0 +1,21 @@
+# Readiness probe fails: it checks port 8081 but nginx listens on 80.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory
+  namespace: kubeiq-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: inventory}
+  template:
+    metadata:
+      labels: {app: inventory}
+    spec:
+      containers:
+        - name: api
+          image: nginx:1.27-alpine
+          ports: [{containerPort: 80}]
+          readinessProbe:
+            httpGet: {path: /healthz, port: 8081}
+            periodSeconds: 5

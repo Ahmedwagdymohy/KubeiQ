@@ -1,0 +1,17 @@
+# ImagePullBackOff: the image tag does not exist.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend
+  namespace: kubeiq-demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels: {app: frontend}
+  template:
+    metadata:
+      labels: {app: frontend}
+    spec:
+      containers:
+        - name: web
+          image: nginx:1.99.99-does-not-exist
