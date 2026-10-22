@@ -9,7 +9,7 @@ export default function Home() {
     <div className="flex flex-1 flex-col">
       <AppHeader />
 
-      <main className="mx-auto flex w-full max-w-7xl flex-1 flex-col border-x border-border">
+      <main className="mx-auto flex w-full max-w-[1680px] flex-1 flex-col border-x border-border">
         <section className="bg-grid flex flex-col items-center px-6 py-28 text-center">
           <SystemStatus />
           <h1 className="mt-8 text-4xl font-medium leading-tight tracking-tight sm:text-6xl">

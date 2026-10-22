@@ -69,6 +69,11 @@ export function ProgressTimeline({
       <h2 className="text-base font-semibold">
         {active ? "Investigating" : done.state === "failed" ? "Investigation failed" : "Investigation"}
       </h2>
+      {active && (
+        <div className="relative h-0.5 w-full overflow-hidden rounded-full bg-surface-2">
+          <div className="scan-bar absolute inset-y-0 w-1/4 rounded-full bg-accent" />
+        </div>
+      )}
       <ul className="flex flex-col">
         <Row label="Collecting evidence" state={collectState} />
         <ul className="ml-1 flex flex-col border-l border-border pl-5">

@@ -121,7 +121,7 @@ export function Doctor() {
       <AppHeader />
       <main
         style={{ "--sidebar": `${width}px` } as CSSProperties}
-        className="mx-auto grid w-full max-w-[1440px] flex-1 grid-cols-[minmax(0,1fr)] gap-px border-x border-border bg-border lg:grid-cols-[var(--sidebar)_minmax(0,1fr)]"
+        className="mx-auto grid w-full max-w-[1680px] flex-1 grid-cols-[minmax(0,1fr)] gap-px border-x border-border bg-border lg:grid-cols-[var(--sidebar)_minmax(0,1fr)]"
       >
         <div className="relative flex min-w-0 flex-col gap-px">
           <ClusterPanel
@@ -163,7 +163,6 @@ export function Doctor() {
                   key={investigation.id ?? "new"}
                   events={investigation.events}
                   status={investigation.status}
-                  duration={investigation.investigation?.report?.duration_seconds ?? null}
                 />
               )}
               {investigation.investigation && <Results investigation={investigation.investigation} />}
@@ -177,15 +176,7 @@ export function Doctor() {
 }
 
 /** Live steps while running; a one-line summary (expandable) once finished. */
-function Steps({
-  events,
-  status,
-  duration,
-}: {
-  events: ProgressEvent[];
-  status: InvestigationStatus;
-  duration: number | null;
-}) {
+function Steps({ events, status }: { events: ProgressEvent[]; status: InvestigationStatus }) {
   const [expanded, setExpanded] = useState(false);
   const finished = status === "completed" || status === "failed";
   if (!finished || expanded) {
@@ -209,7 +200,6 @@ function Steps({
       <span className="flex items-center gap-2 text-sm text-muted">
         <Dot tone={status === "failed" ? "critical" : "healthy"} />
         {status === "failed" ? "Investigation failed" : "Investigation finished"}
-        {duration !== null && status === "completed" ? ` in ${duration}s` : ""}
       </span>
       <button
         type="button"
@@ -275,7 +265,6 @@ function Results({ investigation }: { investigation: Investigation }) {
           Checked {checked.join(", ") || "the cluster"} in {scope}. Everything is running as
           expected
         </p>
-        <p className="mt-1 text-sm text-subtle">Finished in {report.duration_seconds}s</p>
       </div>
     );
   }
@@ -288,7 +277,7 @@ function Results({ investigation }: { investigation: Investigation }) {
           {count} issue{count === 1 ? "" : "s"} found
         </h2>
         <span className="text-sm text-subtle">
-          Checked {checked.slice(0, 3).join(", ")} in {scope} · {report.duration_seconds}s
+          Checked {checked.slice(0, 3).join(", ")} in {scope}
         </span>
       </div>
       <IncidentList key={investigation.id} diagnoses={report.diagnoses} />

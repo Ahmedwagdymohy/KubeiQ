@@ -22,6 +22,12 @@ type State = {
 
 const EMPTY: State = { id: null, status: null, events: [], investigation: null, error: null };
 
+/** Live progress is shown one step at a time so fast scans are still readable. */
+const STEP_MS = 180;
+
+const prefersReducedMotion = () =>
+  typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
 const finished = (status: InvestigationStatus | null) =>
   status === "completed" || status === "failed";
 
@@ -47,6 +53,16 @@ export function useInvestigation() {
   const [loadingId, setLoadingId] = useState<string | null>(null);
   const closeStream = useRef<(() => void) | null>(null);
   const latestRequest = useRef<string | null>(null);
+  const queue = useRef<ProgressEvent[]>([]);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const onDrained = useRef<(() => void) | null>(null);
+
+  const resetPacer = useCallback(() => {
+    if (timer.current) clearTimeout(timer.current);
+    timer.current = null;
+    queue.current = [];
+    onDrained.current = null;
+  }, []);
 
   // Finished investigations never change, so cache them forever: switching back is instant.
   const load = useCallback(
@@ -62,30 +78,59 @@ export function useInvestigation() {
   const follow = useCallback(
     (id: string) => {
       closeStream.current?.();
+      resetPacer();
+      const paced = !prefersReducedMotion();
+
+      const show = (event: ProgressEvent) =>
+        setState((s) =>
+          s.id === id ? { ...s, status: "running", events: mergeEvents(s.events, event) } : s,
+        );
+
+      // Real events, replayed at a readable pace; never slower than the backend itself.
+      const pump = () => {
+        const next = queue.current.shift();
+        if (next) {
+          show(next);
+          timer.current = setTimeout(pump, STEP_MS);
+          return;
+        }
+        timer.current = null;
+        const done = onDrained.current;
+        onDrained.current = null;
+        done?.();
+      };
+
+      const finish = async () => {
+        try {
+          queryClient.removeQueries({ queryKey: ["investigation", id] });
+          const investigation = await load(id);
+          setState((s) => (s.id === id ? fromInvestigation(investigation) : s));
+        } catch (err) {
+          setState((s) => (s.id === id ? { ...s, error: (err as Error).message } : s));
+        }
+        queryClient.invalidateQueries({ queryKey: ["investigations"] });
+      };
+
       closeStream.current = streamInvestigation(
         id,
-        (event) =>
-          setState((s) =>
-            s.id === id ? { ...s, status: "running", events: mergeEvents(s.events, event) } : s,
-          ),
-        async () => {
-          try {
-            queryClient.removeQueries({ queryKey: ["investigation", id] });
-            const investigation = await load(id);
-            setState((s) => (s.id === id ? fromInvestigation(investigation) : s));
-          } catch (err) {
-            setState((s) => (s.id === id ? { ...s, error: (err as Error).message } : s));
-          }
-          queryClient.invalidateQueries({ queryKey: ["investigations"] });
+        (event) => {
+          if (!paced) return show(event);
+          queue.current.push(event);
+          if (!timer.current) pump();
+        },
+        () => {
+          if (timer.current || queue.current.length) onDrained.current = finish;
+          else void finish();
         },
       );
     },
-    [load, queryClient],
+    [load, queryClient, resetPacer],
   );
 
   const start = useCallback(
     async (clusterId: string, namespace: string | null) => {
       closeStream.current?.();
+      resetPacer();
       latestRequest.current = null;
       setState({ ...EMPTY, status: "queued" });
       try {
@@ -97,7 +142,7 @@ export function useInvestigation() {
         setState({ ...EMPTY, error: err instanceof ApiError ? err.message : "Could not start" });
       }
     },
-    [follow, queryClient],
+    [follow, queryClient, resetPacer],
   );
 
   // Keeps the current view on screen until the next investigation has loaded (no flicker).
@@ -109,6 +154,7 @@ export function useInvestigation() {
         const investigation = await load(id);
         if (latestRequest.current !== id) return; // a newer click won
         closeStream.current?.();
+        resetPacer();
         setState(fromInvestigation(investigation));
         if (!finished(investigation.status)) follow(id);
       } catch (err) {
@@ -117,10 +163,16 @@ export function useInvestigation() {
         setLoadingId((current) => (current === id ? null : current));
       }
     },
-    [follow, load],
+    [follow, load, resetPacer],
   );
 
-  useEffect(() => () => closeStream.current?.(), []);
+  useEffect(
+    () => () => {
+      closeStream.current?.();
+      resetPacer();
+    },
+    [resetPacer],
+  );
 
   const running = state.status === "queued" || state.status === "running";
   return { ...state, running, loading: loadingId !== null, start, open };

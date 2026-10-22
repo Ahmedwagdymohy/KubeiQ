@@ -102,3 +102,13 @@ body {
   :root:not([data-theme="light"]) .show-in-dark { display: block; }
   :root:not([data-theme="light"]) .show-in-light { display: none; }
 }
+
+/* Indeterminate scanning bar shown while an investigation runs */
+@keyframes scan {
+  from { left: -25%; }
+  to { left: 100%; }
+}
+.scan-bar { animation: scan 1.4s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .scan-bar { animation: none; left: 0; width: 100%; opacity: 0.4; }
+}
