@@ -60,6 +60,7 @@ class ContainerSnapshot(BaseModel):
     env: list[EnvVar] = Field(default_factory=list)
     env_from: list[str] = Field(default_factory=list)  # e.g. "secret/app-env"
     ports: list[int] = Field(default_factory=list)
+    mounts: list[str] = Field(default_factory=list)  # e.g. "config:/etc/worker"
     liveness_probe: Probe | None = None
     readiness_probe: Probe | None = None
 
@@ -81,6 +82,7 @@ class PodSnapshot(BaseModel):
     labels: dict[str, str] = Field(default_factory=dict)
     conditions: list[Condition] = Field(default_factory=list)
     containers: list[ContainerSnapshot] = Field(default_factory=list)
+    volumes: list[str] = Field(default_factory=list)  # e.g. "config: configMap/worker-config"
     reason: str | None = None
     message: str | None = None
     created_at: datetime | None = None

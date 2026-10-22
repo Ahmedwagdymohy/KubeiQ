@@ -227,3 +227,17 @@ def test_logs_handle_empty_output() -> None:
     excerpt = logs._fetch(EmptyLogs(), snap, "app", previous=True)  # type: ignore[arg-type]
     assert excerpt.lines == []
     assert excerpt.error is None
+
+
+def test_pod_snapshot_includes_volumes_and_mounts() -> None:
+    from kubernetes.client import V1ConfigMapVolumeSource, V1Volume, V1VolumeMount
+
+    raw = crashloop_pod()
+    raw.spec.volumes = [
+        V1Volume(name="config", config_map=V1ConfigMapVolumeSource(name="worker-config"))
+    ]
+    raw.spec.containers[0].volume_mounts = [V1VolumeMount(name="config", mount_path="/etc/worker")]
+    snap = pods.to_snapshot(raw, NOW)
+
+    assert snap.volumes == ["config: configMap/worker-config"]
+    assert snap.containers[0].mounts == ["config:/etc/worker"]

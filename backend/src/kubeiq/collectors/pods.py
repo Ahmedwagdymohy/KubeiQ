@@ -57,6 +57,7 @@ def to_snapshot(pod: Any, now: datetime) -> PodSnapshot:
             for c in status.conditions or []
         ],
         containers=containers,
+        volumes=[_volume(v) for v in spec.volumes or []],
         reason=status.reason,
         message=status.message,
         created_at=meta.creation_timestamp,
@@ -97,6 +98,7 @@ def _container(spec: Any, status: Any, init: bool) -> ContainerSnapshot:
         env=[_env_var(e) for e in spec.env or []],
         env_from=[_env_from(e) for e in spec.env_from or []],
         ports=[p.container_port for p in spec.ports or []],
+        mounts=[f"{m.name}:{m.mount_path}" for m in spec.volume_mounts or []],
         liveness_probe=_probe(spec.liveness_probe),
         readiness_probe=_probe(spec.readiness_probe),
     )
@@ -157,6 +159,22 @@ def _env_var(env: Any) -> EnvVar:
     if source.field_ref:
         return EnvVar(name=env.name, source=EnvSource.FIELD, ref=source.field_ref.field_path)
     return EnvVar(name=env.name, source=EnvSource.RESOURCE)
+
+
+def _volume(volume: Any) -> str:
+    if volume.config_map:
+        return f"{volume.name}: configMap/{volume.config_map.name}"
+    if volume.secret:
+        return f"{volume.name}: secret/{volume.secret.secret_name}"
+    if volume.persistent_volume_claim:
+        return f"{volume.name}: pvc/{volume.persistent_volume_claim.claim_name}"
+    if volume.projected:
+        return f"{volume.name}: projected"
+    if volume.empty_dir is not None:
+        return f"{volume.name}: emptyDir"
+    if volume.host_path:
+        return f"{volume.name}: hostPath/{volume.host_path.path}"
+    return f"{volume.name}: other"
 
 
 def _env_from(env_from: Any) -> str:
