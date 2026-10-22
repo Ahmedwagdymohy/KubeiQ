@@ -1,5 +1,25 @@
 # Architecture
 
+## Platform shape (ADR 0006)
+
+KubeiQ is **one platform with one install**; products are modules inside it.
+
+```
+ kubeiq.io (website/)                       Self-hosted KubeiQ (one install)
+ ┌──────────────────────┐                   ┌──────────────────────────────────────────────┐
+ │ Landing · Products   │  Get Started      │  App (frontend/)  Home · Products menu       │
+ │ Pricing · Install ───┼──────────────────▶│     /doctor   (future products: /<name>)     │
+ └──────────────────────┘  one command      │  Platform (backend/)                         │
+                                            │     clusters · collectors · LLM · redaction  │
+                                            │     auth · licensing · persistence           │
+                                            │  Product modules: doctor (detectors, agent)  │
+                                            └──────────────────────────────────────────────┘
+```
+
+- **Platform code** is shared by every product. **Products** add routes, UI and logic on top and
+  never import each other.
+- Agent, CLI and MCP server are extra ways to reach the same backend, not separate products.
+
 ## Overview
 
 ```

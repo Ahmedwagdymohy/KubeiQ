@@ -41,6 +41,14 @@ Update this file in the same commit that completes a task.
 - [ ] Local auth (single admin bootstrap, sessions)
 - [ ] Broken-workload scenarios in `examples/` + kind-based e2e test
 
+## Phase 4.5 — Platform shape (ADR 0006)
+- [x] Decision: one platform, one install, products as modules; website separate from the app
+- [ ] `website/`: landing page (moved from the app), Cluster Doctor product page, pricing, install page
+- [ ] One-line installer `deploy/install.sh` (`curl -fsSL .../install.sh | sh`)
+- [ ] App Home at `/`: product tiles and recent investigations
+- [ ] Product modules in the backend (`products/doctor/`) with enable flags (`KUBEIQ_PRODUCTS`)
+- [ ] Deploy the website (static export) to kubeiq.io
+
 ## Phase 5 — Production & distribution
 - [ ] Helm chart
 - [ ] In-cluster agent (outbound connection, no open ports) as a second `ClusterSource`

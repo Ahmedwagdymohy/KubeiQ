@@ -6,8 +6,13 @@ Read it first, then check `docs/ROADMAP.md` for the current phase and next open 
 ## What KubeiQ is
 
 An open-core platform that brings AI to Kubernetes operations: AI investigations,
-agents, MCP, and a self-hosted multi-cluster dashboard. The first feature is the
-**AI Kubernetes Troubleshooting Agent**.
+agents, MCP, and a self-hosted multi-cluster dashboard. The first product is
+**Cluster Doctor**, the AI Kubernetes troubleshooting agent.
+
+**Product model (ADR 0006):** KubeiQ is one platform installed with one command. Every product
+(Cluster Doctor, future ones) is a module inside it, sharing clusters, LLM config, auth and
+licensing. Never ship a product as a separate download. Paid tiers gate organization and scale
+features (teams, SSO, RBAC, audit, more clusters), never core usefulness.
 
 - **Core (OSS, Apache-2.0):** everything outside `ee/`.
 - **Pro / Enterprise (commercial, `ee/`):** RBAC, SSO (OIDC/LDAP), audit logs, managed hosting.
@@ -23,6 +28,7 @@ agents, MCP, and a self-hosted multi-cluster dashboard. The first feature is the
 | 0003 | Cluster access via official Kubernetes Python client behind a `ClusterSource` abstraction (kubeconfig now, in-cluster agent later). No `kubectl` subprocess |
 | 0004 | LLM access via LiteLLM (provider-agnostic: OpenRouter, OpenAI, Anthropic, Bedrock, Azure, Ollama) |
 | 0005 | Hybrid diagnosis: deterministic detectors first, then tool-calling LLM agent; async investigations streamed over SSE |
+| 0006 | One platform, one install; products are modules (own route, API, enable flag). Marketing site in `website/` is separate from the app |
 
 Do not reverse an ADR silently — write a new ADR that supersedes it.
 
@@ -41,13 +47,15 @@ backend/            FastAPI service (Python 3.12, uv). Package: backend/src/kube
     security/       redaction of secrets/PII before anything reaches an LLM
     db/             persistence models, sessions, Alembic migrations (applied at startup)
   tests/
-frontend/           Next.js (TypeScript, Tailwind, App Router, React Query)
+frontend/           The self-hosted app: Next.js (TypeScript, Tailwind, App Router, React Query)
+  src/app/page.tsx    App Home: product tiles and recent investigations (not marketing)
   src/app/doctor/     Cluster Doctor product (/doctor?id=<investigation> is shareable)
   src/components/     UI building blocks (ui.tsx, icons.tsx), header, doctor/ components
   src/hooks/          use-investigation: start/open runs and follow SSE progress
   src/lib/api.ts      typed API client and SSE helper
+website/            Marketing site (kubeiq.io): landing, product pages, pricing, install. Static export
 ee/                 Commercial features (separate license)
-deploy/             Compose / Helm assets
+deploy/             Compose / Helm assets, install.sh (the one-line installer)
 examples/           Intentionally broken workloads for testing diagnoses
 docs/               Architecture, roadmap, ADRs
 ```
@@ -66,6 +74,10 @@ uv run mypy src
 cd frontend && pnpm install
 pnpm dev                              # http://localhost:3000
 pnpm lint && pnpm build
+
+# Website (marketing)
+cd website && pnpm install && pnpm dev   # http://localhost:3001
+pnpm lint && pnpm build                 # static export to website/out
 
 # Full stack
 docker compose up --build             # frontend :3000, backend :8000
@@ -93,6 +105,11 @@ kind create cluster --name kubeiq-dev # adds context kind-kubeiq-dev
 - **Fix commands must be complete.** Users copy them as-is. Build them with `detectors/commands.py`:
   fill values from evidence, named placeholders only for unknowable values, verify on the workload.
 - Products live under the header "Products" menu; Cluster Doctor (`/doctor`) is the first.
+  A new product = a new module: its own route, API router and enable flag, using only shared
+  platform code (never importing another product). Add it to the website too (product page).
+- Website vs app: marketing copy, pricing and install instructions belong in `website/`; the app
+  never shows marketing. Every "Get Started" points to the single install page. `website/` mirrors
+  the design tokens in `frontend/src/app/globals.css`; change both together.
 - Frontend uses Next.js 16 — read `frontend/AGENTS.md` and the bundled docs before using new APIs.
 - Verify UI changes visually: headless Chrome screenshots (`--headless=new --screenshot`, add
   `--force-dark-mode` for dark). Minimum width is 500px, so test phone layouts in a 390px iframe.
