@@ -2,6 +2,7 @@ import Link from "next/link";
 
 import { CommandBlock } from "@/components/command-block";
 import { FeatureGrid } from "@/components/feature-grid";
+import { KubeMascot } from "@/components/kube-mascot";
 import { Pill, PrimaryLink, SecondaryLink, SectionHeading } from "@/components/ui";
 import { GITHUB_URL, INSTALL_COMMAND, PRODUCTS } from "@/lib/site";
 
@@ -23,7 +24,8 @@ export default function Home() {
           <PrimaryLink href="/install">Get Started</PrimaryLink>
           <SecondaryLink href={GITHUB_URL}>View on GitHub</SecondaryLink>
         </div>
-        <div className="mt-12 w-full max-w-4xl">
+        <div className="relative mt-28 w-full max-w-4xl">
+          <KubeMascot />
           <CommandBlock commands={[INSTALL_COMMAND]} />
         </div>
       </section>

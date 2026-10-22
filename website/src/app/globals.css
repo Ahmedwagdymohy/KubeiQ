@@ -116,3 +116,13 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .scan-bar { animation: none; left: 0; width: 100%; opacity: 0.4; }
 }
+
+/* Website mascot (Kube): a small hop on hover and click */
+@keyframes kube-hop {
+  0%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-14px); }
+}
+.kube-hop { animation: kube-hop 0.42s ease-out; }
+@media (prefers-reduced-motion: reduce) {
+  .kube-hop { animation: none; }
+}

@@ -76,4 +76,10 @@ The goal: a DevOps engineer can fix the issue without asking another tool.
 
 ## Motion
 
-Subtle only: 150ms color/opacity transitions, a gentle pulse on running states. No bouncing.
+Subtle only in the app: 150ms color/opacity transitions, a gentle pulse on running states, the
+scan bar while investigating. No bouncing.
+
+The website may have one playful element: **Kube**, the pixel mascot (`website/src/components/kube-mascot.tsx`),
+a logo-cyan cube with a doctor's head mirror that walks on the landing page's install terminal,
+hops on hover and says a short Kubernetes line when clicked. It stays still with reduced motion.
+Keep it to the website; the app stays calm.
