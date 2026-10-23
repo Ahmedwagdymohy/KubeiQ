@@ -1,6 +1,5 @@
-import Image from "next/image";
-
 import { BearingFinder } from "@/components/bearing-finder";
+import { Screen } from "@/components/blocks";
 import { ChartTable } from "@/components/chart-table";
 import { FailureBand } from "@/components/failure-band";
 import { FieldHero } from "@/components/field-hero";
@@ -13,17 +12,16 @@ export default function Home() {
   return (
     <>
       <FieldHero
-        lines={["Take the", "Helm"]}
+        lines={["Know Why", "It Broke"]}
+        shape="screen"
         sentence="KubeiQ is open source AI for Kubernetes. It finds why your workloads fail and hands you the commands to fix them"
         figure={
-          <Image
-            src="/found/smalls-lighthouse-engraving.jpg"
-            alt="Engraving of Smalls Lighthouse struck by a wave in a storm, 1870"
-            width={1007}
-            height={1600}
+          <Screen
+            dark="/screens/hero-overview-dark.jpg"
+            light="/screens/hero-overview-light.jpg"
+            alt="KubeiQ Overview: 9 failing of 25 workloads, with workload health for every namespace"
             priority
-            sizes="(min-width: 768px) 30vw, 58vw"
-            className="h-auto w-full"
+            sizes="(min-width: 768px) 44vw, 86vw"
           />
         }
       />

@@ -52,7 +52,7 @@ export function SiteFooter() {
 
       <div className="frame mt-auto pt-16">
         <p className="max-w-[120ch] text-sm leading-relaxed text-inverse-muted">
-          Pictures, all public domain via Wikimedia Commons:{" "}
+          Chart under the home page screenshots, public domain via Wikimedia Commons:{" "}
           {PICTURE_CREDITS.map((c, i) => (
             <span key={c.page}>
               <a href={c.page} className={`text-inverse-ink ${link}`}>

@@ -37,8 +37,8 @@ export default function DoctorPage() {
         sentence="Pick a cluster and a namespace. Cluster Doctor finds what is broken, names the root cause in one line and gives you the commands to fix it"
         figure={
           <Screen
-            dark="/screens/doctor-incident-dark.png"
-            light="/screens/doctor-incident-light.png"
+            dark="/screens/doctor-incident-dark.jpg"
+            light="/screens/doctor-incident-light.jpg"
             alt="Cluster Doctor showing a failing workload with its root cause and the fix command"
             priority
           />

@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 import type { ReactNode } from "react";
 
 import { Screen } from "@/components/blocks";
@@ -33,17 +32,16 @@ export default function InstallPage() {
         lines={["Install", "KubeiQ"]}
         size="title"
         stack
+        shape="screen"
         action={null}
         sentence="One command installs every KubeiQ product on your laptop or server"
         figure={
-          <Image
-            src="/found/bell-rock-lighthouse-during-a-storm-from.jpg"
-            alt="Engraving of Bell Rock Lighthouse in a storm, after J. M. W. Turner"
-            width={1357}
-            height={908}
+          <Screen
+            dark="/screens/doctor-incident-dark.jpg"
+            light="/screens/doctor-incident-light.jpg"
+            alt="Cluster Doctor with a root cause and the commands to fix it"
             priority
-            sizes="(min-width: 768px) 30vw, 58vw"
-            className="aspect-[2/3] h-auto w-full object-cover object-[70%_50%]"
+            sizes="(min-width: 768px) 44vw, 86vw"
           />
         }
       >
@@ -55,16 +53,8 @@ export default function InstallPage() {
       <section data-reveal className="frame grid gap-12 pt-[clamp(96px,12vw,200px)] md:grid-cols-12 md:gap-6">
         <div className="md:col-span-5">
           <div className="flex flex-col gap-4 md:sticky md:top-8">
-            <div className="relative aspect-[4/5] overflow-hidden bg-surface">
-              <Image
-                src="/found/hms-dolphin-log-book-1.jpg"
-                alt="A page of the log book of HMS Dolphin from 1765"
-                fill
-                sizes="(min-width: 768px) 40vw, 100vw"
-                className="drift object-cover object-left"
-              />
-            </div>
-            <p className="text-base text-muted">Five steps, the same on a laptop or a server</p>
+            <Screen dark="/screens/fact-open.jpg" alt="The KubeiQ Overview you open after the install" />
+            <p className="text-base text-muted">Five steps to this Overview, the same on a laptop or a server</p>
           </div>
         </div>
 
@@ -96,8 +86,8 @@ export default function InstallPage() {
               the installer prints. Open Cluster Doctor, pick a cluster and a namespace, and start a scan.
             </p>
             <Screen
-              dark="/screens/doctor-incident-dark.png"
-              light="/screens/doctor-incident-light.png"
+              dark="/screens/doctor-incident-dark.jpg"
+              light="/screens/doctor-incident-light.jpg"
               alt="Cluster Doctor after a scan, showing a failing workload and the fix"
             />
           </Step>
@@ -149,15 +139,6 @@ export default function InstallPage() {
             </a>{" "}
             for updates.
           </p>
-          <div data-rise className="relative mt-2 aspect-[16/9] overflow-hidden bg-surface">
-            <Image
-              src="/found/darien-nautical-chart-1737.jpg"
-              alt="Nautical chart of the Gulf of Darien from 1737"
-              fill
-              sizes="(min-width: 768px) 50vw, 100vw"
-              className="drift object-cover"
-            />
-          </div>
         </div>
       </section>
     </>

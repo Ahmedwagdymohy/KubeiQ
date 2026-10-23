@@ -41,8 +41,8 @@ export default function MapProductPage() {
         sentence="A live chart of your namespace. Every app and the resources behind it, how they connect and which ones are broken, with the reason"
         figure={
           <Screen
-            dark="/screens/map-overview-dark.png"
-            light="/screens/map-expanded-light.png"
+            dark="/screens/map-overview-dark.jpg"
+            light="/screens/map-expanded-light.jpg"
             alt="Cluster Map with each app and its resources, broken ones in red"
             priority
           />
@@ -63,26 +63,26 @@ export default function MapProductPage() {
           <figure data-rise style={rise(2)} className="flex flex-col gap-3">
             <div className="relative aspect-[4/3] overflow-hidden bg-surface">
               <Image
-                src="/found/darien-nautical-chart-1737.jpg"
-                alt="Nautical chart of the Gulf of Darien from 1737, with rhumb lines and soundings"
-                fill
-                sizes="(min-width: 768px) 50vw, 100vw"
-                className="drift object-cover"
-              />
-            </div>
-            <figcaption className="text-base text-muted">The Gulf of Darien, charted in 1737</figcaption>
-          </figure>
-          <figure data-rise style={rise(3)} className="flex flex-col gap-3">
-            <div className="relative aspect-[4/3] overflow-hidden bg-surface">
-              <Image
-                src="/screens/map-details-dark.png"
-                alt="A broken pod selected on Cluster Map, showing the missing environment variable"
+                src="/screens/map-overview-dark.jpg"
+                alt="Cluster Map of kubeiq-demo: each app as a card, broken ones in red"
                 fill
                 sizes="(min-width: 768px) 50vw, 100vw"
                 className="object-cover object-left-top"
               />
             </div>
-            <figcaption className="text-base text-muted">kubeiq-demo, charted by Cluster Map today</figcaption>
+            <figcaption className="text-base text-muted">kubeiq-demo on Cluster Map: what is there and what is broken</figcaption>
+          </figure>
+          <figure data-rise style={rise(3)} className="flex flex-col gap-3">
+            <div className="relative aspect-[4/3] overflow-hidden bg-surface">
+              <Image
+                src="/screens/doctor-incident-dark.jpg"
+                alt="Cluster Doctor opened from a broken node, with the root cause and the fix"
+                fill
+                sizes="(min-width: 768px) 50vw, 100vw"
+                className="object-cover object-left-top"
+              />
+            </div>
+            <figcaption className="text-base text-muted">One click on a red node opens Cluster Doctor on it</figcaption>
           </figure>
         </div>
       </section>
@@ -97,7 +97,7 @@ export default function MapProductPage() {
         title="From Red Node to Fix"
         picture={
           <Screen
-            dark="/screens/map-details-dark.png"
+            dark="/screens/map-expanded-light.jpg"
             alt="A broken pod selected on the map, showing the missing environment variable and the Investigate button"
           />
         }

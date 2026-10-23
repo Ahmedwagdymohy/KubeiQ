@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 
 import { FeatureRows, Screen, Split } from "@/components/blocks";
 import { FieldHero } from "@/components/field-hero";
@@ -48,8 +47,8 @@ export default function ManagerProductPage() {
         sentence="Everything in your cluster in one place. Find any resource, read its YAML, events and logs, and jump to the map or an investigation"
         figure={
           <Screen
-            dark="/screens/manager-dark.png"
-            light="/screens/manager-light.png"
+            dark="/screens/manager-dark.jpg"
+            light="/screens/manager-light.jpg"
             alt="Cluster Manager listing deployments with one deployment open"
             priority
           />
@@ -64,7 +63,7 @@ export default function ManagerProductPage() {
 
       <Split
         title="Logs Without a Terminal"
-        picture={<Screen dark="/screens/manager-logs-dark.png" alt="Live logs of a pod in Cluster Manager" />}
+        picture={<Screen dark="/screens/manager-logs-dark.jpg" alt="Live logs of a pod in Cluster Manager" />}
       >
         <p>
           Follow a pod&apos;s logs live, switch containers, or read the run before the last restart. When
@@ -82,16 +81,8 @@ export default function ManagerProductPage() {
             cordon or delete, and every attempt that was refused, lands in Activity with who, what and when
           </p>
           <figure data-rise style={rise(2)} className="flex flex-col gap-3">
-            <div className="relative aspect-[4/3] overflow-hidden bg-surface">
-              <Image
-                src="/found/hms-dolphin-log-book-1.jpg"
-                alt="A page of the log book of HMS Dolphin from 1765, with times, courses and remarks"
-                fill
-                sizes="(min-width: 768px) 40vw, 100vw"
-                className="drift object-cover"
-              />
-            </div>
-            <figcaption className="text-base text-muted">The log book of HMS Dolphin, 1765</figcaption>
+            <Screen dark="/screens/activity.jpg" alt="Settings, Activity: sign-ins and every cluster change with who and when" />
+            <figcaption className="text-base text-muted">Activity in Settings, from a demo install</figcaption>
           </figure>
         </div>
         <div className="flex flex-col gap-6 md:col-span-6 md:col-start-7">

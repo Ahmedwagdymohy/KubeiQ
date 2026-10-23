@@ -10,29 +10,29 @@ const STAGES = [
   {
     name: "Read the Cluster",
     text: `Pods, events, workloads, services, nodes and logs, read with the access your kubeconfig already has. Secret values are never read`,
-    picture: "/found/admiralty-chart-no-2613-france-n-coast.jpg",
-    alt: "Admiralty chart of the French coast from 1894, covered in depth soundings",
+    picture: "/screens/stage-read.jpg",
+    alt: "Cluster Manager listing the pods of kubeiq-demo with their status and restarts",
     tone: "bg-tide-1 text-white",
   },
   {
     name: "Name the Cause",
     text: "Known failures are recognized in seconds and their symptoms grouped under one root cause: 126 restarts of payment become one missing variable",
-    picture: "/found/a-circle-of-winds-consisting-of-32.jpg",
-    alt: "Hand-coloured mariner's compass with 32 points, from 1747",
+    picture: "/screens/stage-cause.jpg",
+    alt: "Cluster Doctor naming the root cause of payment: environment variable DATABASE_URL is missing",
     tone: "bg-tide-2 text-white",
   },
   {
     name: "Dig Deeper",
     text: "When the cause is unclear, an AI agent reads previous logs, ConfigMaps and related resources with read-only tools. Passwords and tokens are masked first",
-    picture: "/found/bell-rock-lighthouse-during-a-storm-from.jpg",
-    alt: "Engraving of Bell Rock Lighthouse in a storm, after J. M. W. Turner",
+    picture: "/screens/stage-dig.jpg",
+    alt: "The investigation steps: evidence collected, problems found, and the agent checking orders and queue-worker",
     tone: "bg-tide-3 text-field-ink",
   },
   {
     name: "Fix and Check",
     text: "Commands with your real names, filled from the cluster, and the command that proves the fix rolled out. Changes stay off until an admin turns them on",
-    picture: "/found/hms-dolphin-log-book-1.jpg",
-    alt: "A page of the log book of HMS Dolphin, 1765",
+    picture: "/screens/stage-fix.jpg",
+    alt: "The fix command for payment and the commands that check the rollout",
     tone: "bg-tide-4 text-field-ink",
   },
 ];
@@ -86,8 +86,15 @@ export function ScanStages() {
                   </h3>
                   <p className="max-w-[36ch] text-lg font-medium leading-relaxed md:text-lg">{stage.text}</p>
                 </div>
-                <div className="relative aspect-[4/3] overflow-hidden md:aspect-auto md:h-full">
-                  <Image src={stage.picture} alt={stage.alt} fill sizes="(min-width: 768px) 30vw, 90vw" className="object-cover" />
+                <div className="flex items-center md:h-full">
+                  <Image
+                    src={stage.picture}
+                    alt={stage.alt}
+                    width={1600}
+                    height={900}
+                    sizes="(min-width: 768px) 30vw, 90vw"
+                    className="h-auto w-full rounded-md"
+                  />
                 </div>
               </div>
             </div>
