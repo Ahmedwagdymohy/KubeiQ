@@ -35,7 +35,7 @@ export default function Home() {
           title="Products"
           description="Every product is included in the same install and shares your clusters and AI settings"
         />
-        <div className="grid pl-px pt-px md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid pl-px pt-px md:grid-cols-2 xl:grid-cols-4">
           {PRODUCTS.map(({ slug, name, description, icon: Icon }) => (
             <Link
               key={slug}
@@ -64,7 +64,7 @@ export default function Home() {
       <section className="bg-grid flex flex-col items-center gap-6 border-t border-border px-6 py-24 text-center">
         <h2 className="text-3xl font-medium tracking-tight sm:text-4xl">Running in Minutes</h2>
         <p className="max-w-xl text-lg text-muted">
-          You need Docker and a kubeconfig. KubeiQ only reads from your cluster and never changes it
+          You need Docker and a kubeconfig. KubeiQ is read-only by default and never reads secret values
         </p>
         <PrimaryLink href="/install">Get Started</PrimaryLink>
       </section>

@@ -50,7 +50,7 @@ const LINES = [
   "kubectl get pods",
   "I read logs for fun",
   "CrashLoopBackOff? Not today",
-  "Read-only. Promise",
+  "Read-only by default",
 ];
 
 type Legs = keyof typeof LEGS;

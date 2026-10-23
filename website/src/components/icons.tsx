@@ -81,3 +81,10 @@ export const MapIcon = (props: IconProps) => (
     <path d="M7.5 6h9M6.3 8.2l4.4 7.6M17.7 8.2l-4.4 7.6" />
   </Icon>
 );
+
+export const ManagerIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <rect x="3" y="4" width="18" height="16" rx="2" />
+    <path d="M3 9h18M9 9v11" />
+  </Icon>
+);

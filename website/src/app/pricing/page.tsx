@@ -14,10 +14,10 @@ const PLANS = [
     price: "$0",
     note: "Open source, Apache-2.0",
     features: [
-      "Every core product, including Cluster Doctor",
-      "Clusters from your kubeconfig",
+      "Cluster Doctor, Cluster Map and Cluster Manager",
+      "Up to 3 users, with access by project",
+      "Read-only by default, opt-in changes with an activity log",
       "Any AI model, or rules only",
-      "Investigation history",
       "Community support on GitHub",
     ],
     available: true,
@@ -28,7 +28,7 @@ const PLANS = [
     note: "For teams",
     features: [
       "Everything in Free",
-      "Teams and shared workspaces",
+      "Unlimited users",
       "Scheduled scans and alerts",
       "PDF investigation reports",
       "More cluster connections",
@@ -42,8 +42,8 @@ const PLANS = [
     features: [
       "Everything in Pro",
       "SSO with OIDC and LDAP",
-      "Role-based access per cluster",
-      "Audit logs",
+      "Custom roles and fine-grained access",
+      "Audit log export and retention",
       "AI keys per team, managed hosting",
     ],
     available: false,
