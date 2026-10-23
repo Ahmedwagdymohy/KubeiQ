@@ -3,6 +3,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { SectionLabel } from "@/components/ui";
+import { useAllNamespaces } from "@/hooks/use-me";
 import { api, type Cluster } from "@/lib/api";
 
 type Props = {
@@ -11,7 +12,7 @@ type Props = {
   running: boolean;
   onSelect: (id: string) => void;
   onNamespace: (namespace: string) => void;
-  onInvestigate: () => void;
+  onInvestigate: (namespace: string) => void;
 };
 
 export function ClusterPanel({
@@ -29,6 +30,9 @@ export function ClusterPanel({
     enabled: Boolean(selected),
   });
   const current = clusters.data?.find((c) => c.id === selected);
+  const allNamespaces = useAllNamespaces(selected);
+  // Users limited to some namespaces start with their first one instead of "All namespaces".
+  const effective = allNamespaces ? namespace : namespace || (namespaces.data?.[0] ?? "");
 
   return (
     <aside className="flex flex-col gap-5 bg-bg p-6">
@@ -67,11 +71,11 @@ export function ClusterPanel({
         <div className="flex flex-col gap-3 border-t border-border pt-6">
           <SectionLabel>Namespace</SectionLabel>
           <select
-            value={namespace}
+            value={effective}
             onChange={(e) => onNamespace(e.target.value)}
             className="rounded-md border border-border bg-surface px-3 py-2 text-sm text-fg outline-none focus:border-accent"
           >
-            <option value="">All namespaces</option>
+            {allNamespaces && <option value="">All namespaces</option>}
             {namespaces.data?.map((ns) => (
               <option key={ns} value={ns}>
                 {ns}
@@ -80,7 +84,7 @@ export function ClusterPanel({
           </select>
           <button
             type="button"
-            onClick={onInvestigate}
+            onClick={() => onInvestigate(effective)}
             disabled={running || !current.status?.reachable}
             className="mt-2 rounded-md bg-accent px-4 py-3 font-medium text-accent-ink transition-colors hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-50"
           >

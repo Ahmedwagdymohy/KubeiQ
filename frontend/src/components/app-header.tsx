@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 import { ChevronDownIcon, GitHubIcon, SettingsIcon } from "@/components/icons";
+import { UserMenu } from "@/components/auth/user-menu";
 import { Logo } from "@/components/logo";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { GITHUB_URL, PRODUCTS } from "@/lib/products";
@@ -66,6 +67,7 @@ export function AppHeader() {
             <SettingsIcon />
           </Link>
           <ThemeToggle />
+          <UserMenu />
         </div>
       </nav>
     </header>

@@ -9,6 +9,7 @@ import { DetailsPanel } from "@/components/map/details-panel";
 import { MapCanvas } from "@/components/map/map-canvas";
 import { MapContext } from "@/components/map/map-context";
 import { Dot, Spinner } from "@/components/ui";
+import { useAllNamespaces } from "@/hooks/use-me";
 import { api } from "@/lib/api";
 import { collapseGraph, findGroupContaining, getMainNode, groupGraph } from "@/lib/map/graph";
 
@@ -50,10 +51,13 @@ export function ClusterMapView() {
     queryFn: () => api.namespaces(cluster!),
     enabled: Boolean(cluster),
   });
+  const allNamespaces = useAllNamespaces(cluster);
+  // Users limited to some namespaces start with their first one instead of "All namespaces".
+  const scope = allNamespaces ? namespace : namespace || (namespaces.data?.[0] ?? "");
   const map = useQuery({
-    queryKey: ["map", cluster, namespace],
-    queryFn: () => api.map(cluster!, namespace || null),
-    enabled: Boolean(cluster),
+    queryKey: ["map", cluster, scope],
+    queryFn: () => api.map(cluster!, scope || null),
+    enabled: Boolean(cluster) && (allNamespaces || Boolean(scope)),
     refetchInterval: REFRESH_MS,
     placeholderData: keepPreviousData,
   });
@@ -112,14 +116,14 @@ export function ClusterMapView() {
         </select>
         <select
           aria-label="Namespace"
-          value={namespace}
+          value={scope}
           onChange={(e) => {
             setNamespace(e.target.value);
             update({ namespace: e.target.value });
           }}
           className={control}
         >
-          <option value="">All namespaces</option>
+          {allNamespaces && <option value="">All namespaces</option>}
           {namespaces.data?.map((ns) => (
             <option key={ns} value={ns}>
               {ns}

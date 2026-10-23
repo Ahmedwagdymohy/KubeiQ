@@ -6,9 +6,9 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from kubeiq.auth import repository
-from kubeiq.auth.deps import COOKIE, CurrentUser, throttle
+from kubeiq.auth.deps import COOKIE, CurrentUser, principal_for, throttle
 from kubeiq.auth.master import is_master_key
-from kubeiq.auth.models import LoginIn, Me, PasswordChangeIn, ProjectAccess
+from kubeiq.auth.models import LoginIn, Me, PasswordChangeIn, ProjectAccess, ScopeAccess
 from kubeiq.auth.passwords import hash_password, verify_password
 from kubeiq.core.config import Settings, get_settings
 from kubeiq.db.models import User
@@ -26,8 +26,20 @@ async def _me(session: AsyncSession, user_id: str, username: str, role: str) -> 
         ProjectAccess(project_id=p.id, project=p.name, role=m.role)
         for m, p in await repository.memberships(session, user_id)
     ]
+    row = await session.get(User, user_id)
+    grants = (await principal_for(session, row)).access.grants if row else ()
+    access = [
+        ScopeAccess(
+            cluster_id=g.cluster_id,
+            namespaces=sorted(g.namespaces) if g.namespaces is not None else None,
+            role=g.role,
+        )
+        for g in grants
+    ]
     return Me(
+        access=access,
         username=username,
+        builtin=row is None or row.password_hash is None,
         role=role,
         projects=projects,
         changes_enabled=await changes_enabled(session),

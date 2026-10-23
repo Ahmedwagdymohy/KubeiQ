@@ -169,6 +169,60 @@ export type About = {
   local_kubeconfig: { path: string; contexts: number };
 };
 
+export type Role = "admin" | "user";
+export type ProjectRole = "viewer" | "editor";
+export type ProjectAccess = { project_id: string; project: string; role: ProjectRole };
+
+export type Me = {
+  username: string;
+  role: Role;
+  builtin: boolean;
+  projects: ProjectAccess[];
+  access: { cluster_id: string; namespaces: string[] | null; role: ProjectRole }[];
+  changes_enabled: boolean;
+};
+
+export type User = {
+  id: string;
+  username: string;
+  role: Role;
+  builtin: boolean;
+  created_at: string;
+  projects: ProjectAccess[];
+  password?: string | null; // only right after it was generated
+};
+
+export type Users = { users: User[]; max_users: number; plan: string };
+
+export type ProjectScope = { cluster_id: string; namespaces: string[] };
+export type ProjectMember = { user_id: string; role: ProjectRole; username?: string };
+
+export type Project = {
+  id: string;
+  name: string;
+  description: string | null;
+  scopes: ProjectScope[];
+  members: ProjectMember[];
+  created_at: string;
+};
+
+export type ProjectInput = Omit<Project, "id" | "created_at">;
+
+export type AuditEvent = {
+  id: number;
+  created_at: string;
+  username: string;
+  action: string;
+  target: string | null;
+  cluster_id: string | null;
+  namespace: string | null;
+  detail: string | null;
+  ok: boolean;
+};
+
+/** Fired when the backend says the session is gone, so the app can send the user to sign in. */
+export const UNAUTHORIZED_EVENT = "kubeiq:unauthorized";
+
 export class ApiError extends Error {
   constructor(
     message: string,
@@ -183,6 +237,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   try {
     response = await fetch(`${API_BASE_URL}${path}`, {
       cache: "no-store",
+      credentials: "include",
       ...init,
       headers: { "content-type": "application/json", ...init?.headers },
     });
@@ -197,6 +252,9 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     } catch {
       // keep the generic message
     }
+    if (response.status === 401 && !path.startsWith("/api/v1/auth/")) {
+      window.dispatchEvent(new Event(UNAUTHORIZED_EVENT));
+    }
     throw new ApiError(detail, response.status);
   }
   if (response.status === 204) return undefined as T;
@@ -205,7 +263,30 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
 const encodeCluster = (id: string) => id.split("/").map(encodeURIComponent).join("/");
 
+const json = (method: string, body?: unknown): RequestInit => ({
+  method,
+  body: body === undefined ? undefined : JSON.stringify(body),
+});
+
 export const api = {
+  me: () => request<Me>("/api/v1/auth/me"),
+  login: (username: string, password: string) =>
+    request<Me>("/api/v1/auth/login", json("POST", { username, password })),
+  logout: () => request<void>("/api/v1/auth/logout", json("POST")),
+  changePassword: (current: string, next: string) =>
+    request<void>("/api/v1/auth/password", json("POST", { current, new: next })),
+  users: () => request<Users>("/api/v1/users"),
+  createUser: (body: { username: string; role: Role; password?: string }) =>
+    request<User>("/api/v1/users", json("POST", body)),
+  updateUser: (id: string, body: { role?: Role; reset_password?: boolean }) =>
+    request<User>(`/api/v1/users/${id}`, json("PATCH", body)),
+  deleteUser: (id: string) => request<void>(`/api/v1/users/${id}`, json("DELETE")),
+  projects: () => request<Project[]>("/api/v1/projects"),
+  createProject: (body: ProjectInput) => request<Project>("/api/v1/projects", json("POST", body)),
+  updateProject: (id: string, body: ProjectInput) =>
+    request<Project>(`/api/v1/projects/${id}`, json("PUT", body)),
+  deleteProject: (id: string) => request<void>(`/api/v1/projects/${id}`, json("DELETE")),
+  audit: (limit = 100) => request<AuditEvent[]>(`/api/v1/audit?limit=${limit}`),
   health: (signal?: AbortSignal) => request<Health>("/healthz", { signal }),
   clusters: () => request<Cluster[]>("/api/v1/clusters"),
   namespaces: (clusterId: string) =>
@@ -246,7 +327,9 @@ export function streamInvestigation(
   onEvent: (event: ProgressEvent) => void,
   onEnd: (status: InvestigationStatus | "unknown") => void,
 ): () => void {
-  const source = new EventSource(`${API_BASE_URL}/api/v1/investigations/${id}/events`);
+  const source = new EventSource(`${API_BASE_URL}/api/v1/investigations/${id}/events`, {
+    withCredentials: true,
+  });
   source.addEventListener("progress", (message) => {
     onEvent(JSON.parse((message as MessageEvent).data) as ProgressEvent);
   });

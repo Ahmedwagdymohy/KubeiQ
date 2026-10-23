@@ -41,6 +41,14 @@ main() {
     say "Created $DIR/backend/.env (add an AI model there to enable AI investigations)"
   fi
 
+  # The admin signs in with this key. Generated once and kept across updates.
+  if ! grep -q '^KUBEIQ_MASTER_KEY=.' "$DIR/backend/.env"; then
+    key="kiq-$(LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 32)"
+    printf '\nKUBEIQ_MASTER_KEY=%s\n' "$key" >>"$DIR/backend/.env"
+    say "Generated a master key in $DIR/backend/.env"
+  fi
+  master_key=$(sed -n 's/^KUBEIQ_MASTER_KEY=//p' "$DIR/backend/.env" | tail -n 1)
+
   say "Building and starting KubeiQ (the first run takes a few minutes)"
   cd "$DIR"
   docker compose up --build --detach </dev/null
@@ -54,6 +62,11 @@ main() {
   done
 
   say "KubeiQ is running: http://localhost:$FRONTEND_PORT"
+  echo ""
+  echo "    Sign in as: admin"
+  echo "    Master key: $master_key"
+  echo "    Keep this key safe. It is also in $DIR/backend/.env (KUBEIQ_MASTER_KEY)."
+  echo ""
   echo "    Stop:    cd $DIR && docker compose down"
   echo "    Update:  run this installer again"
 }

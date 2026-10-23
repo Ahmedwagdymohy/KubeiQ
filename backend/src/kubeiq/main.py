@@ -10,6 +10,7 @@ from loguru import logger
 from kubeiq import __version__
 from kubeiq.api import health
 from kubeiq.api.v1.router import router as v1_router
+from kubeiq.auth.master import master_key
 from kubeiq.core.config import Settings, get_settings
 from kubeiq.core.logging import setup_logging
 from kubeiq.db.migrate import upgrade_database
@@ -27,6 +28,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     async def lifespan(_: FastAPI) -> AsyncIterator[None]:
         logger.info("KubeiQ {} starting (env={})", __version__, settings.env)
         await upgrade_database()
+        master_key()  # created and announced on first start
         async with get_sessionmaker()() as session:
             interrupted = await repository.fail_interrupted(session)
             await sync_uploaded_clusters(session)

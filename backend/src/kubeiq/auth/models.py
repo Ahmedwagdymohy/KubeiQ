@@ -19,10 +19,18 @@ class ProjectAccess(BaseModel):
     role: Literal["viewer", "editor"]
 
 
+class ScopeAccess(BaseModel):
+    cluster_id: str
+    namespaces: list[str] | None  # None = all namespaces
+    role: Literal["viewer", "editor"]
+
+
 class Me(BaseModel):
     username: str
     role: Literal["admin", "user"]
+    builtin: bool = False  # signs in with the master key, so has no password to change
     projects: list[ProjectAccess] = Field(default_factory=list)
+    access: list[ScopeAccess] = Field(default_factory=list)  # empty for admins (they see all)
     changes_enabled: bool = False  # whether cluster changes are turned on for this install
 
 

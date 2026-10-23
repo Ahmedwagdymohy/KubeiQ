@@ -141,7 +141,7 @@ export function Doctor() {
             running={investigation.running}
             onSelect={choose}
             onNamespace={setNamespace}
-            onInvestigate={() => selected && investigation.start(selected, namespace || null)}
+            onInvestigate={(ns) => selected && investigation.start(selected, ns || null)}
           />
           <div className="flex-1 bg-bg">
             <HistoryList activeId={investigation.id} onOpen={investigation.open} />
