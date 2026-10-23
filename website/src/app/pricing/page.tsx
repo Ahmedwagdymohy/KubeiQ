@@ -1,11 +1,21 @@
 import type { Metadata } from "next";
 
-import { PrimaryLink, SectionHeading } from "@/components/ui";
-import { GITHUB_URL } from "@/lib/site";
+import Image from "next/image";
+
+import { PricingFields } from "@/components/home/pricing-fields";
+
+/** Every plan runs the same app. */
+const STRIP = [
+  { src: "/screens/overview-light.png", alt: "KubeiQ Overview in the light theme" },
+  { src: "/screens/manager-logs-dark.png", alt: "Live pod logs in Cluster Manager" },
+  { src: "/screens/map-demo-light.png", alt: "Cluster Map of the demo namespace" },
+  { src: "/screens/doctor-dark.png", alt: "Cluster Doctor with a root cause and its fix" },
+];
 
 export const metadata: Metadata = {
   title: "Pricing",
-  description: "KubeiQ core is free and open source. Pro and Enterprise add team and scale features.",
+  description:
+    "KubeiQ core is free and open source. Pro and Enterprise add team and scale features.",
 };
 
 const PLANS = [
@@ -53,54 +63,67 @@ const PLANS = [
 export default function PricingPage() {
   return (
     <>
-      <section className="bg-grid flex flex-col items-center px-6 py-24 text-center">
-        <h1 className="text-4xl font-medium tracking-tight sm:text-6xl">Pricing</h1>
-        <p className="mt-6 max-w-2xl text-lg text-muted">
-          The core stays free and open source. Paid plans add what teams and organizations need
+      <section className="frame flex flex-col gap-8 pb-20 pt-16 lg:flex-row-reverse lg:items-end lg:justify-between md:pt-28">
+        <h1 className="t-display lg:w-[calc(58vw-var(--m))]">
+          <span className="mask-line">
+            <span>Free to run.</span>
+          </span>
+          <span className="mask-line">
+            <span>Paid to scale.</span>
+          </span>
+        </h1>
+        <p className="after-mask max-w-[34ch] text-[17px]">
+          The core stays free and open source. Paid plans add what teams and organizations need, in
+          the same install
         </p>
       </section>
 
-      <section className="grid gap-px border-t border-border bg-border lg:grid-cols-3">
-        {PLANS.map((plan) => (
-          <div key={plan.name} className="flex flex-col gap-6 bg-bg p-8 sm:p-12">
-            <div className="flex flex-col gap-1">
-              <h2 className="text-lg font-medium">{plan.name}</h2>
-              <p className="text-sm text-subtle">{plan.note}</p>
-            </div>
-            <p
-              className={`text-4xl font-medium tracking-tight ${plan.available ? "" : "text-muted"}`}
-            >
-              {plan.price}
-            </p>
-            <ul className="flex flex-col gap-3">
-              {plan.features.map((feature) => (
-                <li key={feature} className="flex items-baseline gap-3 text-fg/90">
-                  <span className="h-1.5 w-1.5 shrink-0 translate-y-[-2px] rounded-full bg-accent" />
-                  {feature}
-                </li>
-              ))}
-            </ul>
-            <div className="mt-auto pt-4">
-              {plan.available ? (
-                <PrimaryLink href="/install">Get Started</PrimaryLink>
-              ) : (
-                <a
-                  href={GITHUB_URL}
-                  className="text-sm text-muted transition-colors hover:text-fg"
-                >
-                  Watch the repository for updates
-                </a>
-              )}
-            </div>
+      <PricingFields />
+
+      <div className="grid grid-cols-2 md:grid-cols-4">
+        {STRIP.map((shot) => (
+          <div key={shot.src} className="relative h-[30svh] overflow-hidden md:h-[42svh]">
+            <Image
+              src={shot.src}
+              alt={shot.alt}
+              width={1440}
+              height={900}
+              className="drift h-full w-full object-cover object-left-top"
+            />
           </div>
         ))}
-      </section>
+      </div>
 
-      <section className="border-t border-border px-6 py-20 sm:px-12">
-        <SectionHeading
-          title="One Install for Every Plan"
-          description="Paid features are switched on with a license key in the same installation. Nothing to migrate"
-        />
+      <section className="frame py-32 sm:py-44" aria-labelledby="compare">
+        <div data-reveal className="flex flex-col gap-12">
+          <h2 id="compare" className="t-title">
+            Compare Plans
+          </h2>
+          <div className="grid gap-12 md:grid-cols-3">
+            {PLANS.map((plan) => (
+              <div key={plan.name} className="flex flex-col gap-4">
+                <div className="flex flex-col gap-1">
+                  <h3 className="t-statement font-medium">{plan.name}</h3>
+                  <p className="text-sm text-muted">
+                    {plan.note}
+                    {plan.available ? "" : ", coming soon"}
+                  </p>
+                </div>
+                <ul className="flex flex-col gap-3 text-[17px]">
+                  {plan.features.map((feature) => (
+                    <li key={feature} className="flex gap-3">
+                      <span className="mt-[0.55em] h-1.5 w-1.5 shrink-0 rounded-full bg-accent" />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
+          </div>
+          <p className="t-statement max-w-[40ch] text-muted lg:ml-[var(--axis)]">
+            Paid features switch on with a license key in the same installation. Nothing to migrate
+          </p>
+        </div>
       </section>
     </>
   );

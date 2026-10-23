@@ -31,17 +31,12 @@ function CopyButton({ text }: { text: string }) {
 /** Terminal-style block: one command per line, each with its own copy button. */
 export function CommandBlock({ commands }: { commands: string[] }) {
   return (
-    <div className="overflow-hidden rounded-lg border border-border bg-terminal text-left">
-      <div className="flex items-center gap-1.5 border-b border-white/10 px-4 py-2.5">
-        <span className="h-2.5 w-2.5 rounded-full bg-white/15" />
-        <span className="h-2.5 w-2.5 rounded-full bg-white/15" />
-        <span className="h-2.5 w-2.5 rounded-full bg-white/15" />
-      </div>
-      <ul className="flex flex-col py-2">
+    <div className="overflow-hidden rounded-lg bg-terminal text-left">
+      <ul className="flex flex-col py-3">
         {commands.map((command) => (
           <li key={command} className="flex items-start gap-3 px-4 py-1.5">
-            <span className="select-none font-mono text-sm leading-6 text-accent">$</span>
-            <code className="min-w-0 flex-1 overflow-x-auto whitespace-pre font-mono text-sm leading-6 text-terminal-fg">
+            <code className="min-w-0 flex-1 whitespace-pre-wrap break-all font-mono text-sm leading-6 text-terminal-fg">
+              <span className="select-none text-field">$ </span>
               {command}
             </code>
             <CopyButton text={command} />

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { JetBrains_Mono, Manrope } from "next/font/google";
 import "./globals.css";
 import { SiteFooter } from "@/components/site-footer";
+import { RevealObserver } from "@/components/reveal-observer";
 import { SiteHeader } from "@/components/site-header";
 import { THEME_SCRIPT } from "@/lib/theme";
 
@@ -31,12 +32,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <head>
         <script dangerouslySetInnerHTML={{ __html: THEME_SCRIPT }} />
       </head>
-      <body className="flex min-h-full flex-col">
+      <body id="top" className="flex min-h-full flex-col">
         <SiteHeader />
-        <main className="mx-auto flex w-full max-w-[1680px] flex-1 flex-col border-x border-border">
-          {children}
-        </main>
+        <main className="flex w-full flex-1 flex-col">{children}</main>
         <SiteFooter />
+        <RevealObserver />
       </body>
     </html>
   );

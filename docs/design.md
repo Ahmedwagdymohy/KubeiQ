@@ -137,7 +137,21 @@ Never hard-code colors; use the Tailwind tokens (`bg-surface`, `text-muted`, `bg
   Kind icons are coloured by health (cyan healthy, amber warning, red broken) with no tile behind
   them; broken nodes get a red border and a badge. Details panel on the right: status, the one-line
   reason, **Investigate with Cluster Doctor**, facts, connected resources, labels.
-- Landing page feature grid: bento cells with outlined mono tags and dot pills.
+- **Website** (`website/`): laid out like the printed incident report KubeiQ writes. One pair of
+  page margins and an **axis at 42% of the window**: headings and body hang from it, the left zone
+  holds one supporting sentence. Colour comes in whole fields, two-colour print style: the logo
+  cyan field (`bg-field`) and the inverse of the page (`bg-inverse`). No rules, eyebrows,
+  gridlines or card grids. The landing page argues in this order: the demo cluster as a mosaic
+  (one field per workload, failing ones turning healthy as their fixes land), one incident in three
+  states (its Investigate button works), how it works as a staircase of clauses, **Make It Yours**
+  (a pinned incident the reader configures: workload, model, secret masking, cluster changes),
+  the products as a gutterless screenshot mosaic with a recorded Doctor clip, the real findings
+  table, pricing as two fields, and the install band. All incident text is real Cluster Doctor
+  output from `examples/` (`website/src/lib/incidents.ts`); screenshots and
+  `public/video/doctor-tour.mp4` are recorded from the app.
+- **Website motion**: the headline lines rise from their baselines on load; section children
+  rise in turn when they enter (`data-reveal`, hidden only when script runs); screenshots drift
+  slowly; controls lift on hover. Everything stops under reduced motion.
 
 - **Cluster Manager**: toolbar (cluster, namespace), kind sidebar grouped by category with a
   filter, a table from the server's own columns, and an object panel with Overview / YAML / Events /
