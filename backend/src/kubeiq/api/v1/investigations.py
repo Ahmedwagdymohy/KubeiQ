@@ -2,6 +2,7 @@
 
 import json
 from collections.abc import AsyncIterator
+from datetime import datetime
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
@@ -52,10 +53,12 @@ async def list_investigations(
     user: CurrentUser,
     cluster_id: str | None = None,
     limit: Annotated[int, Query(ge=1, le=100)] = 20,
+    before: datetime | None = None,
 ) -> list[InvestigationSummary]:
+    """Newest first. Pass the last item's created_at as `before` to load the next page."""
     # Over-fetch for non-admins so filtering by project still fills the page.
     fetch = limit if user.is_admin else limit * 5
-    rows = await repository.list_recent(session, cluster_id=cluster_id, limit=fetch)
+    rows = await repository.list_recent(session, cluster_id=cluster_id, limit=fetch, before=before)
     visible = [r for r in rows if user.access.can("read", r.cluster_id, r.namespace)]
     return [InvestigationSummary.model_validate(row) for row in visible[:limit]]
 

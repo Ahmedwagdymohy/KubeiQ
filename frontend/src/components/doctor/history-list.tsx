@@ -1,9 +1,12 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 
 import { Dot, SectionLabel } from "@/components/ui";
 import { api, type InvestigationSummary } from "@/lib/api";
+
+/** Investigations shown at first and loaded by each Show more. */
+const PAGE_SIZE = 5;
 
 export function timeAgo(iso: string): string {
   const seconds = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
@@ -34,14 +37,21 @@ export function HistoryList({
   activeId: string | null;
   onOpen: (id: string) => void;
 }) {
-  const history = useQuery({ queryKey: ["investigations"], queryFn: () => api.investigations(20) });
+  const history = useInfiniteQuery({
+    queryKey: ["investigations", "history"],
+    queryFn: ({ pageParam }) => api.investigations(PAGE_SIZE, pageParam),
+    initialPageParam: undefined as string | undefined,
+    // A full page means there may be more; the next page starts before its last item.
+    getNextPageParam: (last) => (last.length === PAGE_SIZE ? last.at(-1)?.created_at : undefined),
+  });
+  const items = history.data?.pages.flat();
 
   return (
     <section className="flex flex-col gap-3 bg-bg p-6">
       <SectionLabel>Recent Investigations</SectionLabel>
-      {history.data?.length === 0 && <p className="text-sm text-subtle">No investigations yet</p>}
+      {items?.length === 0 && <p className="text-sm text-subtle">No investigations yet</p>}
       <ul className="-mx-2 flex flex-col gap-0.5">
-        {history.data?.map((item) => (
+        {items?.map((item) => (
           <li key={item.id}>
             <button
               type="button"
@@ -73,6 +83,16 @@ export function HistoryList({
           </li>
         ))}
       </ul>
+      {history.hasNextPage && (
+        <button
+          type="button"
+          onClick={() => history.fetchNextPage()}
+          disabled={history.isFetchingNextPage}
+          className="self-start text-sm font-medium text-muted transition-colors hover:text-fg disabled:opacity-60"
+        >
+          {history.isFetchingNextPage ? "Loading" : "Show more"}
+        </button>
+      )}
     </section>
   );
 }

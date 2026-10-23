@@ -41,10 +41,13 @@ async def list_recent(
     org_id: str = DEFAULT_ORG,
     cluster_id: str | None = None,
     limit: int = 20,
+    before: datetime | None = None,
 ) -> list[Investigation]:
     query = select(Investigation).where(Investigation.org_id == org_id)
     if cluster_id:
         query = query.where(Investigation.cluster_id == cluster_id)
+    if before:
+        query = query.where(Investigation.created_at < before)
     query = query.order_by(Investigation.created_at.desc()).limit(limit)
     return list((await session.execute(query)).scalars())
 
