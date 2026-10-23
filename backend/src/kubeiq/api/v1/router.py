@@ -16,6 +16,7 @@ from kubeiq.api.v1 import (
     users,
 )
 from kubeiq.auth.deps import current_principal
+from kubeiq.products.manager import api as manager_api
 from kubeiq.products.map import api as map_api
 
 router = APIRouter(prefix="/api/v1")
@@ -30,4 +31,5 @@ protected.include_router(settings.router)
 protected.include_router(users.router)
 protected.include_router(projects.router)
 protected.include_router(map_api.router)
+protected.include_router(manager_api.router)
 router.include_router(protected)

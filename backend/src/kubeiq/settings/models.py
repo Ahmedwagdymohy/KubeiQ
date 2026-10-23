@@ -58,6 +58,10 @@ class LocalKubeconfig(BaseModel):
     contexts: int
 
 
+class ChangesSettings(BaseModel):
+    enabled: bool
+
+
 class AboutOut(BaseModel):
     version: str
     database: str

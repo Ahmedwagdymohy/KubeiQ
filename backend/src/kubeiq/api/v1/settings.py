@@ -18,6 +18,7 @@ from kubeiq.settings.models import (
     AboutOut,
     AISettingsIn,
     AISettingsOut,
+    ChangesSettings,
     KubeconfigIn,
     KubeconfigOut,
     LocalKubeconfig,
@@ -99,6 +100,22 @@ async def delete_kubeconfig(kubeconfig_id: str, session: SessionDep, admin: Admi
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Kubeconfig not found")
     await service.sync_uploaded_clusters(session)
     await audit.record(session, admin.username, "settings.kubeconfig.delete", target=kubeconfig_id)
+
+
+@router.get("/changes", response_model=ChangesSettings)
+async def get_changes(session: SessionDep) -> ChangesSettings:
+    return ChangesSettings(enabled=await service.changes_enabled(session))
+
+
+@router.put("/changes", response_model=ChangesSettings)
+async def put_changes(
+    body: ChangesSettings, session: SessionDep, admin: AdminUser
+) -> ChangesSettings:
+    await repository.put_value(session, repository.CHANGES_KEY, {"enabled": body.enabled})
+    await audit.record(
+        session, admin.username, "settings.changes", detail="on" if body.enabled else "off"
+    )
+    return body
 
 
 @router.get("/about", response_model=AboutOut)
