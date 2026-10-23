@@ -1,45 +1,108 @@
+import Image from "next/image";
 import Link from "next/link";
-import type { ReactNode } from "react";
-
-export function Pill({ children }: { children: ReactNode }) {
-  return (
-    <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 text-xs text-muted">
-      <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-      {children}
-    </span>
-  );
-}
+import type { CSSProperties, ReactNode } from "react";
 
 export function PrimaryLink({ href, children }: { href: string; children: ReactNode }) {
   return (
     <Link
       href={href}
-      className="rounded-md bg-accent px-6 py-3 text-center font-medium text-accent-ink transition-colors hover:bg-accent-strong"
+      className="inline-flex h-11 items-center justify-center rounded-md bg-accent px-5 text-[15px] font-medium text-accent-ink transition-[background-color,transform] hover:bg-accent-strong active:translate-y-px"
     >
       {children}
     </Link>
   );
 }
 
-export function SecondaryLink({ href, children }: { href: string; children: ReactNode }) {
+/** A plain text link with an arrow that moves on hover. */
+export function TextLink({ href, children }: { href: string; children: ReactNode }) {
   const className =
-    "rounded-md border border-fg/80 px-6 py-3 text-center font-medium transition-colors hover:bg-surface-2";
+    "group inline-flex items-center gap-1.5 text-[15px] font-medium text-fg underline-offset-4 transition-colors hover:text-accent";
+  const inner = (
+    <>
+      {children}
+      <span aria-hidden className="transition-transform group-hover:translate-x-0.5">
+        →
+      </span>
+    </>
+  );
   return href.startsWith("http") ? (
     <a href={href} className={className}>
-      {children}
+      {inner}
     </a>
   ) : (
     <Link href={href} className={className}>
-      {children}
+      {inner}
     </Link>
   );
 }
 
-export function SectionHeading({ title, description }: { title: string; description?: string }) {
+/** Staggered entrance wrapper (see .rise in globals.css). */
+export function Rise({
+  children,
+  delay = 0,
+  className = "",
+  as: Tag = "div",
+}: {
+  children: ReactNode;
+  delay?: number;
+  className?: string;
+  as?: "div" | "p" | "h2" | "h3" | "li" | "figure";
+}) {
   return (
-    <div className="flex flex-col gap-3">
-      <h2 className="text-3xl font-medium leading-tight tracking-tight sm:text-4xl">{title}</h2>
-      {description && <p className="max-w-2xl text-lg text-muted">{description}</p>}
+    <Tag className={`rise ${className}`} style={{ "--d": `${delay}ms` } as CSSProperties}>
+      {children}
+    </Tag>
+  );
+}
+
+export function SectionTitle({ children, className = "" }: { children: ReactNode; className?: string }) {
+  return (
+    <h2
+      className={`rise text-[26px] font-medium leading-[1.1] tracking-[-0.02em] sm:text-[30px] ${className}`}
+    >
+      {children}
+    </h2>
+  );
+}
+
+/** A real screenshot of the app, light or dark to match the page. */
+export function Screen({
+  light,
+  dark,
+  alt,
+  width = 1600,
+  height = 1000,
+  priority = false,
+  className = "",
+}: {
+  light?: string;
+  dark: string;
+  alt: string;
+  width?: number;
+  height?: number;
+  priority?: boolean;
+  className?: string;
+}) {
+  return (
+    <div className={`overflow-hidden rounded-xl bg-surface ${className}`}>
+      {light && (
+        <Image
+          src={light}
+          alt={alt}
+          width={width}
+          height={height}
+          priority={priority}
+          className="show-in-light h-auto w-full"
+        />
+      )}
+      <Image
+        src={dark}
+        alt={alt}
+        width={width}
+        height={height}
+        priority={priority}
+        className={`${light ? "show-in-dark" : ""} h-auto w-full`}
+      />
     </div>
   );
 }

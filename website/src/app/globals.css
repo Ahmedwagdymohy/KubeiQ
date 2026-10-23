@@ -1,101 +1,143 @@
 @import "tailwindcss";
 
-/* Design tokens — see docs/design.md. Dark is the default; light via system or toggle. */
+/* Design tokens: see docs/design.md ("Sheet" theme). Light is the default; dark follows the
+   system or the theme toggle. The frame holds the sidebar and top bar; pages sit on the sheet.
+   Mirrors frontend/src/app/globals.css: change both together. */
 :root {
-  color-scheme: dark;
-  --bg: #000000;
-  --surface: #0a0b0c;
-  --surface-2: #14171a;
-  --border: #3a4046;
-  --grid: rgba(255, 255, 255, 0.05);
-  --text: #f5f7f8;
-  --text-muted: #a1a9b0;
-  --text-subtle: #6b747c;
-  --accent: #39c1db;
-  --accent-strong: #66d3e8;
-  --accent-ink: #03161b;
-  --warning: #fbbf24;
-  --danger: #f87171;
-  --terminal: #0b0e11;
-  --terminal-text: #e3e9ee;
-  --terminal-warn: #fbbf24;
-}
-
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme="dark"]) {
-    color-scheme: light;
-    --bg: #ffffff;
-    --surface: #f7f9fa;
-    --surface-2: #eef2f4;
-    --border: #cdd4da;
-    --grid: rgba(15, 23, 42, 0.05);
-    --text: #0b1115;
-    --text-muted: #4b5661;
-    --text-subtle: #87929c;
-    --accent: #0e8fa8;
-    --accent-strong: #0b7a90;
-    --accent-ink: #ffffff;
-    --warning: #b45309;
-    --danger: #dc2626;
-    --terminal: #0f1418;
-    --terminal-text: #e3e9ee;
-    --terminal-warn: #fbbf24;
-  }
-}
-
-:root[data-theme="light"] {
   color-scheme: light;
+  --frame: #edf2f4;
+  --frame-hover: #e2e9ec;
   --bg: #ffffff;
-  --surface: #f7f9fa;
-  --surface-2: #eef2f4;
-  --border: #cdd4da;
+  --surface: #f6f8f9;
+  --surface-2: #edf1f3;
+  --border: #e1e7ea;
+  --control: #ccd4d9;
   --grid: rgba(15, 23, 42, 0.05);
   --text: #0b1115;
-  --text-muted: #4b5661;
-  --text-subtle: #87929c;
-  --accent: #0e8fa8;
-  --accent-strong: #0b7a90;
+  --text-muted: #47525c;
+  --text-subtle: #5f6a75;
+  --accent: #0b7f96;
+  --accent-strong: #096a7e;
   --accent-ink: #ffffff;
-  --warning: #b45309;
-  --danger: #dc2626;
+  --healthy: #0e8fa8;
+  --warning: #a8590a;
+  --warning-soft: #fdf3e2;
+  --danger: #c4242a;
+  --danger-soft: #fdecea;
   --terminal: #0f1418;
   --terminal-text: #e3e9ee;
   --terminal-warn: #fbbf24;
 }
 
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --frame: #0b0c0d;
+    --frame-hover: #17191b;
+    --bg: #000000;
+    --surface: #0c0d0e;
+    --surface-2: #17191b;
+    --border: #212427;
+    --control: #3a3f44;
+    --grid: rgba(255, 255, 255, 0.05);
+    --text: #f5f7f8;
+    --text-muted: #b4b9be;
+    --text-subtle: #8b9298;
+    --accent: #39c1db;
+    --accent-strong: #66d3e8;
+    --accent-ink: #03161b;
+    --healthy: #39c1db;
+    --warning: #f0b43c;
+    --warning-soft: #241b0b;
+    --danger: #f2706d;
+    --danger-soft: #2a1414;
+    --terminal: #0b0e11;
+    --terminal-text: #e3e9ee;
+    --terminal-warn: #fbbf24;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --frame: #0b0c0d;
+  --frame-hover: #17191b;
+  --bg: #000000;
+  --surface: #0c0d0e;
+  --surface-2: #17191b;
+  --border: #212427;
+  --control: #3a3f44;
+  --grid: rgba(255, 255, 255, 0.05);
+  --text: #f5f7f8;
+  --text-muted: #b4b9be;
+  --text-subtle: #8b9298;
+  --accent: #39c1db;
+  --accent-strong: #66d3e8;
+  --accent-ink: #03161b;
+  --healthy: #39c1db;
+  --warning: #f0b43c;
+  --warning-soft: #241b0b;
+  --danger: #f2706d;
+  --danger-soft: #2a1414;
+  --terminal: #0b0e11;
+  --terminal-text: #e3e9ee;
+  --terminal-warn: #fbbf24;
+}
+
 @theme inline {
+  --color-frame: var(--frame);
+  --color-frame-hover: var(--frame-hover);
   --color-bg: var(--bg);
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
   --color-border: var(--border);
+  --color-control: var(--control);
   --color-fg: var(--text);
   --color-muted: var(--text-muted);
   --color-subtle: var(--text-subtle);
   --color-accent: var(--accent);
   --color-accent-strong: var(--accent-strong);
   --color-accent-ink: var(--accent-ink);
+  --color-healthy: var(--healthy);
   --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
   --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
   --color-terminal: var(--terminal);
   --color-terminal-fg: var(--terminal-text);
   --color-terminal-warn: var(--terminal-warn);
   --font-sans: var(--font-manrope);
-  --font-mono: var(--font-jetbrains-mono);
+  --font-mono: var(--font-jetbrains-mono); /* taste-skill-ignore: mono only inside <code> for commands and refs */
+}
+
+html {
+  scrollbar-gutter: stable both-edges;
 }
 
 body {
-  background: var(--bg);
+  background: var(--frame);
   color: var(--text);
   font-family: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
+  font-feature-settings: "tnum" 0;
 }
 
-/* Faint engineering grid used behind hero sections */
-.bg-grid {
-  background-image:
-    linear-gradient(to right, var(--grid) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--grid) 1px, transparent 1px);
-  background-size: 48px 48px;
+/* The sheet: the page sits on the white sheet inside the tinted frame, as in the app. */
+.sheet {
+  background: var(--bg);
+  border-radius: 16px;
 }
+
+/* One grid and one pair of margins for every section */
+.wrap {
+  width: 100%;
+  padding-inline: clamp(20px, 4.4vw, 72px);
+}
+.grid12 {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: clamp(16px, 2vw, 32px);
+}
+
+.tnum { font-variant-numeric: tabular-nums; }
 
 /* Show the right theme-toggle icon without JS (server and client markup stay identical) */
 .show-in-dark { display: none; }
@@ -107,14 +149,42 @@ body {
   :root:not([data-theme="light"]) .show-in-light { display: none; }
 }
 
-/* Indeterminate scanning bar shown while an investigation runs */
-@keyframes scan {
-  from { left: -25%; }
-  to { left: 100%; }
+/* Entrances: hidden only when script runs and motion is welcome; the reduced page is the finished page. */
+@media (prefers-reduced-motion: no-preference) {
+  .js .rise {
+    opacity: 0;
+    transform: translateY(24px);
+    transition:
+      opacity 700ms cubic-bezier(0.2, 0.7, 0.2, 1),
+      transform 700ms cubic-bezier(0.2, 0.7, 0.2, 1);
+    transition-delay: var(--d, 0ms);
+  }
+  .js .rise.in {
+    opacity: 1;
+    transform: none;
+  }
 }
-.scan-bar { animation: scan 1.4s ease-in-out infinite; }
-@media (prefers-reduced-motion: reduce) {
-  .scan-bar { animation: none; left: 0; width: 100%; opacity: 0.4; }
+
+/* Readout: lines arrive one by one */
+@keyframes line-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+.line-in { animation: line-in 380ms cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+@keyframes caret {
+  50% { opacity: 0; }
+}
+.caret { animation: caret 1s steps(1) infinite; }
+
+/* Signature move: product screens crossfade slowly, the shown one drifts */
+.fade-shot {
+  opacity: 0;
+  transition: opacity 1600ms ease;
+}
+.fade-shot.on { opacity: 1; }
+@media (prefers-reduced-motion: no-preference) {
+  .fade-shot img { transition: transform 7000ms linear; transform: scale(1.0); }
+  .fade-shot.on img { transform: scale(1.035); }
 }
 
 /* Website mascot (Kube): a small hop on hover and click */
@@ -123,6 +193,8 @@ body {
   40% { transform: translateY(-14px); }
 }
 .kube-hop { animation: kube-hop 0.42s ease-out; }
+
 @media (prefers-reduced-motion: reduce) {
-  .kube-hop { animation: none; }
+  .kube-hop, .line-in, .caret { animation: none; }
+  .fade-shot { transition: none; }
 }

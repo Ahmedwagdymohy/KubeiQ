@@ -1,50 +1,38 @@
 import Link from "next/link";
 
-import { Logo } from "@/components/logo";
 import { DOCS_URL, GITHUB_URL, PRODUCTS } from "@/lib/site";
 
+/** One quiet line under the sheet: what this is, the links, the licence. */
 export function SiteFooter() {
+  const link = "text-fg transition-colors hover:text-accent";
   return (
-    <footer className="border-t border-border">
-      <div className="mx-auto flex max-w-[1680px] flex-col gap-10 px-6 py-12 md:flex-row md:justify-between">
-        <div className="flex flex-col gap-3">
-          <Logo />
-          <p className="max-w-xs text-sm text-muted">
-            Open source AI tools for Kubernetes, running on your own servers
-          </p>
-        </div>
-        <div className="grid grid-cols-2 gap-10 text-sm sm:grid-cols-3">
-          <div className="flex flex-col gap-2">
-            <p className="font-medium">Products</p>
-            {PRODUCTS.map((p) => (
-              <Link key={p.slug} href={`/products/${p.slug}`} className="text-muted hover:text-fg">
-                {p.name}
-              </Link>
-            ))}
-          </div>
-          <div className="flex flex-col gap-2">
-            <p className="font-medium">Get Started</p>
-            <Link href="/install" className="text-muted hover:text-fg">
-              Install
-            </Link>
-            <Link href="/pricing" className="text-muted hover:text-fg">
-              Pricing
-            </Link>
-            <a href={DOCS_URL} className="text-muted hover:text-fg">
-              Docs
-            </a>
-          </div>
-          <div className="flex flex-col gap-2">
-            <p className="font-medium">Project</p>
-            <a href={GITHUB_URL} className="text-muted hover:text-fg">
-              GitHub
-            </a>
-            <a href={`${GITHUB_URL}/blob/main/LICENSE`} className="text-muted hover:text-fg">
-              Apache-2.0 License
-            </a>
-          </div>
-        </div>
-      </div>
+    <footer className="wrap grid gap-2 py-7 text-[15px] text-muted lg:grid-cols-[1fr_auto_1fr] lg:items-baseline lg:gap-6">
+      <p>KubeiQ, AI tools for Kubernetes</p>
+      <nav aria-label="Footer" className="flex flex-wrap gap-x-6 gap-y-1">
+        {PRODUCTS.map((p) => (
+          <Link key={p.slug} href={`/products/${p.slug}`} className={link}>
+            {p.name}
+          </Link>
+        ))}
+        <Link href="/pricing" className={link}>
+          Pricing
+        </Link>
+        <Link href="/install" className={link}>
+          Install
+        </Link>
+        <a href={DOCS_URL} className={link}>
+          Docs
+        </a>
+        <a href={GITHUB_URL} className={link}>
+          GitHub
+        </a>
+      </nav>
+      <p className="lg:text-right">
+        2026, open source under{" "}
+        <a href={`${GITHUB_URL}/blob/main/LICENSE`} className={link}>
+          Apache-2.0
+        </a>
+      </p>
     </footer>
   );
 }

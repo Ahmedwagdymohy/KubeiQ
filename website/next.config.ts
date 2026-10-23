@@ -3,6 +3,7 @@ import type { NextConfig } from "next";
 // Static site: `pnpm build` writes plain HTML/CSS/JS to out/, deployable to any static host.
 const nextConfig: NextConfig = {
   output: "export",
+  devIndicators: false,
   images: { unoptimized: true },
   turbopack: {
     rules: {

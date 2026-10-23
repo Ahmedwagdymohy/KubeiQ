@@ -3,8 +3,9 @@
 import { useState } from "react";
 
 import { CheckIcon, CopyIcon } from "@/components/icons";
+import { PLACEHOLDER } from "@/lib/demo";
 
-function CopyButton({ text }: { text: string }) {
+export function CopyButton({ text, label = "Copy command" }: { text: string; label?: string }) {
   const [copied, setCopied] = useState(false);
   const copy = async () => {
     try {
@@ -19,30 +20,48 @@ function CopyButton({ text }: { text: string }) {
     <button
       type="button"
       onClick={copy}
-      aria-label={copied ? "Copied" : "Copy command"}
+      aria-label={copied ? "Copied" : label}
       title={copied ? "Copied" : "Copy"}
-      className="shrink-0 rounded p-1 text-terminal-fg/50 transition-colors hover:bg-white/10 hover:text-terminal-fg"
+      className="shrink-0 rounded p-1 text-terminal-fg/60 transition-[color,background-color,transform] hover:bg-white/10 hover:text-terminal-fg active:scale-90"
     >
       {copied ? <CheckIcon className="text-accent" /> : <CopyIcon />}
     </button>
   );
 }
 
-/** Terminal-style block: one command per line, each with its own copy button. */
-export function CommandBlock({ commands }: { commands: string[] }) {
+/** A command with its `<placeholders>` highlighted. */
+export function CommandText({ command }: { command: string }) {
   return (
-    <div className="overflow-hidden rounded-lg border border-border bg-terminal text-left">
-      <div className="flex items-center gap-1.5 border-b border-white/10 px-4 py-2.5">
-        <span className="h-2.5 w-2.5 rounded-full bg-white/15" />
-        <span className="h-2.5 w-2.5 rounded-full bg-white/15" />
-        <span className="h-2.5 w-2.5 rounded-full bg-white/15" />
-      </div>
-      <ul className="flex flex-col py-2">
+    <>
+      {command.split(PLACEHOLDER).map((part, i) =>
+        i % 2 ? (
+          <span key={i} className="text-terminal-warn">
+            {part}
+          </span>
+        ) : (
+          part
+        ),
+      )}
+    </>
+  );
+}
+
+/** Terminal block: one command per line, each with its own copy button. */
+export function CommandBlock({ commands, wrap = false }: { commands: string[]; wrap?: boolean }) {
+  return (
+    <div className="overflow-hidden rounded-lg bg-terminal text-left">
+      <ul className="flex flex-col py-3">
         {commands.map((command) => (
           <li key={command} className="flex items-start gap-3 px-4 py-1.5">
-            <span className="select-none font-mono text-sm leading-6 text-accent">$</span>
-            <code className="min-w-0 flex-1 overflow-x-auto whitespace-pre font-mono text-sm leading-6 text-terminal-fg">
-              {command}
+            <code className="select-none font-mono text-sm leading-6 text-accent" aria-hidden>
+              $
+            </code>
+            <code
+              className={`min-w-0 flex-1 font-mono text-sm leading-6 text-terminal-fg ${
+                wrap ? "whitespace-pre-wrap break-all" : "overflow-x-auto whitespace-pre"
+              }`}
+            >
+              <CommandText command={command} />
             </code>
             <CopyButton text={command} />
           </li>

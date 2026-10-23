@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 
-import { PrimaryLink, SectionHeading } from "@/components/ui";
+import { UsersPanel } from "@/components/fragments";
+import { Block, Close, PageIntro } from "@/components/page-parts";
+import { PrimaryLink, Rise, Screen, TextLink } from "@/components/ui";
 import { GITHUB_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -50,58 +52,78 @@ const PLANS = [
   },
 ];
 
+const INCLUDED = [
+  { name: "Cluster Doctor", light: "/screens/doctor-incident-light.png", dark: "/screens/doctor-incident-dark.png", w: 2576, h: 1528 },
+  { name: "Cluster Map", light: "/screens/map-expanded-light.png", dark: "/screens/map-overview-dark.png", w: 1600, h: 936 },
+  { name: "Cluster Manager", light: "/screens/manager-light.png", dark: "/screens/manager-dark.png", w: 1600, h: 1000 },
+];
+
 export default function PricingPage() {
   return (
     <>
-      <section className="bg-grid flex flex-col items-center px-6 py-24 text-center">
-        <h1 className="text-4xl font-medium tracking-tight sm:text-6xl">Pricing</h1>
-        <p className="mt-6 max-w-2xl text-lg text-muted">
-          The core stays free and open source. Paid plans add what teams and organizations need
-        </p>
-      </section>
+      <PageIntro
+        title={
+          <>
+            Pricing. <br className="hidden sm:block" />
+            The core stays free.
+          </>
+        }
+        lead="Every product is free and open source, for up to three people. Paid plans add what teams and organizations need, in the same install"
+      >
+        <div className="grid gap-x-16 gap-y-14 lg:grid-cols-3">
+          {PLANS.map((plan, i) => (
+            <Rise key={plan.name} delay={i * 90} className="flex flex-col gap-6">
+              <div className="flex flex-col gap-1">
+                <p className="flex items-baseline justify-between gap-4 text-[22px] font-medium">
+                  <span>{plan.name}</span>
+                  <span className={plan.available ? "tnum" : "text-lg text-muted"}>{plan.price}</span>
+                </p>
+                <p className="text-base text-muted">{plan.note}</p>
+              </div>
+              <ul className="flex flex-col gap-3 text-lg">
+                {plan.features.map((feature) => (
+                  <li key={feature}>{feature}</li>
+                ))}
+              </ul>
+              <div className="mt-auto pt-2">
+                {plan.available ? (
+                  <PrimaryLink href="/install">Get Started</PrimaryLink>
+                ) : (
+                  <TextLink href={GITHUB_URL}>Watch the repository for updates</TextLink>
+                )}
+              </div>
+            </Rise>
+          ))}
+        </div>
+      </PageIntro>
 
-      <section className="grid gap-px border-t border-border bg-border lg:grid-cols-3">
-        {PLANS.map((plan) => (
-          <div key={plan.name} className="flex flex-col gap-6 bg-bg p-8 sm:p-12">
-            <div className="flex flex-col gap-1">
-              <h2 className="text-lg font-medium">{plan.name}</h2>
-              <p className="text-sm text-subtle">{plan.note}</p>
-            </div>
-            <p
-              className={`text-4xl font-medium tracking-tight ${plan.available ? "" : "text-muted"}`}
-            >
-              {plan.price}
-            </p>
-            <ul className="flex flex-col gap-3">
-              {plan.features.map((feature) => (
-                <li key={feature} className="flex items-baseline gap-3 text-fg/90">
-                  <span className="h-1.5 w-1.5 shrink-0 translate-y-[-2px] rounded-full bg-accent" />
-                  {feature}
-                </li>
-              ))}
-            </ul>
-            <div className="mt-auto pt-4">
-              {plan.available ? (
-                <PrimaryLink href="/install">Get Started</PrimaryLink>
-              ) : (
-                <a
-                  href={GITHUB_URL}
-                  className="text-sm text-muted transition-colors hover:text-fg"
-                >
-                  Watch the repository for updates
-                </a>
-              )}
-            </div>
-          </div>
-        ))}
-      </section>
+      <Block title="All Three Products, Free" lead="The free plan is not a trial. It is the whole open source core, with no limit on clusters, scans or time">
+        <div className="grid gap-6 md:grid-cols-3">
+          {INCLUDED.map((p, i) => (
+            <Rise key={p.name} as="figure" delay={i * 80} className="flex flex-col gap-3">
+              <div className="aspect-[4/3] overflow-hidden rounded-xl bg-surface">
+                <Screen light={p.light} dark={p.dark} alt={`${p.name} screen`} width={p.w} height={p.h} className="h-full [&_img]:origin-top-left [&_img]:scale-[1.7]" />
+              </div>
+              <figcaption className="text-lg font-medium">{p.name}</figcaption>
+            </Rise>
+          ))}
+        </div>
+      </Block>
 
-      <section className="border-t border-border px-6 py-20 sm:px-12">
-        <SectionHeading
-          title="One Install for Every Plan"
-          description="Paid features are switched on with a license key in the same installation. Nothing to migrate"
-        />
-      </section>
+      <Block title="Three Seats, Real Access">
+        <div className="grid12 gap-y-10">
+          <Rise as="p" className="col-span-12 max-w-[42ch] text-lg leading-relaxed lg:col-span-5">
+            The free plan has room for an admin and two more people. Projects decide which clusters
+            and namespaces each one sees, and whether they may change anything. Paid features switch
+            on with a license key in the same installation, so there is nothing to migrate
+          </Rise>
+          <Rise delay={120} className="col-span-12 lg:col-span-6 lg:col-start-7">
+            <UsersPanel />
+          </Rise>
+        </div>
+      </Block>
+
+      <Close sentence="Start on the free plan today. When your team grows, the same install grows with it." />
     </>
   );
 }

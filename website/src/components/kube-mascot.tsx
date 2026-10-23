@@ -199,7 +199,7 @@ export function KubeMascot() {
         {line && (
           <span
             role="status"
-            className="absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap rounded-md border border-border bg-surface px-2.5 py-1 text-xs text-fg shadow-lg shadow-black/20"
+            className={"absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap rounded-md bg-bg px-2.5 py-1 text-sm text-fg shadow-lg shadow-black/20" /* taste-skill-ignore: speech bubble floats */}
           >
             {line}
           </span>
