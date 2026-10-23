@@ -6,6 +6,7 @@ from typing import Annotated
 from fastapi import APIRouter, Depends, HTTPException, Query
 from kubernetes.client import CoreV1Api
 
+from kubeiq.auth.deps import CurrentUser
 from kubeiq.clusters.base import ClusterInfo, ClusterNotFoundError, ClusterStatus
 from kubeiq.clusters.errors import describe_error
 from kubeiq.clusters.registry import ClusterRegistry, get_registry
@@ -23,12 +24,16 @@ class ClusterResponse(ClusterInfo):
 @router.get("", response_model=list[ClusterResponse])
 async def list_clusters(
     registry: Registry,
-    check: Annotated[bool, Query(description="Probe each cluster for reachability")] = True,
+    user: CurrentUser,
+    probe: Annotated[
+        bool, Query(alias="check", description="Probe each cluster for reachability")
+    ] = True,
 ) -> list[ClusterResponse]:
-    clusters = registry.list_clusters()
+    allowed = user.access.clusters()
+    clusters = [c for c in registry.list_clusters() if allowed is None or c.id in allowed]
     statuses: list[ClusterStatus | None] = (
         list(await asyncio.gather(*(registry.check(c.id) for c in clusters)))
-        if check
+        if probe
         else [None] * len(clusters)
     )
     return [
@@ -37,7 +42,13 @@ async def list_clusters(
 
 
 @router.get("/{cluster_id:path}/namespaces", response_model=list[str])
-async def list_namespaces(cluster_id: str, registry: Registry) -> list[str]:
+async def list_namespaces(cluster_id: str, registry: Registry, user: CurrentUser) -> list[str]:
+    clusters = user.access.clusters()
+    if clusters is not None and cluster_id not in clusters:
+        raise HTTPException(status_code=403, detail="Your projects do not include this cluster")
+    allowed = user.access.namespaces(cluster_id)
+    if allowed is not None:
+        return sorted(allowed)
     try:
         api = registry.api_client(cluster_id)
         result = await asyncio.to_thread(
@@ -52,7 +63,10 @@ async def list_namespaces(cluster_id: str, registry: Registry) -> list[str]:
 
 # Declared last: the greedy path parameter would otherwise capture ".../namespaces".
 @router.get("/{cluster_id:path}", response_model=ClusterResponse)
-async def get_cluster(cluster_id: str, registry: Registry) -> ClusterResponse:
+async def get_cluster(cluster_id: str, registry: Registry, user: CurrentUser) -> ClusterResponse:
+    allowed = user.access.clusters()
+    if allowed is not None and cluster_id not in allowed:
+        raise HTTPException(status_code=403, detail="Your projects do not include this cluster")
     try:
         cluster = registry.get_cluster(cluster_id)
         status = await registry.check(cluster_id)

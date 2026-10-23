@@ -20,6 +20,7 @@ from kubeiq.investigations import repository, runner
 from kubeiq.investigations.broker import EventBroker
 from kubeiq.investigations.models import EventOut
 from kubeiq.main import create_app
+from tests.conftest import AUTH
 from tests.test_clusters_api import FakeRegistry, FakeSource
 
 REPORT = DiagnosisReport(
@@ -69,7 +70,7 @@ def client(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[TestClie
     app.dependency_overrides[registry_module.get_registry] = lambda: fake_registry
     app.dependency_overrides[runner.get_runner] = lambda: test_runner
     app.dependency_overrides[runner.get_broker] = lambda: broker
-    with TestClient(app) as test_client:
+    with TestClient(app, headers=AUTH) as test_client:
         yield test_client
     _clear_caches()
 

@@ -42,3 +42,4 @@ next-env.d.ts
 
 # Generated encryption key for settings (never commit)
 .kubeiq-secret.key
+.kubeiq-master-key

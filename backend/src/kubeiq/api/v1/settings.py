@@ -7,6 +7,8 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from kubeiq import __version__
+from kubeiq.auth import repository as audit
+from kubeiq.auth.deps import AdminUser, require_admin
 from kubeiq.clusters.registry import get_local_source
 from kubeiq.core.config import Settings, get_settings
 from kubeiq.db.session import get_session
@@ -23,7 +25,7 @@ from kubeiq.settings.models import (
 )
 from kubeiq.settings.providers import PROVIDERS, Provider
 
-router = APIRouter(prefix="/settings", tags=["settings"])
+router = APIRouter(prefix="/settings", tags=["settings"], dependencies=[Depends(require_admin)])
 
 SessionDep = Annotated[AsyncSession, Depends(get_session)]
 SettingsDep = Annotated[Settings, Depends(get_settings)]
@@ -40,12 +42,15 @@ async def get_ai(session: SessionDep, base: SettingsDep) -> AISettingsOut:
 
 
 @router.put("/ai", response_model=AISettingsOut)
-async def put_ai(body: AISettingsIn, session: SessionDep, base: SettingsDep) -> AISettingsOut:
+async def put_ai(
+    body: AISettingsIn, session: SessionDep, base: SettingsDep, admin: AdminUser
+) -> AISettingsOut:
     try:
         merged = service.merge_ai(await service.load_ai(session, base), body)
     except ValueError as exc:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(exc)) from exc
     await repository.put_value(session, repository.AI_KEY, merged)
+    await audit.record(session, admin.username, "settings.ai", detail=merged.get("model") or None)
     return service.to_view(merged, base)
 
 
@@ -72,7 +77,9 @@ async def list_kubeconfigs(session: SessionDep) -> list[KubeconfigOut]:
 
 
 @router.post("/kubeconfigs", response_model=KubeconfigOut, status_code=status.HTTP_201_CREATED)
-async def add_kubeconfig(body: KubeconfigIn, session: SessionDep) -> KubeconfigOut:
+async def add_kubeconfig(
+    body: KubeconfigIn, session: SessionDep, admin: AdminUser
+) -> KubeconfigOut:
     try:
         kubeconfigs.inspect(body.content)
     except kubeconfigs.InvalidKubeconfigError as exc:
@@ -82,14 +89,16 @@ async def add_kubeconfig(body: KubeconfigIn, session: SessionDep) -> KubeconfigO
     except IntegrityError as exc:
         raise HTTPException(status.HTTP_409_CONFLICT, f"'{body.name}' already exists") from exc
     await service.sync_uploaded_clusters(session)
+    await audit.record(session, admin.username, "settings.kubeconfig.add", target=body.name)
     return _kubeconfig_out(row)
 
 
 @router.delete("/kubeconfigs/{kubeconfig_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_kubeconfig(kubeconfig_id: str, session: SessionDep) -> None:
+async def delete_kubeconfig(kubeconfig_id: str, session: SessionDep, admin: AdminUser) -> None:
     if not await repository.delete_kubeconfig(session, kubeconfig_id):
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Kubeconfig not found")
     await service.sync_uploaded_clusters(session)
+    await audit.record(session, admin.username, "settings.kubeconfig.delete", target=kubeconfig_id)
 
 
 @router.get("/about", response_model=AboutOut)

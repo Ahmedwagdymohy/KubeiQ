@@ -98,3 +98,73 @@ class StoredKubeconfig(Base):
     name: Mapped[str] = mapped_column(String(64))
     content: Mapped[str] = mapped_column(Text)
     created_at: Mapped[datetime] = mapped_column(default=_now)
+
+
+class User(Base):
+    """A person who can sign in. The built-in admin signs in with the master key instead."""
+
+    __tablename__ = "users"
+    __table_args__ = (UniqueConstraint("org_id", "username", name="uq_users_org_username"),)
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    org_id: Mapped[str] = mapped_column(String(64), default=DEFAULT_ORG, index=True)
+    username: Mapped[str] = mapped_column(String(64))
+    password_hash: Mapped[str | None] = mapped_column(String(255))
+    role: Mapped[str] = mapped_column(String(16), default="user")  # "admin" or "user"
+    created_at: Mapped[datetime] = mapped_column(default=_now)
+
+
+class AuthSession(Base):
+    """A signed-in browser. Only a hash of the cookie token is stored."""
+
+    __tablename__ = "auth_sessions"
+
+    token_hash: Mapped[str] = mapped_column(String(64), primary_key=True)
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    created_at: Mapped[datetime] = mapped_column(default=_now)
+    expires_at: Mapped[datetime]
+
+
+class Project(Base):
+    """Access boundary: which clusters and namespaces its members can use."""
+
+    __tablename__ = "projects"
+    __table_args__ = (UniqueConstraint("org_id", "name", name="uq_projects_org_name"),)
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    org_id: Mapped[str] = mapped_column(String(64), default=DEFAULT_ORG, index=True)
+    name: Mapped[str] = mapped_column(String(64))
+    description: Mapped[str | None] = mapped_column(Text)
+    # [{"cluster_id": "...", "namespaces": ["shop", "payments"]}]; empty namespaces = all
+    scopes: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)
+    created_at: Mapped[datetime] = mapped_column(default=_now)
+
+
+class ProjectMember(Base):
+    __tablename__ = "project_members"
+
+    project_id: Mapped[str] = mapped_column(
+        ForeignKey("projects.id", ondelete="CASCADE"), primary_key=True
+    )
+    user_id: Mapped[str] = mapped_column(
+        ForeignKey("users.id", ondelete="CASCADE"), primary_key=True, index=True
+    )
+    role: Mapped[str] = mapped_column(String(16), default="viewer")  # "viewer" or "editor"
+
+
+class AuditEvent(Base):
+    """Who did what: sign-ins, settings and access changes, and every change to a cluster."""
+
+    __tablename__ = "audit_events"
+    __table_args__ = (Index("ix_audit_org_created", "org_id", "created_at"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    org_id: Mapped[str] = mapped_column(String(64), default=DEFAULT_ORG)
+    created_at: Mapped[datetime] = mapped_column(default=_now)
+    username: Mapped[str] = mapped_column(String(64))
+    action: Mapped[str] = mapped_column(String(64))  # e.g. "auth.login", "k8s.scale"
+    target: Mapped[str | None] = mapped_column(String(512))
+    cluster_id: Mapped[str | None] = mapped_column(String(255))
+    namespace: Mapped[str | None] = mapped_column(String(255))
+    detail: Mapped[str | None] = mapped_column(Text)
+    ok: Mapped[bool] = mapped_column(default=True)

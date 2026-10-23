@@ -8,6 +8,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from kubeiq.agent.diagnosis import DiagnosisReport
 from kubeiq.agent.llm import get_llm
 from kubeiq.agent.service import diagnose
+from kubeiq.auth.deps import CurrentUser, check
 from kubeiq.clusters.base import ClusterNotFoundError
 from kubeiq.clusters.registry import ClusterRegistry, get_registry
 from kubeiq.collectors.models import Scope
@@ -22,10 +23,12 @@ router = APIRouter(prefix="/diagnose", tags=["diagnose"])
 async def run_diagnosis(
     scope: Scope,
     registry: Annotated[ClusterRegistry, Depends(get_registry)],
+    user: CurrentUser,
     settings: Annotated[Settings, Depends(get_settings)],
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> DiagnosisReport:
     settings = await effective_settings(session, settings)
+    check(user, "read", scope.cluster_id, scope.namespace)
     try:
         api = registry.api_client(scope.cluster_id)
     except ClusterNotFoundError as exc:

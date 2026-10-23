@@ -10,6 +10,7 @@ from kubeiq.db.models import DEFAULT_ORG, AppSetting, StoredKubeconfig
 __all__ = ["StoredKubeconfig"]
 
 AI_KEY = "ai"
+CHANGES_KEY = "changes"
 
 
 async def get_value(

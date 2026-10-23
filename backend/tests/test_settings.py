@@ -1,15 +1,8 @@
 """Settings: AI model overrides the environment, secrets stay write-only, kubeconfigs work."""
 
-from collections.abc import Iterator
-from pathlib import Path
-
-import pytest
 from fastapi.testclient import TestClient
 
-from kubeiq.clusters import registry as registry_module
 from kubeiq.core import config
-from kubeiq.db import session as db_session
-from kubeiq.main import create_app
 from kubeiq.settings import crypto, kubeconfigs
 from kubeiq.settings.providers import litellm_model
 from kubeiq.settings.service import apply_ai
@@ -28,29 +21,6 @@ users:
   - name: admin
     user: {token: "abc"}
 """
-
-
-@pytest.fixture
-def client(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[TestClient]:
-    monkeypatch.setenv("KUBEIQ_DATABASE_URL", f"sqlite+aiosqlite:///{tmp_path / 'test.db'}")
-    monkeypatch.setenv("KUBEIQ_DATA_DIR", str(tmp_path))
-    monkeypatch.setenv("KUBEIQ_LLM_MODEL", "openai/env-model")
-    monkeypatch.setenv("KUBEIQ_KUBECONFIG", str(tmp_path / "missing-kubeconfig"))
-    caches = (
-        config.get_settings,
-        db_session.get_engine,
-        db_session.get_sessionmaker,
-        registry_module.get_registry,
-        registry_module.get_local_source,
-        registry_module.get_uploaded_source,
-        crypto._fernet,
-    )
-    for fn in caches:
-        fn.cache_clear()
-    with TestClient(create_app()) as test_client:
-        yield test_client
-    for fn in caches:
-        fn.cache_clear()
 
 
 def test_environment_model_is_used_until_settings_are_saved(client: TestClient) -> None:

@@ -112,3 +112,9 @@ async def sync_uploaded_clusters(session: AsyncSession) -> None:
         for row in await repository.list_kubeconfigs(session)
     }
     get_uploaded_source().set_files(files)
+
+
+async def changes_enabled(session: AsyncSession) -> bool:
+    """Cluster changes (scale, restart, delete, ...) are off until an admin turns them on."""
+    value = await repository.get_value(session, repository.CHANGES_KEY)
+    return bool(value and value.get("enabled"))

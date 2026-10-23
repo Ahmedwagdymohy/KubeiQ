@@ -4,6 +4,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException
 
+from kubeiq.auth.deps import CurrentUser, check
 from kubeiq.clusters.base import ClusterNotFoundError
 from kubeiq.clusters.registry import ClusterRegistry, get_registry
 from kubeiq.collectors.models import EvidenceBundle, Scope
@@ -14,8 +15,9 @@ router = APIRouter(prefix="/evidence", tags=["evidence"])
 
 @router.post("", response_model=EvidenceBundle)
 async def collect(
-    scope: Scope, registry: Annotated[ClusterRegistry, Depends(get_registry)]
+    scope: Scope, registry: Annotated[ClusterRegistry, Depends(get_registry)], user: CurrentUser
 ) -> EvidenceBundle:
+    check(user, "read", scope.cluster_id, scope.namespace)
     try:
         api = registry.api_client(scope.cluster_id)
     except ClusterNotFoundError as exc:

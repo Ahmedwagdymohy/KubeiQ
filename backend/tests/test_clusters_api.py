@@ -11,6 +11,7 @@ from kubeiq.clusters.base import (
 from kubeiq.clusters.registry import ClusterRegistry, get_registry
 from kubeiq.core.config import Settings
 from kubeiq.main import create_app
+from tests.conftest import AUTH
 
 
 class FakeSource(ClusterSource):
@@ -37,7 +38,7 @@ class FakeRegistry(ClusterRegistry):
 
 app = create_app(Settings(env="test"))
 app.dependency_overrides[get_registry] = lambda: FakeRegistry([FakeSource()])
-client = TestClient(app)
+client = TestClient(app, headers=AUTH)
 
 
 def test_list_clusters_with_status() -> None:

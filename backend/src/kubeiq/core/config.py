@@ -24,6 +24,11 @@ class Settings(BaseSettings):
     # Encrypts API keys and uploaded kubeconfigs at rest. Generated into data_dir when unset.
     secret_key: SecretStr | None = None
 
+    # Admin sign-in (like LiteLLM): username "admin" + master key. Generated when unset.
+    master_key: SecretStr | None = None
+    admin_username: str = "admin"
+    session_days: int = 7
+
     kubeconfig: str | None = None
     # Set to host.docker.internal when running in Docker against kind/minikube/k3d clusters.
     kubeconfig_localhost_alias: str | None = None
