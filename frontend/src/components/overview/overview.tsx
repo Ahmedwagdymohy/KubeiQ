@@ -178,7 +178,7 @@ function Ledger({ health, loading }: { health: ClusterHealth[]; loading: boolean
       >
         <div
           role="row"
-          className="hidden h-9 items-center gap-6 px-4 text-xs text-subtle md:grid md:grid-cols-[minmax(180px,240px)_minmax(0,1fr)_repeat(3,72px)_88px]"
+          className="hidden h-9 items-center gap-5 px-4 text-xs text-subtle lg:grid lg:grid-cols-[minmax(160px,220px)_minmax(0,1fr)_repeat(3,64px)_80px]"
         >
           <span role="columnheader">Cluster and namespaces</span>
           <span role="columnheader">Workload health</span>
@@ -218,7 +218,7 @@ function ClusterRows({ health }: { health: ClusterHealth }) {
   const mapHref = `/map?cluster=${encodeURIComponent(cluster.id)}`;
 
   return (
-    <div role="rowgroup" className="border-t border-border first:border-t-0 md:first:border-t">
+    <div role="rowgroup" className="border-t border-border first:border-t-0 lg:first:border-t">
       <LedgerRow
         strong
         name={cluster.name}
@@ -262,7 +262,7 @@ function ClusterRows({ health }: { health: ClusterHealth }) {
         <button
           type="button"
           onClick={() => setAll((v) => !v)}
-          className="w-full px-4 py-2.5 text-left text-sm text-muted transition-colors hover:bg-surface hover:text-fg md:pl-9"
+          className="w-full px-4 py-2.5 text-left text-sm text-muted transition-colors hover:bg-surface hover:text-fg lg:pl-9"
         >
           {all ? "Show fewer namespaces" : `Show ${plural(hidden, "more namespace")}`}
         </button>
@@ -298,11 +298,11 @@ function LedgerRow({
   return (
     <div
       role="row"
-      className={`grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-6 gap-y-2 px-4 md:grid-cols-[minmax(180px,240px)_minmax(0,1fr)_repeat(3,72px)_88px] ${
+      className={`grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-5 gap-y-2 px-4 lg:grid-cols-[minmax(160px,220px)_minmax(0,1fr)_repeat(3,64px)_80px] ${
         strong ? "py-4" : "border-t border-border/70 py-2.5"
       }`}
     >
-      <div role="cell" className={`flex min-w-0 flex-col ${strong ? "" : "md:pl-5"}`}>
+      <div role="cell" className={`flex min-w-0 flex-col ${strong ? "" : "lg:pl-5"}`}>
         <span
           className={`truncate font-mono ${strong ? "text-[14px] font-medium text-fg" : "text-[13px] text-muted"}`}
         >
@@ -311,7 +311,7 @@ function LedgerRow({
         <span className="truncate text-xs text-subtle">{sub}</span>
       </div>
 
-      <div role="cell" className="order-last col-span-2 min-w-0 md:order-none md:col-span-1">
+      <div role="cell" className="order-last col-span-2 min-w-0 lg:order-none lg:col-span-1">
         {counts && total > 0 ? (
           <HealthBar counts={counts} thick={strong} />
         ) : state === "loading" ? (
@@ -327,7 +327,7 @@ function LedgerRow({
         <span
           key={s}
           role="cell"
-          className={`hidden text-right tabular-nums md:block ${strong ? "text-[15px] font-medium" : "text-sm"} ${
+          className={`hidden text-right tabular-nums lg:block ${strong ? "text-[15px] font-medium" : "text-sm"} ${
             !counts ? "text-subtle" : counts[s] === 0 ? "text-subtle" : STATUS[s].text
           }`}
         >
@@ -337,13 +337,13 @@ function LedgerRow({
 
       <div role="cell" className="flex items-center justify-end gap-3">
         {counts && (
-          <span className="text-xs tabular-nums text-muted md:hidden">
+          <span className="text-xs tabular-nums text-muted lg:hidden">
             {counts.error > 0 && <span className="text-danger">{counts.error} failing · </span>}
             {counts.warning > 0 && <span className="text-warning">{counts.warning} degraded · </span>}
             {counts.healthy} healthy
           </span>
         )}
-        <span className="hidden md:inline">{action}</span>
+        <span className="hidden lg:inline">{action}</span>
       </div>
     </div>
   );
