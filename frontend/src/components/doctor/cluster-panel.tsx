@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 
+import { input, primaryButton } from "@/components/settings/fields";
 import { SectionLabel } from "@/components/ui";
 import { useAllNamespaces } from "@/hooks/use-me";
 import { api, type Cluster } from "@/lib/api";
@@ -73,7 +74,7 @@ export function ClusterPanel({
           <select
             value={effective}
             onChange={(e) => onNamespace(e.target.value)}
-            className="rounded-md border border-border bg-surface px-3 py-2 text-sm text-fg outline-none focus:border-accent"
+            className={input}
           >
             {allNamespaces && <option value="">All namespaces</option>}
             {namespaces.data?.map((ns) => (
@@ -86,7 +87,7 @@ export function ClusterPanel({
             type="button"
             onClick={() => onInvestigate(effective)}
             disabled={running || !current.status?.reachable}
-            className="mt-2 rounded-md bg-accent px-4 py-3 font-medium text-accent-ink transition-colors hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-50"
+            className={`${primaryButton} mt-2 h-10`}
           >
             {running ? "Investigating" : "Investigate Cluster"}
           </button>
@@ -113,13 +114,14 @@ function ClusterItem({
     <button
       type="button"
       onClick={onClick}
-      className={`flex w-full flex-col gap-1 rounded-md border px-3 py-2.5 text-left transition-colors ${
-        active ? "border-accent/70 bg-surface-2" : "border-border bg-surface hover:bg-surface-2"
+      aria-pressed={active}
+      className={`flex w-full flex-col gap-1 rounded-lg border px-3 py-2.5 text-left transition-colors ${
+        active ? "border-control bg-surface-2" : "border-border bg-bg hover:bg-surface"
       }`}
     >
       <span className="flex items-center gap-2 text-sm font-medium">
-        <span className={`h-1.5 w-1.5 rounded-full ${reachable ? "bg-accent" : "bg-danger"}`} />
-        <span className="truncate">{cluster.name}</span>
+        <span className={`h-1.5 w-1.5 rounded-full ${reachable ? "bg-healthy" : "bg-danger"}`} />
+        <span className="truncate font-mono text-[13px]">{cluster.name}</span>
         {cluster.is_default && <span className="text-xs text-subtle">default</span>}
       </span>
       <span className="truncate text-xs text-subtle">

@@ -29,7 +29,7 @@ import { getMainNode, leafCount, statusOf } from "@/lib/map/graph";
 import type { FlowNodeData } from "@/lib/map/layout";
 
 const TONE: Record<MapStatus, string> = {
-  healthy: "text-accent",
+  healthy: "text-healthy",
   warning: "text-warning",
   error: "text-danger",
 };

@@ -1,50 +1,75 @@
 import Link from "next/link";
 
-import { Logo } from "@/components/logo";
-import { DOCS_URL, GITHUB_URL, PRODUCTS } from "@/lib/site";
+import { Action } from "@/components/ui";
+import { DOCS_URL, GITHUB_URL, PICTURE_CREDITS, PRODUCTS } from "@/lib/site";
 
+const link = "underline decoration-transparent decoration-2 underline-offset-4 transition-colors hover:decoration-current";
+
+/** Close and footer in one field of the inverse colour, with the name cropped by the bottom edge. */
 export function SiteFooter() {
   return (
-    <footer className="border-t border-border">
-      <div className="mx-auto flex max-w-[1680px] flex-col gap-10 px-6 py-12 md:flex-row md:justify-between">
-        <div className="flex flex-col gap-3">
-          <Logo />
-          <p className="max-w-xs text-sm text-muted">
-            Open source AI tools for Kubernetes, running on your own servers
+    <footer data-reveal className="relative flex flex-col overflow-hidden bg-inverse lg:min-h-[100svh] text-inverse-ink">
+      <div className="frame grid gap-12 pt-[clamp(64px,9vw,128px)] md:grid-cols-12">
+        <div className="flex flex-col items-start gap-8 md:col-span-7">
+          <h2 data-rise className="text-[11vw] font-extrabold leading-[0.92] tracking-[-0.045em] md:text-[clamp(48px,5vw,88px)]">
+            Built in the Open
+          </h2>
+          <p data-rise className="max-w-[44ch] text-lg leading-relaxed">
+            KubeiQ is Apache-2.0. Read the code, run it on your own servers and bring your own AI model
           </p>
+          <div data-rise className="w-full sm:w-auto">
+            <Action href={GITHUB_URL} tone="inverse" className="w-full sm:w-auto">
+              View on GitHub
+            </Action>
+          </div>
         </div>
-        <div className="grid grid-cols-2 gap-10 text-sm sm:grid-cols-3">
-          <div className="flex flex-col gap-2">
-            <p className="font-medium">Products</p>
+        <nav aria-label="Footer" className="grid grid-cols-2 gap-x-8 gap-y-8 text-base font-semibold md:col-span-5 md:grid-cols-2">
+          <div className="flex flex-col gap-2.5">
+            <p className="text-inverse-muted">Products</p>
             {PRODUCTS.map((p) => (
-              <Link key={p.slug} href={`/products/${p.slug}`} className="text-muted hover:text-fg">
+              <Link key={p.slug} href={`/products/${p.slug}`} className={link}>
                 {p.name}
               </Link>
             ))}
           </div>
-          <div className="flex flex-col gap-2">
-            <p className="font-medium">Get Started</p>
-            <Link href="/install" className="text-muted hover:text-fg">
+          <div className="flex flex-col gap-2.5">
+            <p className="text-inverse-muted">Get Started</p>
+            <Link href="/install" className={link}>
               Install
             </Link>
-            <Link href="/pricing" className="text-muted hover:text-fg">
+            <Link href="/pricing" className={link}>
               Pricing
             </Link>
-            <a href={DOCS_URL} className="text-muted hover:text-fg">
+            <a href={DOCS_URL} className={link}>
               Docs
             </a>
-          </div>
-          <div className="flex flex-col gap-2">
-            <p className="font-medium">Project</p>
-            <a href={GITHUB_URL} className="text-muted hover:text-fg">
-              GitHub
-            </a>
-            <a href={`${GITHUB_URL}/blob/main/LICENSE`} className="text-muted hover:text-fg">
+            <a href={`${GITHUB_URL}/blob/main/LICENSE`} className={link}>
               Apache-2.0 License
             </a>
           </div>
-        </div>
+        </nav>
       </div>
+
+      <div className="frame mt-auto pt-16">
+        <p className="max-w-[120ch] text-sm leading-relaxed text-inverse-muted">
+          Pictures, all public domain via Wikimedia Commons:{" "}
+          {PICTURE_CREDITS.map((c, i) => (
+            <span key={c.page}>
+              <a href={c.page} className={`text-inverse-ink ${link}`}>
+                {c.title}
+              </a>
+              , {c.creator}
+              {i < PICTURE_CREDITS.length - 1 ? "; " : "."}
+            </span>
+          ))}
+        </p>
+      </div>
+      <p
+        aria-hidden
+        className="frame -mb-[0.2em] mt-4 select-none whitespace-nowrap text-[36vw] font-extrabold leading-[0.8] tracking-[-0.06em] md:-mb-[0.24em] md:text-[29vw]"
+      >
+        KubeiQ
+      </p>
     </footer>
   );
 }

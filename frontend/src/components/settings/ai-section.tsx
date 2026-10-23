@@ -29,6 +29,7 @@ export function AISection() {
       id="ai"
       title="AI Model"
       description="KubeiQ finds known problems without AI. With a model it also investigates the unclear ones and writes the fix. Your key is encrypted and never shown again"
+      aside={settings.data && <InUse saved={settings.data} />}
     >
       {settings.error && <p className="text-sm text-danger">{(settings.error as Error).message}</p>}
       {settings.data && providers.data && (
@@ -36,6 +37,25 @@ export function AISection() {
         <AIForm key={settings.dataUpdatedAt} saved={settings.data} providers={providers.data} />
       )}
     </Section>
+  );
+}
+
+function InUse({ saved }: { saved: AISettings }) {
+  return (
+    <div className="flex items-start gap-2 rounded-lg border border-border px-3 py-2.5">
+      <span className="pt-1.5">
+        <Dot tone={saved.active_model ? "healthy" : "info"} />
+      </span>
+      {saved.active_model ? (
+        <span className="min-w-0">
+          <span className="text-fg">In use: </span>
+          <code className="break-all font-mono text-[13px] text-fg">{saved.active_model}</code>{" "}
+          <span className="text-subtle">{SOURCE_LABEL[saved.active_source]}</span>
+        </span>
+      ) : (
+        <span>AI is off. Investigations use rules only</span>
+      )}
+    </div>
   );
 }
 
@@ -77,21 +97,7 @@ function AIForm({ saved, providers }: { saved: AISettings; providers: Provider[]
   };
 
   return (
-    <div className="flex max-w-3xl flex-col gap-6">
-      <div className="flex flex-wrap items-center justify-between gap-4 rounded-md border border-border bg-surface px-4 py-3 text-sm">
-        <span className="flex items-center gap-2">
-          <Dot tone={saved.active_model ? "healthy" : "info"} />
-          {saved.active_model ? (
-            <span>
-              In use: <code className="font-mono text-fg">{saved.active_model}</code>{" "}
-              <span className="text-subtle">{SOURCE_LABEL[saved.active_source]}</span>
-            </span>
-          ) : (
-            <span className="text-muted">AI is off. Investigations use rules only</span>
-          )}
-        </span>
-      </div>
-
+    <div className="flex flex-col gap-6">
       <Switch
         checked={form.enabled}
         onChange={(v) => set("enabled", v)}
@@ -107,10 +113,11 @@ function AIForm({ saved, providers }: { saved: AISettings; providers: Provider[]
                 key={p.id}
                 type="button"
                 onClick={() => set("provider", p.id)}
-                className={`rounded-md border px-3 py-2.5 text-left text-sm transition-colors ${
+                aria-pressed={p.id === form.provider}
+                className={`rounded-lg border bg-bg px-3 py-2.5 text-left text-sm transition-colors ${
                   p.id === form.provider
-                    ? "border-accent bg-surface-2 text-fg"
-                    : "border-border text-muted hover:bg-surface hover:text-fg"
+                    ? "border-accent font-medium text-fg shadow-[inset_0_0_0_1px_var(--accent)]"
+                    : "border-border text-muted hover:border-control hover:text-fg"
                 }`}
               >
                 {p.label}
@@ -155,7 +162,7 @@ function AIForm({ saved, providers }: { saved: AISettings; providers: Provider[]
             <Field label="API key">
               {saved.api_key_set && key === undefined ? (
                 <div className="flex items-center gap-3">
-                  <span className="flex-1 rounded-md border border-border bg-surface px-3 py-2 font-mono text-sm text-muted">
+                  <span className="flex h-10 flex-1 items-center rounded-lg border border-border bg-bg px-3 font-mono text-sm text-muted">
                     •••• {saved.api_key_hint}
                   </span>
                   <button type="button" className={secondaryButton} onClick={() => setKey("")}>
@@ -200,7 +207,7 @@ function AIForm({ saved, providers }: { saved: AISettings; providers: Provider[]
         </div>
       </div>
 
-      <div className="flex flex-wrap items-center gap-3 border-t border-border pt-6">
+      <div className="flex flex-wrap items-center gap-3 border-t border-border pt-5">
         <button
           type="button"
           className={primaryButton}

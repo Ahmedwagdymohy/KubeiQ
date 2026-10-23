@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 
 /**
- * Kube: a pixel cube (logo cyan) wearing a doctor's head mirror. It walks along the top edge of
+ * Kube: a pixel cube (logo cyan) wearing a helmsman's cap. It walks along the top edge of
  * its parent, stops, blinks, hops on hover and talks when clicked. Still when the user prefers
  * reduced motion. Place it inside a `relative` element; it stands on that element's top edge.
  */
@@ -14,9 +14,9 @@ const SPRITE_W = COLS * PX;
 const SPEED = 34; // px per second
 
 const COLORS: Record<string, string> = {
-  M: "#c9d1d6", // head mirror
-  W: "#ffffff", // mirror shine
-  S: "#8d989f", // head band
+  M: "#e9ebe7", // cap crown
+  W: "#39c1db", // cap badge
+  S: "#1c1f21", // cap peak and band
   L: "#7fdcec", // top face
   C: "#39c1db", // front face
   D: "#1f8ea3", // side and feet
@@ -24,9 +24,9 @@ const COLORS: Record<string, string> = {
 };
 
 const HEAD = [
-  "...MM.........",
-  "..MWMM........",
-  "..MMMM........",
+  "...MMMMMMMM...",
+  "..MMMMWWMMMM..",
+  "..SSSSSSSSSS..",
   ".SSSSSSSSSSSS.",
   ".LLLLLLLLLLDD.",
   ".CCCCCCCCCCDD.",
@@ -44,12 +44,12 @@ const LEGS = {
 };
 
 const LINES = [
+  "Steady as she goes",
   "All pods healthy",
-  "0 restarts today",
-  "Who touched the ConfigMap?",
+  "payment needs DATABASE_URL",
   "kubectl get pods",
-  "I read logs for fun",
-  "CrashLoopBackOff? Not today",
+  "Kubernetes means helmsman",
+  "CrashLoopBackOff ahead",
   "Read-only by default",
 ];
 
@@ -199,7 +199,7 @@ export function KubeMascot() {
         {line && (
           <span
             role="status"
-            className="absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap rounded-md border border-border bg-surface px-2.5 py-1 text-xs text-fg shadow-lg shadow-black/20"
+            className="absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap bg-fg px-3 py-1.5 text-sm font-semibold text-bg"
           >
             {line}
           </span>

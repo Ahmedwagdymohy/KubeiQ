@@ -1,107 +1,71 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 
-import { PrimaryLink, SectionHeading } from "@/components/ui";
-import { GITHUB_URL } from "@/lib/site";
+import { FieldHero } from "@/components/field-hero";
+import { InstallBand } from "@/components/install-band";
+import { Plans } from "@/components/plans";
+import { rise } from "@/components/ui";
 
 export const metadata: Metadata = {
   title: "Pricing",
   description: "KubeiQ core is free and open source. Pro and Enterprise add team and scale features.",
 };
 
-const PLANS = [
+const FACTS = [
   {
-    name: "Free",
-    price: "$0",
-    note: "Open source, Apache-2.0",
-    features: [
-      "Cluster Doctor, Cluster Map and Cluster Manager",
-      "Up to 3 users, with access by project",
-      "Read-only by default, opt-in changes with an activity log",
-      "Any AI model, or rules only",
-      "Community support on GitHub",
-    ],
-    available: true,
+    title: "One Install for Every Plan",
+    text: "Paid features are switched on with a license key in the same installation. Nothing to migrate",
+    picture: "/found/hms-dolphin-log-book-1.jpg",
+    alt: "A page of the log book of HMS Dolphin, 1765",
   },
   {
-    name: "Pro",
-    price: "Coming Soon",
-    note: "For teams",
-    features: [
-      "Everything in Free",
-      "Unlimited users",
-      "Scheduled scans and alerts",
-      "PDF investigation reports",
-      "More cluster connections",
-    ],
-    available: false,
+    title: "The Core Stays Open",
+    text: "Cluster Doctor, Cluster Map and Cluster Manager are Apache-2.0. Paid plans add teams and scale, never the tools themselves",
+    picture: "/found/admiralty-chart-no-2613-france-n-coast.jpg",
+    alt: "Admiralty chart of the French coast, 1894",
   },
   {
-    name: "Enterprise",
-    price: "Coming Soon",
-    note: "For organizations",
-    features: [
-      "Everything in Pro",
-      "SSO with OIDC and LDAP",
-      "Custom roles and fine-grained access",
-      "Audit log export and retention",
-      "AI keys per team, managed hosting",
-    ],
-    available: false,
+    title: "Your Servers, Your Model",
+    text: "KubeiQ runs where you install it and talks to the AI model you choose, so the bill for tokens stays yours",
+    picture: "/found/bell-rock-lighthouse-during-a-storm-from.jpg",
+    alt: "Bell Rock Lighthouse in a storm, after J. M. W. Turner",
   },
 ];
 
 export default function PricingPage() {
   return (
     <>
-      <section className="bg-grid flex flex-col items-center px-6 py-24 text-center">
-        <h1 className="text-4xl font-medium tracking-tight sm:text-6xl">Pricing</h1>
-        <p className="mt-6 max-w-2xl text-lg text-muted">
-          The core stays free and open source. Paid plans add what teams and organizations need
-        </p>
-      </section>
+      <FieldHero
+        lines={["Free to", "Steer"]}
+        sentence="Every KubeiQ product is free and open source for up to 3 users. Pro and Enterprise are coming soon"
+        figure={
+          <Image
+            src="/found/a-circle-of-winds-consisting-of-32.jpg"
+            alt="Hand-coloured mariner's compass with 32 points, from 1747"
+            width={1134}
+            height={1142}
+            priority
+            sizes="(min-width: 768px) 30vw, 58vw"
+            className="aspect-[2/3] h-auto w-full object-cover"
+          />
+        }
+      />
 
-      <section className="grid gap-px border-t border-border bg-border lg:grid-cols-3">
-        {PLANS.map((plan) => (
-          <div key={plan.name} className="flex flex-col gap-6 bg-bg p-8 sm:p-12">
-            <div className="flex flex-col gap-1">
-              <h2 className="text-lg font-medium">{plan.name}</h2>
-              <p className="text-sm text-subtle">{plan.note}</p>
+      <Plans heading={false} />
+
+      <section data-reveal className="frame grid gap-10 pt-[clamp(96px,12vw,200px)] md:grid-cols-3 md:gap-6">
+        {FACTS.map((f, i) => (
+          <div key={f.title} data-rise style={rise(i)} className="flex flex-col gap-4">
+            <div className="relative aspect-[4/3] overflow-hidden bg-surface">
+              <Image src={f.picture} alt={f.alt} fill sizes="(min-width: 768px) 33vw, 100vw" className="object-cover" />
             </div>
-            <p
-              className={`text-4xl font-medium tracking-tight ${plan.available ? "" : "text-muted"}`}
-            >
-              {plan.price}
-            </p>
-            <ul className="flex flex-col gap-3">
-              {plan.features.map((feature) => (
-                <li key={feature} className="flex items-baseline gap-3 text-fg/90">
-                  <span className="h-1.5 w-1.5 shrink-0 translate-y-[-2px] rounded-full bg-accent" />
-                  {feature}
-                </li>
-              ))}
-            </ul>
-            <div className="mt-auto pt-4">
-              {plan.available ? (
-                <PrimaryLink href="/install">Get Started</PrimaryLink>
-              ) : (
-                <a
-                  href={GITHUB_URL}
-                  className="text-sm text-muted transition-colors hover:text-fg"
-                >
-                  Watch the repository for updates
-                </a>
-              )}
-            </div>
+            <h2 className="text-[clamp(26px,2.4vw,38px)] font-extrabold leading-[1.05] tracking-[-0.03em]">{f.title}</h2>
+            <p className="max-w-[38ch] text-lg leading-relaxed">{f.text}</p>
           </div>
         ))}
       </section>
 
-      <section className="border-t border-border px-6 py-20 sm:px-12">
-        <SectionHeading
-          title="One Install for Every Plan"
-          description="Paid features are switched on with a license key in the same installation. Nothing to migrate"
-        />
-      </section>
+      <InstallBand />
     </>
   );
 }

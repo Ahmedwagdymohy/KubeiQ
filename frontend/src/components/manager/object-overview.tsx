@@ -101,7 +101,7 @@ export function ObjectOverview({ detail, kind }: { detail: KubeObject; kind: Kin
                   <span className="flex items-center justify-between gap-3">
                     <span className="font-medium">{c.name}</span>
                     {s && (
-                      <span className={s.ready ? "text-accent" : "text-danger"}>
+                      <span className={s.ready ? "text-healthy" : "text-danger"}>
                         {s.ready ? "Ready" : (waiting ?? "Not ready")}
                         {s.restartCount ? ` · ${s.restartCount} restarts` : ""}
                       </span>
@@ -122,7 +122,7 @@ export function ObjectOverview({ detail, kind }: { detail: KubeObject; kind: Kin
               <div key={c.type} className="flex flex-col gap-0.5 px-4 py-2.5 text-sm">
                 <span className="flex items-center justify-between gap-3">
                   <span>{c.type}</span>
-                  <span className={c.status === "True" ? "text-accent" : "text-muted"}>
+                  <span className={c.status === "True" ? "text-healthy" : "text-muted"}>
                     {c.status === "True" ? "Yes" : c.status === "False" ? "No" : c.status}
                   </span>
                 </span>

@@ -2,18 +2,18 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
-import { AppHeader } from "@/components/app-header";
 import { DEFAULT_KIND, kindKey } from "@/components/manager/kinds";
 import { KindSidebar } from "@/components/manager/kind-sidebar";
 import { ObjectPanel } from "@/components/manager/object-panel";
 import { ResourceTable } from "@/components/manager/resource-table";
 import { useAllNamespaces } from "@/hooks/use-me";
 import { api } from "@/lib/api";
+import { resolveCluster, setClusterScope, useClusterPicked, useClusterScope } from "@/lib/scope";
 
 const control =
-  "rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-fg outline-none focus:border-accent";
+  "h-8 rounded-lg border border-control bg-bg px-2.5 text-sm text-fg outline-none transition-colors focus:border-accent";
 
 type Selected = { namespace: string | null; name: string };
 
@@ -29,8 +29,14 @@ export function ClusterManager() {
     return name ? { namespace: params.get("in") || null, name } : null;
   });
 
-  const cluster =
-    chosen ?? clusters.data?.find((c) => c.is_default)?.id ?? clusters.data?.[0]?.id ?? null;
+  const scoped = useClusterScope();
+  const cluster = chosen ?? resolveCluster(clusters.data, scoped);
+
+  // A ?cluster= link puts that cluster in scope for the other products too.
+  useEffect(() => {
+    const linked = params.get("cluster");
+    if (linked) setClusterScope(linked, false);
+  }, [params]);
   const allNamespaces = useAllNamespaces(cluster);
   const namespaces = useQuery({
     queryKey: ["namespaces", cluster],
@@ -67,32 +73,21 @@ export function ClusterManager() {
     router.replace(`/manager?${q.toString()}`, { scroll: false });
   };
 
+  useClusterPicked((id) => {
+    setChosen(id);
+    setNamespace("");
+    setSelected(null);
+    sync({ cluster: id, namespace: "", selected: null });
+  });
+
   const select = (next: Selected | null) => {
     setSelected(next);
     sync({ selected: next });
   };
 
   return (
-    <div className="flex h-screen flex-col">
-      <AppHeader />
-      <div className="flex flex-wrap items-center gap-3 border-b border-border px-6 py-3">
-        <select
-          aria-label="Cluster"
-          value={cluster ?? ""}
-          onChange={(e) => {
-            setChosen(e.target.value);
-            setNamespace("");
-            setSelected(null);
-            sync({ cluster: e.target.value, namespace: "", selected: null });
-          }}
-          className={control}
-        >
-          {clusters.data?.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
+    <div className="flex h-full min-h-0 flex-1 flex-col">
+      <div className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-2.5 sm:px-5">
         <select
           aria-label="Namespace"
           value={scope}

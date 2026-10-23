@@ -42,7 +42,7 @@ export function DetailsPanel({
         <KubeIcon
           kind={node.kind}
           size={36}
-          className={node.status === "healthy" ? "text-accent" : node.status === "error" ? "text-danger" : "text-warning"}
+          className={node.status === "healthy" ? "text-healthy" : node.status === "error" ? "text-danger" : "text-warning"}
         />
         <div className="flex min-w-0 flex-1 flex-col">
           <h2 className="break-words font-semibold">{node.name}</h2>
@@ -70,7 +70,7 @@ export function DetailsPanel({
           {investigate && (
             <Link
               href={investigate}
-              className="mt-1 rounded-md bg-accent px-4 py-2.5 text-center text-sm font-medium text-accent-ink transition-colors hover:bg-accent-strong"
+              className="mt-1 rounded-lg bg-accent px-4 py-2.5 text-center text-sm font-semibold text-accent-ink transition-colors hover:bg-accent-strong"
             >
               Investigate with Cluster Doctor
             </Link>

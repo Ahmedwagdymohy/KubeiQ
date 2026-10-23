@@ -27,9 +27,9 @@ export function ClustersSection() {
       title="Clusters"
       description="KubeiQ connects to every context in these kubeconfig files. Access is read-only by default, and uploaded files are encrypted"
     >
-      <div className="flex max-w-3xl flex-col gap-4">
+      <div className="flex flex-col gap-4">
         {about.data && (
-          <div className="flex flex-col gap-1 rounded-md border border-border px-4 py-3">
+          <div className="flex flex-col gap-1 rounded-lg border border-border bg-bg px-4 py-3">
             <span className="text-sm font-medium">Server kubeconfig</span>
             <span className="text-sm text-muted">
               <code className="font-mono text-xs">{about.data.local_kubeconfig.path}</code> ·{" "}
@@ -70,7 +70,7 @@ function KubeconfigCard({
   onRemove: () => void;
 }) {
   return (
-    <div className="flex flex-col gap-3 rounded-md border border-border px-4 py-3">
+    <div className="flex flex-col gap-3 rounded-lg border border-border bg-bg px-4 py-3">
       <div className="flex items-center justify-between gap-4">
         <span className="text-sm font-medium">{file.name}</span>
         <button
@@ -139,7 +139,7 @@ function AddKubeconfig({ onAdded }: { onAdded: () => void }) {
   }
 
   return (
-    <div className="flex flex-col gap-4 rounded-md border border-border bg-surface/50 p-4">
+    <div className="flex flex-col gap-4 rounded-lg border border-border bg-bg p-4">
       <Field label="Name" hint="Lowercase letters, numbers and dashes, e.g. production">
         <input
           className={input}
