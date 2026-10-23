@@ -440,5 +440,3 @@ export function streamInvestigation(
   return () => source.close();
 }
 
-/** Backwards-compatible helper used by the landing page status pill. */
-export const getHealth = api.health;

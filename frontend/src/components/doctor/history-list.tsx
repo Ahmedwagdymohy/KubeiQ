@@ -38,7 +38,7 @@ export function HistoryList({
 
   return (
     <section className="flex flex-col gap-3 bg-bg p-6">
-      <SectionLabel>Recent investigations</SectionLabel>
+      <SectionLabel>Recent Investigations</SectionLabel>
       {history.data?.length === 0 && <p className="text-sm text-subtle">No investigations yet</p>}
       <ul className="-mx-2 flex flex-col gap-0.5">
         {history.data?.map((item) => (
@@ -46,7 +46,7 @@ export function HistoryList({
             <button
               type="button"
               onClick={() => onOpen(item.id)}
-              className={`flex w-full items-start gap-3 rounded-md px-2 py-2.5 text-left transition-colors hover:bg-surface-2 ${
+              className={`flex w-full items-start gap-3 rounded-lg px-2 py-2.5 text-left transition-colors hover:bg-surface ${
                 item.id === activeId ? "bg-surface-2" : ""
               }`}
             >
@@ -59,7 +59,8 @@ export function HistoryList({
                   <span className="font-normal text-subtle"> · {timeAgo(item.created_at)}</span>
                 </span>
                 <span className="text-sm text-muted">
-                  {item.namespace ?? "All namespaces"} on {item.cluster_id.replace(/^kubeconfig:/, "")}
+                  {item.namespace ?? "All namespaces"} on{" "}
+                  <span className="font-mono text-xs">{item.cluster_id.replace(/^kubeconfig:/, "")}</span>
                 </span>
                 {item.status === "completed" && !item.healthy && item.summary && (
                   <span className="line-clamp-2 text-sm text-subtle">{item.summary}</span>

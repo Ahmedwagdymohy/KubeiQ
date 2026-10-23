@@ -79,9 +79,9 @@ function IncidentRow({
         <span className="flex min-w-0 flex-1 flex-col gap-1">
           <span className="flex flex-wrap items-baseline gap-x-2">
             <span className="font-semibold text-fg">{name}</span>
-            <span className="text-sm text-subtle">
+            <span className="font-mono text-xs text-subtle">
               {kind}
-              {namespace ? ` in ${namespace}` : ""}
+              {namespace ? `/${namespace}` : ""}
             </span>
           </span>
           <span className={`text-fg/90 ${expanded ? "" : "line-clamp-2"}`}>
@@ -89,7 +89,7 @@ function IncidentRow({
           </span>
         </span>
         <span className="flex shrink-0 items-center gap-3 pt-0.5">
-          <span className="text-sm text-muted" title="Confidence">
+          <span className="text-sm tabular-nums text-muted" title="Confidence">
             {diagnosis.confidence}%
           </span>
           <ChevronIcon
@@ -101,7 +101,7 @@ function IncidentRow({
       {expanded && (
         <div className="flex flex-col gap-6 px-6 pb-8 pl-[3.25rem] sm:px-8 sm:pl-[3.75rem]">
           {diagnosis.fix_steps.length > 0 && (
-            <Block title="How to fix">
+            <Block title="How to Fix">
               <ol className="flex list-decimal flex-col gap-1.5 pl-5 text-fg/90">
                 {diagnosis.fix_steps.map((step) => (
                   <li key={step}>
@@ -125,19 +125,19 @@ function IncidentRow({
           )}
 
           {(diagnosis.verify ?? []).length > 0 && (
-            <Block title="Check that it worked">
+            <Block title="Check That It Worked">
               <Terminal commands={diagnosis.verify ?? []} />
             </Block>
           )}
 
-          <Block title="Why it happens">
+          <Block title="Why It Happens">
             <p className="text-muted">
               <RichText text={diagnosis.explanation} />
             </p>
           </Block>
 
           {diagnosis.prevention && (
-            <Block title="Prevent it next time">
+            <Block title="Prevent It Next Time">
               <p className="text-muted">
                 <RichText text={diagnosis.prevention} />
               </p>
@@ -154,7 +154,7 @@ function IncidentRow({
             </Block>
           )}
 
-          <Block title="Affected resources">
+          <Block title="Affected Resources">
             <div className="flex flex-wrap gap-x-4 gap-y-1">
               {diagnosis.affected.map((ref) => (
                 <span key={ref} className="font-mono text-sm text-subtle">

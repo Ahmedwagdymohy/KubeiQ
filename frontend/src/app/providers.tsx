@@ -1,11 +1,14 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { usePathname } from "next/navigation";
 import { useState, type ReactNode } from "react";
 
 import { AuthGate } from "@/components/auth/auth-gate";
+import { AppShell } from "@/components/shell/app-shell";
 
 export function Providers({ children }: { children: ReactNode }) {
+  const pathname = usePathname();
   const [client] = useState(
     () =>
       new QueryClient({
@@ -14,7 +17,7 @@ export function Providers({ children }: { children: ReactNode }) {
   );
   return (
     <QueryClientProvider client={client}>
-      <AuthGate>{children}</AuthGate>
+      <AuthGate>{pathname === "/login" ? children : <AppShell>{children}</AppShell>}</AuthGate>
     </QueryClientProvider>
   );
 }
