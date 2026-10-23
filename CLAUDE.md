@@ -30,6 +30,8 @@ features (teams, SSO, RBAC, audit, more clusters), never core usefulness.
 | 0005 | Hybrid diagnosis: deterministic detectors first, then tool-calling LLM agent; async investigations streamed over SSE |
 | 0007 | Cluster Map (`/map`): our own product reusing Headlamp's map logic (Apache-2.0, credited in `NOTICE`); health from our detectors |
 | 0006 | One platform, one install; products are modules (own route, API, enable flag). Marketing site in `website/` is separate from the app |
+| 0008 | Sign-in: master key admin (LiteLLM-style), users, sessions; projects scope clusters/namespaces (viewer/editor); free plan 3 users |
+| 0009 | Cluster changes are off by default; admin switch, editors only, confirmed in UI, every attempt audited |
 
 Do not reverse an ADR silently — write a new ADR that supersedes it.
 
@@ -47,16 +49,20 @@ backend/            FastAPI service (Python 3.12, uv). Package: backend/src/kube
     investigations/ orchestration, async jobs, progress events
     security/       redaction of secrets/PII before anything reaches an LLM
     settings/       Settings page backend: AI model + kubeconfig uploads, Fernet-encrypted, override env
+    auth/           master key, users, sessions, projects/access checks (deps.py), plan limits, audit
     db/             persistence models, sessions, Alembic migrations (applied at startup)
     products/map/   Cluster Map: extra collectors, relations (ported from Headlamp), health, /api/v1/map
+    products/manager/ Cluster Manager: kind discovery, Table API lists, YAML, events, logs, actions
   tests/
 frontend/           The self-hosted app: Next.js (TypeScript, Tailwind, App Router, React Query)
   src/app/page.tsx    App Home: product tiles and recent investigations (not marketing)
   src/app/doctor/     Cluster Doctor (/doctor?id=<investigation>; ?cluster=&namespace=&focus=<ref> starts a scan)
   src/app/map/        Cluster Map (React Flow + ELK); graph logic in src/lib/map (adapted from Headlamp)
-  src/app/settings/   Settings (gear icon in the header): AI model, clusters, about
+  src/app/manager/    Cluster Manager (?cluster&namespace&kind&name&in are shareable)
+  src/app/login/      Sign-in page; AuthGate (components/auth) sends signed-out users here
+  src/app/settings/   Settings: AI model, clusters, cluster changes, users, projects, activity, account
   src/components/     UI building blocks (ui.tsx, icons.tsx), header, doctor/ components
-  src/hooks/          use-investigation: start/open runs and follow SSE progress
+  src/hooks/          use-investigation (SSE progress), use-me (signed-in user, access), use-can-edit
   src/lib/api.ts      typed API client and SSE helper
 website/            Marketing site (kubeiq.io): landing, product pages, pricing, install. Static export
 ee/                 Commercial features (separate license)
@@ -92,12 +98,20 @@ cd backend && uv run alembic revision --autogenerate -m "..."   # new DB migrati
 
 # Local test cluster
 kind create cluster --name kubeiq-dev # adds context kind-kubeiq-dev
+
+# Sign in locally: user "admin", password = master key (never print or commit it)
+#   backend/.kubeiq-master-key  (generated on first start when KUBEIQ_MASTER_KEY is unset)
+# API calls: curl -H "Authorization: Bearer $(cat backend/.kubeiq-master-key)" ...
 ```
 
 ## Engineering rules
 
-- **Read-only by default.** Cluster access is read-only. Never read Secret values. Any mutating
-  action (future) requires explicit user approval and an audit record.
+- **Read-only by default.** Cluster changes exist only in Cluster Manager, behind the admin switch,
+  for admins and project editors, with a UI confirmation and an audit record (ADR 0009). Never read
+  Secret values: fetch Secrets as `PartialObjectMetadata`.
+- **Every API route checks access.** Routers are mounted behind `current_principal`; per-request
+  scope checks use `auth.deps.check(user, "read"|"edit", cluster_id, namespace)`. New endpoints
+  that touch a cluster must call it. Tests authenticate with the master key from `tests/conftest.py`.
 - **Redact before LLM.** All logs/evidence pass through `security/` redaction before being sent
   to any model.
 - **Multi-tenant ready.** Every persisted entity carries `org_id`, even in single-tenant mode.
@@ -111,7 +125,8 @@ kind create cluster --name kubeiq-dev # adds context kind-kubeiq-dev
   Use the Tailwind tokens (`bg-surface`, `text-muted`, `bg-accent`, ...), never hard-coded colors.
 - **Fix commands must be complete.** Users copy them as-is. Build them with `detectors/commands.py`:
   fill values from evidence, named placeholders only for unknowable values, verify on the workload.
-- Products live under the header "Products" menu; Cluster Doctor (`/doctor`) is the first.
+- Products live under the header "Products" menu: Cluster Doctor (`/doctor`), Cluster Map (`/map`),
+  Cluster Manager (`/manager`).
   A new product = a new module: its own route, API router and enable flag, using only shared
   platform code (never importing another product). Add it to the website too (product page).
 - Code adapted from Headlamp (Apache-2.0) keeps its copyright header plus a "Modified by the KubeiQ

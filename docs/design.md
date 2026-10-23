@@ -56,6 +56,16 @@ Never hard-code colors; use the Tailwind tokens (`bg-surface`, `text-muted`, `bg
   reason, **Investigate with Cluster Doctor**, facts, connected resources, labels.
 - Landing page feature grid: bento cells with outlined mono tags and dot pills.
 
+- **Cluster Manager**: toolbar (cluster, namespace), kind sidebar grouped by category with a
+  filter, a table from the server's own columns, and an object panel with Overview / YAML / Events /
+  Logs tabs. Actions sit in the panel header next to Investigate and Show on map, only when the
+  user may change things. Text that is not a command (YAML, logs) uses the code block, not the
+  `$` terminal.
+- **Dialogs** for changes: title as a question ("Restart checkout?"), one sentence on the effect,
+  Cancel and the action. Deleting requires typing the name; the delete button uses `bg-danger`.
+- **Sign-in**: one centered card with the logo; the hint says the admin uses the master key.
+  Generated passwords are shown once in a box with a copy button and "It will not be shown again".
+
 ## Copy voice
 
 Write like a person, not a brochure.

@@ -17,13 +17,20 @@ actionable fixes — using the LLM provider of your choice, including fully loca
   Click a broken resource and **Investigate** opens Cluster Doctor on it with the fix ready.
   Built on [Headlamp](https://github.com/kubernetes-sigs/headlamp)'s map logic (see `NOTICE`).
 
+- **Cluster Manager**: browse every resource kind, custom resources included. Read YAML, events and
+  live pod logs. Admins can turn on changes (scale, restart, cordon, delete), which are confirmed,
+  limited to project editors and recorded in the activity log.
+
 More products will ship in the same install.
 
 ## Platform
 
 - **Multi-cluster** — pick any context from your kubeconfig; private clusters via an in-cluster agent (coming).
 - **Any LLM** — OpenAI, Anthropic, OpenRouter, Azure, Bedrock, or Ollama via LiteLLM.
-- **Safe by default** — read-only access, secret redaction before any model call.
+- **Users and projects** — master key sign-in for the admin, users with access to chosen clusters and
+  namespaces, an activity log. Free for up to 3 users.
+- **Safe by default** — read-only until an admin turns changes on, Secret values never read, redaction
+  before any model call.
 
 Detected failure types: CrashLoopBackOff, ImagePullBackOff, OOMKilled, Pending/FailedScheduling,
 probe failures, stuck rollouts, service selector mismatches, DNS/networking issues.
@@ -36,8 +43,9 @@ One command installs KubeiQ with every product included (needs Docker, git and a
 curl -fsSL https://raw.githubusercontent.com/Ahmedwagdymohy/KubeiQ/main/deploy/install.sh | sh
 ```
 
-Then open http://localhost:3000. Open **Settings** (gear icon) to choose your AI provider and model,
-paste your key, and add kubeconfig files for more clusters. Keys and kubeconfigs are encrypted at rest.
+Then open http://localhost:3000 and sign in as `admin` with the **master key** the installer prints
+(also saved as `KUBEIQ_MASTER_KEY` in `~/kubeiq/backend/.env`). Open **Settings** (gear icon) to choose your AI provider and model,
+paste your key, add kubeconfig files for more clusters, and invite users into projects. Keys and kubeconfigs are encrypted at rest.
 Environment variables in `backend/.env` still work and are used until a model is saved in Settings.
 
 Port 3000 in use? `export KUBEIQ_FRONTEND_PORT=3001` before running the installer.

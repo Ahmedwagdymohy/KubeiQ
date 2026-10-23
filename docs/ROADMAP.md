@@ -39,7 +39,9 @@ Update this file in the same commit that completes a task.
 - [x] Cluster Doctor UI: cluster picker, live progress, incident list, history, shareable links
 - [x] Light/dark themes, logo, Products menu
 - [x] Settings page: AI provider, model, endpoint and key; kubeconfig uploads; limits (secrets encrypted at rest)
-- [ ] Local auth (single admin bootstrap, sessions). **Needed before exposing KubeiQ beyond localhost**: Settings holds keys and cluster credentials
+- [x] Sign-in: master key admin (generated at install), users, sessions, sign-in throttling (ADR 0008)
+- [x] Projects: access to clusters and namespaces with viewer and editor roles, enforced on every API route
+- [x] Free plan limit of 3 users; activity log of sign-ins, access and settings changes
 - [ ] Broken-workload scenarios in `examples/` + kind-based e2e test
 
 ## Phase 4.5 — Platform shape (ADR 0006)
@@ -60,6 +62,16 @@ Update this file in the same commit that completes a task.
 - [ ] Group by node and by app label (`app.kubernetes.io/instance`), like Headlamp
 - [ ] More kinds: NetworkPolicies, Gateway API routes, StatefulSet volume claims
 - [ ] All-namespaces overview that stays fast on large clusters (Headlamp's graph simplification)
+
+## Phase 4.7 — Cluster Manager (ADR 0009)
+- [x] Phase A, read-only: kind discovery grouped into categories (custom resources included), lists via the Table API, YAML, events, live pod logs
+- [x] Secrets as metadata only; values never fetched
+- [x] Investigate and Show on map from any object
+- [x] Phase B, opt-in changes: admin switch, scale, restart, delete, cordon/uncordon, editors only, confirmations, activity log
+- [x] Website product page and pricing (free up to 3 users)
+- [ ] Phase C: exec into containers, port-forward, edit YAML with a diff, Helm releases (each behind its own switch and audit)
+- [ ] Node view with usage (metrics-server), namespace overview page
+- [ ] Watch-based live updates instead of polling
 
 ## Phase 5 — Production & distribution
 - [ ] Helm chart
@@ -82,7 +94,8 @@ Update this file in the same commit that completes a task.
 
 ## Later — Pro / Enterprise (`ee/`)
 - [ ] License key validation & feature flags
-- [ ] RBAC with cluster-scoped roles
+- [ ] Lift the 3-user limit with a license (`auth/plan.py`)
+- [ ] Custom roles and fine-grained access beyond viewer/editor
 - [ ] OIDC / LDAP SSO, group → role mapping
-- [ ] Audit logs + export
+- [ ] Audit log export and retention
 - [ ] Managed multi-tenant hosting
