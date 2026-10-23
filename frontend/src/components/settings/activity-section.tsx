@@ -28,6 +28,7 @@ const ACTIONS: Record<string, string> = {
 function describe(event: AuditEvent) {
   const action = ACTIONS[event.action] ?? event.action;
   if (event.action === "auth.login" && !event.ok) return "Failed sign-in";
+  if (event.action === "settings.changes") return `Turned cluster changes ${event.detail}`;
   return event.target ? `${action} ${event.target}` : action;
 }
 
@@ -57,7 +58,7 @@ export function ActivitySection() {
                 <td className="px-4 py-2">{event.username}</td>
                 <td className={`px-4 py-2 ${event.ok ? "" : "text-danger"}`}>
                   {describe(event)}
-                  {event.detail && <span className="text-muted"> · {event.detail}</span>}
+                  {event.detail && event.action !== "settings.changes" && <span className="text-muted"> · {event.detail}</span>}
                   {event.namespace && <span className="text-muted"> · {event.namespace}</span>}
                 </td>
               </tr>

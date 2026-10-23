@@ -25,7 +25,7 @@ export function ClustersSection() {
     <Section
       id="clusters"
       title="Clusters"
-      description="KubeiQ connects to every context in these kubeconfig files. Access is read-only, and uploaded files are encrypted"
+      description="KubeiQ connects to every context in these kubeconfig files. Access is read-only by default, and uploaded files are encrypted"
     >
       <div className="flex max-w-3xl flex-col gap-4">
         {about.data && (

@@ -220,6 +220,64 @@ export type AuditEvent = {
   ok: boolean;
 };
 
+export type KindInfo = {
+  group: string;
+  version: string;
+  resource: string;
+  kind: string;
+  label: string;
+  namespaced: boolean;
+  verbs: string[];
+};
+export type KindCategory = { name: string; kinds: KindInfo[] };
+export type ResourceRow = {
+  name: string;
+  namespace: string | null;
+  created: string | null;
+  cells: (string | number | boolean | null)[];
+};
+export type ResourceList = {
+  columns: { name: string; type: string; description: string }[];
+  rows: ResourceRow[];
+  truncated: boolean;
+};
+export type KubeObject = {
+  object: Record<string, unknown> & {
+    metadata?: {
+      name?: string;
+      namespace?: string;
+      creationTimestamp?: string;
+      labels?: Record<string, string>;
+      annotations?: Record<string, string>;
+      ownerReferences?: { kind: string; name: string }[];
+    };
+    spec?: Record<string, unknown>;
+    status?: Record<string, unknown>;
+  };
+  yaml: string;
+  values_hidden: boolean;
+};
+export type KubeEvent = {
+  type: string;
+  reason: string;
+  message: string;
+  count: number;
+  last_seen: string | null;
+};
+export type PodLogs = { container: string; containers: string[]; lines: string[]; truncated: boolean };
+export type ObjectRef = {
+  group: string;
+  version: string;
+  resource: string;
+  namespace: string | null;
+  name: string;
+};
+export type ClusterAction = ObjectRef & {
+  cluster_id: string;
+  action: "scale" | "restart" | "delete" | "cordon" | "uncordon";
+  replicas?: number;
+};
+
 /** Fired when the backend says the session is gone, so the app can send the user to sign in. */
 export const UNAUTHORIZED_EVENT = "kubeiq:unauthorized";
 
@@ -268,6 +326,12 @@ const json = (method: string, body?: unknown): RequestInit => ({
   body: body === undefined ? undefined : JSON.stringify(body),
 });
 
+const query = (params: Record<string, string | number | boolean | null | undefined>) =>
+  Object.entries(params)
+    .filter(([, v]) => v !== null && v !== undefined && v !== "")
+    .map(([k, v]) => `${k}=${encodeURIComponent(String(v))}`)
+    .join("&");
+
 export const api = {
   me: () => request<Me>("/api/v1/auth/me"),
   login: (username: string, password: string) =>
@@ -314,6 +378,38 @@ export const api = {
   deleteKubeconfig: (id: string) =>
     request<void>(`/api/v1/settings/kubeconfigs/${id}`, { method: "DELETE" }),
   about: () => request<About>("/api/v1/settings/about"),
+  kinds: (clusterId: string) =>
+    request<KindCategory[]>(`/api/v1/manager/resources?${query({ cluster_id: clusterId })}`),
+  resources: (clusterId: string, kind: KindInfo, namespace: string | null) =>
+    request<ResourceList>(
+      `/api/v1/manager/list?${query({
+        cluster_id: clusterId,
+        group: kind.group,
+        version: kind.version,
+        resource: kind.resource,
+        namespace: kind.namespaced ? namespace : null,
+      })}`,
+    ),
+  object: (clusterId: string, ref: ObjectRef) =>
+    request<KubeObject>(`/api/v1/manager/object?${query({ cluster_id: clusterId, ...ref })}`),
+  events: (clusterId: string, kind: string, namespace: string | null, name: string) =>
+    request<KubeEvent[]>(
+      `/api/v1/manager/events?${query({ cluster_id: clusterId, kind, namespace, name })}`,
+    ),
+  logs: (
+    clusterId: string,
+    namespace: string,
+    pod: string,
+    opts: { container?: string; tail: number; previous: boolean },
+  ) =>
+    request<PodLogs>(
+      `/api/v1/manager/logs?${query({ cluster_id: clusterId, namespace, pod, ...opts })}`,
+    ),
+  runAction: (body: ClusterAction) =>
+    request<{ ok: boolean; message: string }>("/api/v1/manager/actions", json("POST", body)),
+  changesSetting: () => request<{ enabled: boolean }>("/api/v1/settings/changes"),
+  saveChangesSetting: (enabled: boolean) =>
+    request<{ enabled: boolean }>("/api/v1/settings/changes", json("PUT", { enabled })),
   map: (clusterId: string, namespace: string | null) =>
     request<ClusterMap>(
       `/api/v1/map?cluster_id=${encodeURIComponent(clusterId)}` +

@@ -109,3 +109,19 @@ export function RichText({ text }: { text: string }) {
     </>
   );
 }
+
+/** Read-only text such as YAML or logs, in the terminal palette, with one copy button. */
+export function CodeBlock({ text, className = "" }: { text: string; className?: string }) {
+  return (
+    <div className="relative overflow-hidden rounded-lg border border-border bg-terminal">
+      <div className="absolute right-2 top-2">
+        <CopyButton text={text} />
+      </div>
+      <pre
+        className={`overflow-auto p-4 pr-10 font-mono text-xs leading-5 text-terminal-fg ${className}`}
+      >
+        {text}
+      </pre>
+    </div>
+  );
+}

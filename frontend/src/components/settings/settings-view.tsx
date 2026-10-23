@@ -4,6 +4,7 @@ import { AboutSection } from "@/components/settings/about-section";
 import { AccountSection } from "@/components/settings/account-section";
 import { ActivitySection } from "@/components/settings/activity-section";
 import { AISection } from "@/components/settings/ai-section";
+import { ChangesSection } from "@/components/settings/changes-section";
 import { ClustersSection } from "@/components/settings/clusters-section";
 import { ProjectsSection } from "@/components/settings/projects-section";
 import { UsersSection } from "@/components/settings/users-section";
@@ -12,6 +13,7 @@ import { useMe } from "@/hooks/use-me";
 const ADMIN_NAV = [
   ["ai", "AI Model"],
   ["clusters", "Clusters"],
+  ["changes", "Cluster Changes"],
   ["users", "Users"],
   ["projects", "Projects"],
   ["activity", "Activity"],
@@ -43,6 +45,7 @@ export function SettingsView() {
           <>
             <AISection />
             <ClustersSection />
+            <ChangesSection />
             <UsersSection />
             <ProjectsSection />
             <ActivitySection />

@@ -1,6 +1,6 @@
 import type { ComponentType } from "react";
 
-import { MapIcon, StethoscopeIcon } from "@/components/icons";
+import { ManagerIcon, MapIcon, StethoscopeIcon } from "@/components/icons";
 
 export const GITHUB_URL = "https://github.com/Ahmedwagdymohy/KubeiQ";
 
@@ -24,5 +24,11 @@ export const PRODUCTS: Product[] = [
     name: "Cluster Map",
     description: "See every resource, how it connects and what is unhealthy",
     icon: MapIcon,
+  },
+  {
+    href: "/manager",
+    name: "Cluster Manager",
+    description: "Browse every resource, read YAML, events and logs",
+    icon: ManagerIcon,
   },
 ];
