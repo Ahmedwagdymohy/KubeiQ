@@ -22,6 +22,8 @@ ENV NODE_ENV=production NEXT_TELEMETRY_DISABLED=1 PORT=3000 HOSTNAME=0.0.0.0
 RUN addgroup -S -g 10001 kubeiq && adduser -S -u 10001 -G kubeiq kubeiq
 COPY --from=builder --chown=kubeiq:kubeiq /app/.next/standalone ./
 COPY --from=builder --chown=kubeiq:kubeiq /app/.next/static ./.next/static
+# Standalone output leaves out public/ (logo, Kubernetes icons)
+COPY --from=builder --chown=kubeiq:kubeiq /app/public ./public
 USER kubeiq
 EXPOSE 3000
 CMD ["node", "server.js"]
