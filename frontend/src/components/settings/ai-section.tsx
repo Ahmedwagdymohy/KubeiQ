@@ -109,7 +109,7 @@ function AIForm({ saved, providers }: { saved: AISettings; providers: Provider[]
                 onClick={() => set("provider", p.id)}
                 className={`rounded-md border px-3 py-2.5 text-left text-sm transition-colors ${
                   p.id === form.provider
-                    ? "border-accent bg-surface-2 text-fg"
+                    ? "border-fg bg-surface-2 text-fg"
                     : "border-border text-muted hover:bg-surface hover:text-fg"
                 }`}
               >

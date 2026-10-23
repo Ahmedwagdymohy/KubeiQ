@@ -28,10 +28,10 @@ export function SystemStatus() {
   const { dot, label } = styles[status.state];
 
   return (
-    <div className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 font-mono text-xs text-muted">
+    <div className="inline-flex h-8 items-center gap-2 text-sm text-muted">
       <span className={`h-2 w-2 rounded-full ${dot}`} />
       {label}
-      {status.state === "ready" && <span className="text-subtle">v{status.version}</span>}
+      {status.state === "ready" && <span className="tabular-nums text-subtle">v{status.version}</span>}
     </div>
   );
 }

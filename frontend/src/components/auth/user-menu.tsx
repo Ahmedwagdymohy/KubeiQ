@@ -26,11 +26,11 @@ export function UserMenu() {
       <button
         type="button"
         aria-label="Account"
-        className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-surface text-sm font-semibold uppercase text-fg transition-colors hover:border-accent"
+        className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-2 text-sm font-semibold uppercase text-fg transition-colors hover:bg-primary hover:text-primary-ink"
       >
         {username.slice(0, 1)}
       </button>
-      <div className="invisible absolute right-0 top-full z-20 w-60 pt-3 opacity-0 transition-opacity group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100">
+      <div className="invisible absolute right-0 top-full z-50 w-60 pt-3 opacity-0 transition-opacity group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100 md:bottom-0 md:left-full md:right-auto md:top-auto md:pl-3 md:pt-0">
         <div className="flex flex-col rounded-lg border border-border bg-bg p-2 text-sm shadow-xl shadow-black/20">
           <div className="flex flex-col gap-0.5 px-3 py-2">
             <span className="font-medium text-fg">{username}</span>

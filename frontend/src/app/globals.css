@@ -1,22 +1,36 @@
 @import "tailwindcss";
 
-/* Design tokens — see docs/design.md. Dark is the default; light via system or toggle. */
+/*
+ * Design tokens (Helm). See docs/design.md; website/src/app/globals.css mirrors these values.
+ * Dark is the default: true neutral blacks. Light is chart paper, a cool grey (never cream).
+ * Chrome stays ink; the logo cyan (`--accent`) is kept for data: health, the one chart hue, focus.
+ * The one primary action is `--primary`: near-black on paper, white on black.
+ */
 :root {
   color-scheme: dark;
   --bg: #000000;
-  --surface: #0a0b0c;
-  --surface-2: #14171a;
-  --border: #3a4046;
-  --grid: rgba(255, 255, 255, 0.05);
+  --panel: #0d0e0f;
+  --surface: #0d0e0f;
+  --surface-2: #17191a;
+  --border: #2a2d30;
+  --grid: rgba(255, 255, 255, 0.06);
   --text: #f5f7f8;
-  --text-muted: #a1a9b0;
-  --text-subtle: #6b747c;
+  --text-muted: #b0b6ba;
+  --text-subtle: #8c9398;
   --accent: #39c1db;
   --accent-strong: #66d3e8;
   --accent-ink: #03161b;
+  --primary: #f5f7f8;
+  --primary-ink: #000000;
+  --field: #39c1db;
+  --field-ink: #03161b;
+  --field-deep: #2aa9c2;
+  --inverse: #e9ebe7;
+  --inverse-ink: #0b1115;
+  --inverse-muted: #3f4a52;
   --warning: #fbbf24;
   --danger: #f87171;
-  --terminal: #0b0e11;
+  --terminal: #0c0d0e;
   --terminal-text: #e3e9ee;
   --terminal-warn: #fbbf24;
 }
@@ -24,20 +38,29 @@
 @media (prefers-color-scheme: light) {
   :root:not([data-theme="dark"]) {
     color-scheme: light;
-    --bg: #ffffff;
-    --surface: #f7f9fa;
-    --surface-2: #eef2f4;
-    --border: #cdd4da;
-    --grid: rgba(15, 23, 42, 0.05);
+    --bg: #f2f3f0;
+    --panel: #ffffff;
+    --surface: #e8eae6;
+    --surface-2: #dfe2dd;
+    --border: #dfe2dc;
+    --grid: rgba(11, 17, 21, 0.06);
     --text: #0b1115;
-    --text-muted: #4b5661;
-    --text-subtle: #87929c;
-    --accent: #0e8fa8;
-    --accent-strong: #0b7a90;
+    --text-muted: #3f4a52;
+    --text-subtle: #56616a;
+    --accent: #0a7488;
+    --accent-strong: #085f70;
     --accent-ink: #ffffff;
+    --primary: #0b1115;
+    --primary-ink: #f2f3f0;
+    --field: #39c1db;
+    --field-ink: #03161b;
+    --field-deep: #2aa9c2;
+    --inverse: #0b0d0e;
+    --inverse-ink: #f2f3f0;
+    --inverse-muted: #b0b6ba;
     --warning: #b45309;
-    --danger: #dc2626;
-    --terminal: #0f1418;
+    --danger: #c62828;
+    --terminal: #0f1213;
     --terminal-text: #e3e9ee;
     --terminal-warn: #fbbf24;
   }
@@ -45,26 +68,36 @@
 
 :root[data-theme="light"] {
   color-scheme: light;
-  --bg: #ffffff;
-  --surface: #f7f9fa;
-  --surface-2: #eef2f4;
-  --border: #cdd4da;
-  --grid: rgba(15, 23, 42, 0.05);
+  --bg: #f2f3f0;
+  --panel: #ffffff;
+  --surface: #e8eae6;
+  --surface-2: #dfe2dd;
+  --border: #dfe2dc;
+  --grid: rgba(11, 17, 21, 0.06);
   --text: #0b1115;
-  --text-muted: #4b5661;
-  --text-subtle: #87929c;
-  --accent: #0e8fa8;
-  --accent-strong: #0b7a90;
+  --text-muted: #3f4a52;
+  --text-subtle: #56616a;
+  --accent: #0a7488;
+  --accent-strong: #085f70;
   --accent-ink: #ffffff;
+  --primary: #0b1115;
+  --primary-ink: #f2f3f0;
+  --field: #39c1db;
+  --field-ink: #03161b;
+  --field-deep: #2aa9c2;
+  --inverse: #0b0d0e;
+  --inverse-ink: #f2f3f0;
+  --inverse-muted: #b0b6ba;
   --warning: #b45309;
-  --danger: #dc2626;
-  --terminal: #0f1418;
+  --danger: #c62828;
+  --terminal: #0f1213;
   --terminal-text: #e3e9ee;
   --terminal-warn: #fbbf24;
 }
 
 @theme inline {
   --color-bg: var(--bg);
+  --color-panel: var(--panel);
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
   --color-border: var(--border);
@@ -74,6 +107,14 @@
   --color-accent: var(--accent);
   --color-accent-strong: var(--accent-strong);
   --color-accent-ink: var(--accent-ink);
+  --color-primary: var(--primary);
+  --color-primary-ink: var(--primary-ink);
+  --color-field: var(--field);
+  --color-field-ink: var(--field-ink);
+  --color-field-deep: var(--field-deep);
+  --color-inverse: var(--inverse);
+  --color-inverse-ink: var(--inverse-ink);
+  --color-inverse-muted: var(--inverse-muted);
   --color-warning: var(--warning);
   --color-danger: var(--danger);
   --color-terminal: var(--terminal);
@@ -89,12 +130,9 @@ body {
   font-family: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
 }
 
-/* Faint engineering grid used behind hero sections */
-.bg-grid {
-  background-image:
-    linear-gradient(to right, var(--grid) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--grid) 1px, transparent 1px);
-  background-size: 48px 48px;
+/* The helm rail (components/app-header.tsx) is fixed on the left from md up; pages shift beside it */
+@media (min-width: 768px) {
+  body:has(.app-rail) { padding-left: 56px; }
 }
 
 /* Show the right theme-toggle icon without JS (server and client markup stay identical) */

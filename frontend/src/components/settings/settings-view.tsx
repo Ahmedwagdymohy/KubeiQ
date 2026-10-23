@@ -27,9 +27,8 @@ export function SettingsView() {
   const nav = admin ? ADMIN_NAV : ADMIN_NAV.filter(([id]) => id === "account");
 
   return (
-    <main className="mx-auto grid w-full max-w-[1680px] flex-1 grid-cols-[minmax(0,1fr)] gap-px border-x border-border bg-border lg:grid-cols-[240px_minmax(0,1fr)]">
-      <nav className="hidden flex-col gap-1 bg-bg p-6 lg:flex">
-        <h1 className="mb-3 text-base font-semibold">Settings</h1>
+    <main className="grid w-full flex-1 grid-cols-[minmax(0,1fr)] gap-px bg-border lg:grid-cols-[240px_minmax(0,1fr)]">
+      <nav aria-label="Settings sections" className="hidden flex-col gap-1 bg-bg p-6 pt-9 lg:flex">
         {nav.map(([id, label]) => (
           <a
             key={id}
@@ -41,6 +40,7 @@ export function SettingsView() {
         ))}
       </nav>
       <div className="flex min-w-0 flex-col gap-px">
+        <h1 className="bg-bg px-6 pt-8 text-2xl font-bold tracking-tight sm:px-10">Settings</h1>
         {admin && (
           <>
             <AISection />

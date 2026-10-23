@@ -43,11 +43,11 @@ export function LoginForm() {
       <main className="flex flex-1 items-start justify-center px-4 pt-[12vh]">
         <form
           onSubmit={submit}
-          className="flex w-full max-w-sm flex-col gap-5 rounded-lg border border-border bg-surface p-8"
+          className="flex w-full max-w-sm flex-col gap-5 rounded-lg border border-border bg-panel p-8"
         >
           <div className="flex flex-col items-center gap-4 pb-2">
             <Logo />
-            <h1 className="text-lg font-semibold">Sign In</h1>
+            <h1 className="text-2xl font-bold tracking-tight">Sign In</h1>
           </div>
           <Field label="Username">
             <input

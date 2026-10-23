@@ -25,7 +25,7 @@ const ACTIONS: Record<string, string> = {
   "k8s.uncordon": "Uncordoned",
 };
 
-function describe(event: AuditEvent) {
+export function describe(event: AuditEvent) {
   const action = ACTIONS[event.action] ?? event.action;
   if (event.action === "auth.login" && !event.ok) return "Failed sign-in";
   if (event.action === "settings.changes") return `Turned cluster changes ${event.detail}`;
@@ -38,7 +38,7 @@ export function ActivitySection() {
     <Section
       id="activity"
       title="Activity"
-      description="Sign-ins, access and settings changes, and every change made to a cluster"
+      description="The log: sign-ins, access and settings changes, and every change made to a cluster, newest first"
     >
       <div className="max-w-3xl overflow-x-auto rounded-md border border-border">
         <table className="w-full text-left text-sm">
@@ -52,7 +52,7 @@ export function ActivitySection() {
           <tbody className="divide-y divide-border">
             {audit.data?.map((event) => (
               <tr key={event.id}>
-                <td className="whitespace-nowrap px-4 py-2 text-muted">
+                <td className="whitespace-nowrap px-4 py-2 tabular-nums text-muted">
                   {new Date(event.created_at).toLocaleString()}
                 </td>
                 <td className="px-4 py-2">{event.username}</td>

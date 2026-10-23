@@ -69,7 +69,7 @@ export function ObjectPanel({
         {INVESTIGABLE.has(kind.kind) && namespace && (
           <Link
             href={`/doctor?${scope}&focus=${encodeURIComponent(ref_)}`}
-            className="rounded-md bg-accent px-3 py-1.5 text-sm font-medium text-accent-ink transition-colors hover:bg-accent-strong"
+            className="rounded-md bg-primary px-3 py-1.5 text-sm font-semibold text-primary-ink transition-opacity hover:opacity-85"
           >
             Investigate
           </Link>
@@ -100,7 +100,7 @@ export function ObjectPanel({
             aria-selected={tab === id}
             onClick={() => setTab(id)}
             className={`px-3 py-2.5 text-sm transition-colors ${
-              tab === id ? "text-fg shadow-[inset_0_-2px_0_var(--accent)]" : "text-muted hover:text-fg"
+              tab === id ? "text-fg shadow-[inset_0_-2px_0_var(--text)]" : "text-muted hover:text-fg"
             }`}
           >
             {label}

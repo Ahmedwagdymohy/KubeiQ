@@ -14,6 +14,7 @@ import {
 import { AppHeader } from "@/components/app-header";
 import { ClusterPanel } from "@/components/doctor/cluster-panel";
 import { HistoryList } from "@/components/doctor/history-list";
+import { HelmWheel } from "@/components/helm-wheel";
 import { IncidentList } from "@/components/doctor/incident-list";
 import { ProgressTimeline } from "@/components/doctor/progress-timeline";
 import { Dot } from "@/components/ui";
@@ -132,7 +133,7 @@ export function Doctor() {
       <AppHeader />
       <main
         style={{ "--sidebar": `${width}px` } as CSSProperties}
-        className="mx-auto grid w-full max-w-[1680px] flex-1 grid-cols-[minmax(0,1fr)] gap-px border-x border-border bg-border lg:grid-cols-[var(--sidebar)_minmax(0,1fr)]"
+        className="grid w-full flex-1 grid-cols-[minmax(0,1fr)] gap-px bg-border lg:grid-cols-[var(--sidebar)_minmax(0,1fr)]"
       >
         <div className="relative flex min-w-0 flex-col gap-px">
           <ClusterPanel
@@ -227,11 +228,10 @@ function Steps({ events, status }: { events: ProgressEvent[]; status: Investigat
 
 function EmptyState() {
   return (
-    <div className="bg-grid flex flex-1 flex-col items-center justify-center bg-bg px-6 py-24 text-center">
-      <h1 className="text-3xl font-medium tracking-tight sm:text-4xl">
-        <span className="text-accent">Cluster</span> Doctor
-      </h1>
-      <p className="mt-4 max-w-md text-muted">
+    <div className="flex flex-1 flex-col items-center justify-center bg-bg px-6 py-24 text-center">
+      <HelmWheel className="h-14 w-14 text-subtle" cubeColor="var(--accent)" />
+      <h1 className="mt-6 text-2xl font-bold tracking-tight">Cluster Doctor</h1>
+      <p className="mt-3 max-w-md text-muted">
         Pick a cluster and a namespace, then run an investigation to see what is broken and how to
         fix it
       </p>
@@ -269,7 +269,7 @@ function Results({ investigation, focus }: { investigation: Investigation; focus
 
   if (report.healthy) {
     return (
-      <div className="bg-grid flex flex-col items-center bg-bg px-6 py-16 text-center">
+      <div className="flex flex-col items-center bg-bg px-6 py-16 text-center">
         <span className="flex items-center gap-2 text-sm text-muted">
           <Dot tone="healthy" /> Healthy
         </span>

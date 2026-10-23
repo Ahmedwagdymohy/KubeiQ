@@ -95,6 +95,21 @@ export const SettingsIcon = (props: IconProps) => (
   </Icon>
 );
 
+/** Overview: a compass bearing, the needle pointing at what needs attention. */
+export const CompassIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <circle cx="12" cy="12" r="9" />
+    <path d="m15.5 8.5-2 5-5 2 2-5 5-2Z" />
+  </Icon>
+);
+
+export const BookIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M4 5a2 2 0 0 1 2-2h13v16H6a2 2 0 0 0-2 2V5Z" />
+    <path d="M4 19a2 2 0 0 1 2-2h13" />
+  </Icon>
+);
+
 export const ManagerIcon = (props: IconProps) => (
   <Icon {...props}>
     <rect x="3" y="4" width="18" height="16" rx="2" />

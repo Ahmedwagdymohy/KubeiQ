@@ -89,7 +89,7 @@ function IncidentRow({
           </span>
         </span>
         <span className="flex shrink-0 items-center gap-3 pt-0.5">
-          <span className="text-sm text-muted" title="Confidence">
+          <span className="text-sm tabular-nums text-muted" title="Confidence">
             {diagnosis.confidence}%
           </span>
           <ChevronIcon

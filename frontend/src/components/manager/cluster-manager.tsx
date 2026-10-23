@@ -13,7 +13,7 @@ import { useAllNamespaces } from "@/hooks/use-me";
 import { api } from "@/lib/api";
 
 const control =
-  "rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-fg outline-none focus:border-accent";
+  "rounded-md border border-border bg-panel px-3 py-1.5 text-sm text-fg outline-none focus:border-accent";
 
 type Selected = { namespace: string | null; name: string };
 
@@ -75,7 +75,8 @@ export function ClusterManager() {
   return (
     <div className="flex h-screen flex-col">
       <AppHeader />
-      <div className="flex flex-wrap items-center gap-3 border-b border-border px-6 py-3">
+      <div className="flex flex-wrap items-center gap-3 border-b border-border px-4 py-3 sm:px-6">
+        <h1 className="mr-1 whitespace-nowrap text-base font-bold tracking-tight">Cluster Manager</h1>
         <select
           aria-label="Cluster"
           value={cluster ?? ""}

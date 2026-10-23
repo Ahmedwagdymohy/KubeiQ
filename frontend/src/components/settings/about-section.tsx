@@ -26,7 +26,7 @@ export function AboutSection() {
         ))}
         <dt className="text-subtle">Docs</dt>
         <dd>
-          <a href={`${GITHUB_URL}#readme`} className="text-accent hover:underline">
+          <a href={`${GITHUB_URL}#readme`} className="break-all text-accent hover:underline">
             github.com/Ahmedwagdymohy/KubeiQ
           </a>
         </dd>

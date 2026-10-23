@@ -16,7 +16,7 @@ import { collapseGraph, findGroupContaining, getMainNode, groupGraph } from "@/l
 const REFRESH_MS = 10_000;
 
 const control =
-  "rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-fg outline-none focus:border-accent";
+  "rounded-md border border-border bg-panel px-3 py-1.5 text-sm text-fg outline-none focus:border-accent";
 
 function Toggle({ on, onClick, children }: { on: boolean; onClick: () => void; children: string }) {
   return (
@@ -25,7 +25,7 @@ function Toggle({ on, onClick, children }: { on: boolean; onClick: () => void; c
       aria-pressed={on}
       onClick={onClick}
       className={`rounded-md border px-3 py-1.5 text-sm transition-colors ${
-        on ? "border-accent/70 bg-surface-2 text-fg" : "border-border text-muted hover:text-fg"
+        on ? "border-fg/60 bg-surface-2 text-fg" : "border-border text-muted hover:text-fg"
       }`}
     >
       {children}
@@ -97,7 +97,8 @@ export function ClusterMapView() {
   return (
     <div className="flex h-screen flex-col">
       <AppHeader />
-      <div className="flex flex-wrap items-center gap-3 border-b border-border px-6 py-3">
+      <div className="flex flex-wrap items-center gap-3 border-b border-border px-4 py-3 sm:px-6">
+        <h1 className="mr-1 whitespace-nowrap text-base font-bold tracking-tight">Cluster Map</h1>
         <select
           aria-label="Cluster"
           value={cluster ?? ""}

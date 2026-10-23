@@ -36,6 +36,7 @@ export function ClusterPanel({
 
   return (
     <aside className="flex flex-col gap-5 bg-bg p-6">
+      <h1 className="text-xl font-bold tracking-tight">Cluster Doctor</h1>
       <div className="flex items-center justify-between">
         <SectionLabel>Clusters</SectionLabel>
         <button
@@ -73,7 +74,7 @@ export function ClusterPanel({
           <select
             value={effective}
             onChange={(e) => onNamespace(e.target.value)}
-            className="rounded-md border border-border bg-surface px-3 py-2 text-sm text-fg outline-none focus:border-accent"
+            className="rounded-md border border-border bg-panel px-3 py-2 text-sm text-fg outline-none focus:border-accent"
           >
             {allNamespaces && <option value="">All namespaces</option>}
             {namespaces.data?.map((ns) => (
@@ -86,7 +87,7 @@ export function ClusterPanel({
             type="button"
             onClick={() => onInvestigate(effective)}
             disabled={running || !current.status?.reachable}
-            className="mt-2 rounded-md bg-accent px-4 py-3 font-medium text-accent-ink transition-colors hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-50"
+            className="mt-2 rounded-md bg-primary px-4 py-3 font-semibold text-primary-ink transition-opacity hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {running ? "Investigating" : "Investigate Cluster"}
           </button>
@@ -114,7 +115,7 @@ function ClusterItem({
       type="button"
       onClick={onClick}
       className={`flex w-full flex-col gap-1 rounded-md border px-3 py-2.5 text-left transition-colors ${
-        active ? "border-accent/70 bg-surface-2" : "border-border bg-surface hover:bg-surface-2"
+        active ? "border-fg/60 bg-surface-2" : "border-border bg-surface hover:bg-surface-2"
       }`}
     >
       <span className="flex items-center gap-2 text-sm font-medium">

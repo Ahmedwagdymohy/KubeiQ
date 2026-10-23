@@ -44,7 +44,7 @@ function CopyButton({ text }: { text: string }) {
       title={copied ? "Copied" : "Copy"}
       className="shrink-0 rounded p-1 text-terminal-fg/50 transition-colors hover:bg-white/10 hover:text-terminal-fg"
     >
-      {copied ? <CheckIcon className="text-accent" /> : <CopyIcon />}
+      {copied ? <CheckIcon className="text-field" /> : <CopyIcon />}
     </button>
   );
 }
@@ -59,16 +59,11 @@ export function hasPlaceholder(command: string) {
 
 export function Terminal({ commands }: { commands: string[] }) {
   return (
-    <div className="overflow-hidden rounded-lg border border-border bg-terminal">
-      <div className="flex items-center gap-1.5 border-b border-white/10 px-4 py-2.5">
-        <span className="h-2.5 w-2.5 rounded-full bg-white/15" />
-        <span className="h-2.5 w-2.5 rounded-full bg-white/15" />
-        <span className="h-2.5 w-2.5 rounded-full bg-white/15" />
-      </div>
+    <div className="overflow-hidden rounded-lg bg-terminal">
       <ul className="flex flex-col py-2">
         {commands.map((command) => (
           <li key={command} className="flex items-start gap-3 px-4 py-1.5 hover:bg-white/[0.03]">
-            <span className="select-none font-mono text-sm leading-6 text-accent">$</span>
+            <span className="select-none font-mono text-sm leading-6 text-field">$</span>
             <code className="min-w-0 flex-1 whitespace-pre-wrap break-words font-mono text-sm leading-6 text-terminal-fg">
               {command.split(PLACEHOLDER).map((part, i) =>
                 i % 2 ? (
@@ -113,7 +108,7 @@ export function RichText({ text }: { text: string }) {
 /** Read-only text such as YAML or logs, in the terminal palette, with one copy button. */
 export function CodeBlock({ text, className = "" }: { text: string; className?: string }) {
   return (
-    <div className="relative overflow-hidden rounded-lg border border-border bg-terminal">
+    <div className="relative overflow-hidden rounded-lg bg-terminal">
       <div className="absolute right-2 top-2">
         <CopyButton text={text} />
       </div>

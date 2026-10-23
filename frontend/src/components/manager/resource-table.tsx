@@ -9,6 +9,14 @@ import { api, type KindInfo } from "@/lib/api";
 const REFRESH_MS = 15_000;
 const BAD = /(Error|BackOff|Failed|Pending|Unknown|NotReady|Evicted|OOMKilled|Terminating)/;
 
+/** Counts, ratios (1/2) and ages (27h, 3d) are figures: right-aligned in tabular digits. */
+const FIGURE = /^(\d+(\/\d+)?|\d+(\.\d+)?[smhdy](\d+[smh])?)$/;
+
+function figureColumn(rows: { cells: unknown[] }[], index: number) {
+  const values = rows.map((r) => r.cells[index]).filter((v) => v !== null && v !== undefined && v !== "");
+  return values.length > 0 && values.every((v) => FIGURE.test(String(v)));
+}
+
 export function ResourceTable({
   cluster,
   kind,
@@ -38,7 +46,7 @@ export function ResourceTable({
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center gap-3 border-b border-border px-6 py-3">
-        <h1 className="font-semibold">{kind.label}</h1>
+        <h2 className="font-semibold">{kind.label}</h2>
         {list.data && <span className="text-sm text-subtle">{rows.length}</span>}
         {list.isFetching && <Spinner />}
         <input
@@ -47,7 +55,7 @@ export function ResourceTable({
           onChange={(e) => setFilter(e.target.value)}
           placeholder="Filter by name"
           aria-label="Filter by name"
-          className="ml-auto w-56 rounded-md border border-border bg-surface px-3 py-1.5 text-sm outline-none focus:border-accent"
+          className="ml-auto w-56 rounded-md border border-border bg-panel px-3 py-1.5 text-sm outline-none focus:border-accent"
         />
       </div>
       <div className="min-h-0 flex-1 overflow-auto">
@@ -68,8 +76,12 @@ export function ResourceTable({
                   </th>
                 ))}
                 {showNamespace && <th className="px-4 py-2 font-medium">Namespace</th>}
-                {list.data.columns.slice(1).map((c) => (
-                  <th key={c.name} className="px-4 py-2 font-medium" title={c.description}>
+                {list.data.columns.slice(1).map((c, i) => (
+                  <th
+                    key={c.name}
+                    className={`px-4 py-2 font-medium ${figureColumn(list.data.rows, i + 1) ? "text-right" : ""}`}
+                    title={c.description}
+                  >
                     {c.name}
                   </th>
                 ))}
@@ -97,8 +109,8 @@ export function ResourceTable({
                         <td
                           key={i}
                           className={`max-w-[280px] truncate px-4 py-2.5 ${
-                            BAD.test(text) ? "text-danger" : "text-muted"
-                          }`}
+                            FIGURE.test(text) ? "text-right tabular-nums" : ""
+                          } ${BAD.test(text) ? "text-danger" : "text-muted"}`}
                           title={text}
                         >
                           {text}

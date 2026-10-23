@@ -8,9 +8,10 @@
 :root {
   color-scheme: dark;
   --bg: #000000;
+  --panel: #0d0e0f;
   --surface: #0d0e0f;
   --surface-2: #17191a;
-  --border: #2e3236;
+  --border: #2a2d30;
   --grid: rgba(255, 255, 255, 0.06);
   --text: #f5f7f8;
   --text-muted: #b0b6ba;
@@ -18,6 +19,8 @@
   --accent: #39c1db;
   --accent-strong: #66d3e8;
   --accent-ink: #03161b;
+  --primary: #f5f7f8;
+  --primary-ink: #000000;
   --field: #39c1db;
   --field-ink: #03161b;
   --field-deep: #2aa9c2;
@@ -39,9 +42,10 @@
   :root:not([data-theme="dark"]) {
     color-scheme: light;
     --bg: #f2f3f0;
+    --panel: #ffffff;
     --surface: #e8eae6;
     --surface-2: #dfe2dd;
-    --border: #c3c8c2;
+    --border: #dfe2dc;
     --grid: rgba(11, 17, 21, 0.06);
     --text: #0b1115;
     --text-muted: #3f4a52;
@@ -49,6 +53,8 @@
     --accent: #0a7488;
     --accent-strong: #085f70;
     --accent-ink: #ffffff;
+    --primary: #0b1115;
+    --primary-ink: #f2f3f0;
     --field: #39c1db;
     --field-ink: #03161b;
     --field-deep: #2aa9c2;
@@ -66,9 +72,10 @@
 :root[data-theme="light"] {
   color-scheme: light;
   --bg: #f2f3f0;
+  --panel: #ffffff;
   --surface: #e8eae6;
   --surface-2: #dfe2dd;
-  --border: #c3c8c2;
+  --border: #dfe2dc;
   --grid: rgba(11, 17, 21, 0.06);
   --text: #0b1115;
   --text-muted: #3f4a52;
@@ -76,6 +83,8 @@
   --accent: #0a7488;
   --accent-strong: #085f70;
   --accent-ink: #ffffff;
+  --primary: #0b1115;
+  --primary-ink: #f2f3f0;
   --field: #39c1db;
   --field-ink: #03161b;
   --field-deep: #2aa9c2;
@@ -91,6 +100,7 @@
 
 @theme inline {
   --color-bg: var(--bg);
+  --color-panel: var(--panel);
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
   --color-border: var(--border);
@@ -100,6 +110,8 @@
   --color-accent: var(--accent);
   --color-accent-strong: var(--accent-strong);
   --color-accent-ink: var(--accent-ink);
+  --color-primary: var(--primary);
+  --color-primary-ink: var(--primary-ink);
   --color-field: var(--field);
   --color-field-ink: var(--field-ink);
   --color-field-deep: var(--field-deep);
