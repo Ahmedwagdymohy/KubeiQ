@@ -55,15 +55,15 @@ backend/            FastAPI service (Python 3.12, uv). Package: backend/src/kube
     products/manager/ Cluster Manager: kind discovery, Table API lists, YAML, events, logs, actions
   tests/
 frontend/           The self-hosted app: Next.js (TypeScript, Tailwind, App Router, React Query)
-  src/app/page.tsx    App Home: product tiles and recent investigations (not marketing)
+  src/app/page.tsx    Overview: cluster ledger (workload health per cluster), failing workloads, recent investigations
   src/app/doctor/     Cluster Doctor (/doctor?id=<investigation>; ?cluster=&namespace=&focus=<ref> starts a scan)
   src/app/map/        Cluster Map (React Flow + ELK); graph logic in src/lib/map (adapted from Headlamp)
   src/app/manager/    Cluster Manager (?cluster&namespace&kind&name&in are shareable)
   src/app/login/      Sign-in page; AuthGate (components/auth) sends signed-out users here
   src/app/settings/   Settings: AI model, clusters, cluster changes, users, projects, activity, account
-  src/components/     UI building blocks (ui.tsx, icons.tsx), header, doctor/ components
-  src/hooks/          use-investigation (SSE progress), use-me (signed-in user, access), use-can-edit
-  src/lib/api.ts      typed API client and SSE helper
+  src/components/     UI building blocks (ui.tsx, icons.tsx), shell/ (sidebar + top bar frame), overview/, doctor/ ...
+  src/hooks/          use-investigation (SSE progress), use-me (signed-in user, access), use-can-edit, use-hash
+  src/lib/api.ts      typed API client and SSE helper; lib/scope.ts = cluster in scope (top bar), lib/fleet.ts = workload health
 website/            Marketing site (kubeiq.io): landing, product pages, pricing, install. Static export
 ee/                 Commercial features (separate license)
 deploy/             Compose / Helm assets, install.sh (the one-line installer)
@@ -125,7 +125,7 @@ kind create cluster --name kubeiq-dev # adds context kind-kubeiq-dev
   Use the Tailwind tokens (`bg-surface`, `text-muted`, `bg-accent`, ...), never hard-coded colors.
 - **Fix commands must be complete.** Users copy them as-is. Build them with `detectors/commands.py`:
   fill values from evidence, named placeholders only for unknowable values, verify on the workload.
-- Products live under the header "Products" menu: Cluster Doctor (`/doctor`), Cluster Map (`/map`),
+- Products live in the app sidebar (the shell in `components/shell/app-shell.tsx`, mounted by `providers.tsx`): Cluster Doctor (`/doctor`), Cluster Map (`/map`),
   Cluster Manager (`/manager`).
   A new product = a new module: its own route, API router and enable flag, using only shared
   platform code (never importing another product). Add it to the website too (product page).
