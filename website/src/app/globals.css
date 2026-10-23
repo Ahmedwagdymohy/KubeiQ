@@ -1,43 +1,63 @@
 @import "tailwindcss";
 
-/* Design tokens — see docs/design.md. Dark is the default; light via system or toggle. */
+/*
+ * Design tokens (Helm). See docs/design.md; these mirror frontend/src/app/globals.css.
+ * Dark is the default: true neutral blacks. Light is chart paper (a cool grey paper, never cream).
+ * `--field` is the logo cyan used as a whole colour field; `--inverse` is the opposite ground.
+ */
 :root {
   color-scheme: dark;
   --bg: #000000;
-  --surface: #0a0b0c;
-  --surface-2: #14171a;
-  --border: #3a4046;
-  --grid: rgba(255, 255, 255, 0.05);
+  --surface: #0d0e0f;
+  --surface-2: #17191a;
+  --border: #2e3236;
+  --grid: rgba(255, 255, 255, 0.06);
   --text: #f5f7f8;
-  --text-muted: #a1a9b0;
-  --text-subtle: #6b747c;
+  --text-muted: #b0b6ba;
+  --text-subtle: #8c9398;
   --accent: #39c1db;
   --accent-strong: #66d3e8;
   --accent-ink: #03161b;
+  --field: #39c1db;
+  --field-ink: #03161b;
+  --field-deep: #2aa9c2;
+  --inverse: #e9ebe7;
+  --inverse-ink: #0b1115;
+  --inverse-muted: #3f4a52;
   --warning: #fbbf24;
   --danger: #f87171;
-  --terminal: #0b0e11;
+  --terminal: #0c0d0e;
   --terminal-text: #e3e9ee;
   --terminal-warn: #fbbf24;
+  --tide-1: #0a3a44;
+  --tide-2: #0f5f6e;
+  --tide-3: #1f97ad;
+  --tide-4: #86d9e9;
 }
 
 @media (prefers-color-scheme: light) {
   :root:not([data-theme="dark"]) {
     color-scheme: light;
-    --bg: #ffffff;
-    --surface: #f7f9fa;
-    --surface-2: #eef2f4;
-    --border: #cdd4da;
-    --grid: rgba(15, 23, 42, 0.05);
+    --bg: #f2f3f0;
+    --surface: #e8eae6;
+    --surface-2: #dfe2dd;
+    --border: #c3c8c2;
+    --grid: rgba(11, 17, 21, 0.06);
     --text: #0b1115;
-    --text-muted: #4b5661;
-    --text-subtle: #87929c;
-    --accent: #0e8fa8;
-    --accent-strong: #0b7a90;
+    --text-muted: #3f4a52;
+    --text-subtle: #56616a;
+    --accent: #0a7488;
+    --accent-strong: #085f70;
     --accent-ink: #ffffff;
+    --field: #39c1db;
+    --field-ink: #03161b;
+    --field-deep: #2aa9c2;
+    --inverse: #0b0d0e;
+    --inverse-ink: #f2f3f0;
+    --inverse-muted: #b0b6ba;
     --warning: #b45309;
-    --danger: #dc2626;
-    --terminal: #0f1418;
+    --danger: #c62828;
+    --terminal: #0f1213;
     --terminal-text: #e3e9ee;
     --terminal-warn: #fbbf24;
   }
@@ -45,20 +65,26 @@
 
 :root[data-theme="light"] {
   color-scheme: light;
-  --bg: #ffffff;
-  --surface: #f7f9fa;
-  --surface-2: #eef2f4;
-  --border: #cdd4da;
-  --grid: rgba(15, 23, 42, 0.05);
+  --bg: #f2f3f0;
+  --surface: #e8eae6;
+  --surface-2: #dfe2dd;
+  --border: #c3c8c2;
+  --grid: rgba(11, 17, 21, 0.06);
   --text: #0b1115;
-  --text-muted: #4b5661;
-  --text-subtle: #87929c;
-  --accent: #0e8fa8;
-  --accent-strong: #0b7a90;
+  --text-muted: #3f4a52;
+  --text-subtle: #56616a;
+  --accent: #0a7488;
+  --accent-strong: #085f70;
   --accent-ink: #ffffff;
+  --field: #39c1db;
+  --field-ink: #03161b;
+  --field-deep: #2aa9c2;
+  --inverse: #0b0d0e;
+  --inverse-ink: #f2f3f0;
+  --inverse-muted: #b0b6ba;
   --warning: #b45309;
-  --danger: #dc2626;
-  --terminal: #0f1418;
+  --danger: #c62828;
+  --terminal: #0f1213;
   --terminal-text: #e3e9ee;
   --terminal-warn: #fbbf24;
 }
@@ -74,13 +100,30 @@
   --color-accent: var(--accent);
   --color-accent-strong: var(--accent-strong);
   --color-accent-ink: var(--accent-ink);
+  --color-field: var(--field);
+  --color-field-ink: var(--field-ink);
+  --color-field-deep: var(--field-deep);
+  --color-inverse: var(--inverse);
+  --color-inverse-ink: var(--inverse-ink);
+  --color-inverse-muted: var(--inverse-muted);
   --color-warning: var(--warning);
   --color-danger: var(--danger);
   --color-terminal: var(--terminal);
   --color-terminal-fg: var(--terminal-text);
   --color-terminal-warn: var(--terminal-warn);
+  --color-tide-1: var(--tide-1);
+  --color-tide-2: var(--tide-2);
+  --color-tide-3: var(--tide-3);
+  --color-tide-4: var(--tide-4);
   --font-sans: var(--font-manrope);
   --font-mono: var(--font-jetbrains-mono);
+}
+
+html {
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
 }
 
 body {
@@ -89,12 +132,27 @@ body {
   font-family: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
 }
 
-/* Faint engineering grid used behind hero sections */
-.bg-grid {
-  background-image:
-    linear-gradient(to right, var(--grid) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--grid) 1px, transparent 1px);
-  background-size: 48px 48px;
+/* The page frame: one pair of outer margins used by every section */
+:root {
+  --gutter: clamp(18px, 2.5vw, 40px);
+}
+.frame {
+  padding-left: var(--gutter);
+  padding-right: var(--gutter);
+}
+/* Bleeds a band to the frame's edges from inside a framed section */
+.bleed {
+  margin-left: calc(-1 * var(--gutter));
+  margin-right: calc(-1 * var(--gutter));
+  padding-left: var(--gutter);
+  padding-right: var(--gutter);
+}
+
+/* Display type: the poster shout */
+.shout {
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 0.86;
 }
 
 /* Show the right theme-toggle icon without JS (server and client markup stay identical) */
@@ -107,7 +165,69 @@ body {
   :root:not([data-theme="light"]) .show-in-light { display: none; }
 }
 
-/* Indeterminate scanning bar shown while an investigation runs */
+/* ---------- Motion ---------- */
+:root {
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* Entrances: the parts of a section rise in, staggered. Hidden only when script is running. */
+@media (prefers-reduced-motion: no-preference) {
+  .js [data-rise] {
+    opacity: 0;
+    transform: translateY(24px);
+    transition:
+      opacity 700ms var(--ease-out),
+      transform 700ms var(--ease-out);
+    transition-delay: calc(var(--i, 0) * 80ms);
+  }
+  .js .is-in [data-rise],
+  .js [data-rise].is-in {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* The hero picture opens like a shutter, settling from a slight zoom */
+.shutter { overflow: hidden; }
+@media (prefers-reduced-motion: no-preference) {
+  .js .shutter { clip-path: inset(100% 0 0 0); transition: clip-path 1100ms var(--ease-in-out) 150ms; }
+  .js .shutter img { transform: scale(1.12); transition: transform 1600ms var(--ease-out) 150ms; }
+  .js .is-in .shutter { clip-path: inset(0); }
+  .js .is-in .shutter img { transform: none; }
+}
+
+/* A slow drift on a found picture: the one moving picture */
+@keyframes drift {
+  from { transform: scale(1.04) translate3d(-1.2%, 0, 0); }
+  to { transform: scale(1.1) translate3d(1.2%, -1%, 0); }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .drift { animation: drift 22s ease-in-out infinite alternate; }
+}
+
+/* A log entry swapping in the bearing finder */
+@keyframes fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Names running off the edges */
+@keyframes run-left {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+.marquee { animation: run-left 48s linear infinite; }
+.marquee-wrap:hover .marquee { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) {
+  .marquee { animation: none; }
+}
+
+/* Press feedback on every control */
+.press { transition: transform 120ms var(--ease-out), background-color 150ms ease, color 150ms ease; }
+.press:active { transform: scale(0.97); }
+
+/* Indeterminate scanning bar (app parity) */
 @keyframes scan {
   from { left: -25%; }
   to { left: 100%; }
@@ -126,3 +246,7 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .kube-hop { animation: none; }
 }
+
+/* Hide the scrollbar on the phone row of names in the bearing finder */
+.no-scrollbar { scrollbar-width: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
