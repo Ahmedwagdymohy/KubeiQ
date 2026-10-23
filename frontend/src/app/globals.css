@@ -1,21 +1,25 @@
 @import "tailwindcss";
 
-/* Design tokens — see docs/design.md. Dark is the default; light via system or toggle. */
+/* Design tokens: see docs/design.md (Console). Dark is the default; light via system or toggle. */
 :root {
   color-scheme: dark;
   --bg: #000000;
-  --surface: #0a0b0c;
-  --surface-2: #14171a;
-  --border: #3a4046;
-  --grid: rgba(255, 255, 255, 0.05);
+  --surface: #0b0c0d;
+  --surface-2: #15171a;
+  --border: #1f2326;
+  --control: #353b40;
   --text: #f5f7f8;
-  --text-muted: #a1a9b0;
-  --text-subtle: #6b747c;
+  --text-muted: #b3b9be;
+  --text-subtle: #8b939a;
   --accent: #39c1db;
   --accent-strong: #66d3e8;
   --accent-ink: #03161b;
+  --primary: #f5f7f8;
+  --primary-ink: #000000;
   --warning: #fbbf24;
-  --danger: #f87171;
+  --danger: #f2667a;
+  --danger-soft: #2c1a1f;
+  --warning-soft: #2a2312;
   --terminal: #0b0e11;
   --terminal-text: #e3e9ee;
   --terminal-warn: #fbbf24;
@@ -25,18 +29,22 @@
   :root:not([data-theme="dark"]) {
     color-scheme: light;
     --bg: #ffffff;
-    --surface: #f7f9fa;
-    --surface-2: #eef2f4;
-    --border: #cdd4da;
-    --grid: rgba(15, 23, 42, 0.05);
+    --surface: #f6f8f9;
+    --surface-2: #eceff1;
+    --border: #e3e7ea;
+    --control: #cdd4da;
     --text: #0b1115;
     --text-muted: #4b5661;
-    --text-subtle: #87929c;
+    --text-subtle: #66707a;
     --accent: #0e8fa8;
     --accent-strong: #0b7a90;
     --accent-ink: #ffffff;
+    --primary: #0b1115;
+    --primary-ink: #ffffff;
     --warning: #b45309;
-    --danger: #dc2626;
+    --danger: #c4242a;
+    --danger-soft: #ffedea;
+    --warning-soft: #fffbeb;
     --terminal: #0f1418;
     --terminal-text: #e3e9ee;
     --terminal-warn: #fbbf24;
@@ -46,18 +54,22 @@
 :root[data-theme="light"] {
   color-scheme: light;
   --bg: #ffffff;
-  --surface: #f7f9fa;
-  --surface-2: #eef2f4;
-  --border: #cdd4da;
-  --grid: rgba(15, 23, 42, 0.05);
+  --surface: #f6f8f9;
+  --surface-2: #eceff1;
+  --border: #e3e7ea;
+  --control: #cdd4da;
   --text: #0b1115;
   --text-muted: #4b5661;
-  --text-subtle: #87929c;
+  --text-subtle: #66707a;
   --accent: #0e8fa8;
   --accent-strong: #0b7a90;
   --accent-ink: #ffffff;
+  --primary: #0b1115;
+  --primary-ink: #ffffff;
   --warning: #b45309;
-  --danger: #dc2626;
+  --danger: #c4242a;
+  --danger-soft: #ffedea;
+  --warning-soft: #fffbeb;
   --terminal: #0f1418;
   --terminal-text: #e3e9ee;
   --terminal-warn: #fbbf24;
@@ -68,6 +80,11 @@
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
   --color-border: var(--border);
+  --color-control: var(--control);
+  --color-primary: var(--primary);
+  --color-primary-ink: var(--primary-ink);
+  --color-danger-soft: var(--danger-soft);
+  --color-warning-soft: var(--warning-soft);
   --color-fg: var(--text);
   --color-muted: var(--text-muted);
   --color-subtle: var(--text-subtle);
@@ -84,17 +101,10 @@
 }
 
 body {
+  font-variant-numeric: tabular-nums;
   background: var(--bg);
   color: var(--text);
   font-family: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
-}
-
-/* Faint engineering grid used behind hero sections */
-.bg-grid {
-  background-image:
-    linear-gradient(to right, var(--grid) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--grid) 1px, transparent 1px);
-  background-size: 48px 48px;
 }
 
 /* Show the right theme-toggle icon without JS (server and client markup stay identical) */

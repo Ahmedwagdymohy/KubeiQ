@@ -36,18 +36,21 @@ export function LoginForm() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col">
+    <div className="flex min-h-dvh flex-1 flex-col">
       <div className="flex justify-end p-4">
         <ThemeToggle />
       </div>
       <main className="flex flex-1 items-start justify-center px-4 pt-[12vh]">
         <form
           onSubmit={submit}
-          className="flex w-full max-w-sm flex-col gap-5 rounded-lg border border-border bg-surface p-8"
+          className="flex w-full max-w-sm flex-col gap-5 rounded-lg border border-border p-8"
         >
-          <div className="flex flex-col items-center gap-4 pb-2">
+          <div className="flex flex-col gap-4 pb-2">
             <Logo />
-            <h1 className="text-lg font-semibold">Sign In</h1>
+            <div className="flex flex-col gap-1">
+              <h1 className="text-2xl font-semibold tracking-tight">Sign In</h1>
+              <p className="text-sm text-muted">Use the account your admin created for you</p>
+            </div>
           </div>
           <Field label="Username">
             <input
@@ -75,7 +78,7 @@ export function LoginForm() {
             />
           </Field>
           {login.error && <p className="text-sm text-danger">{login.error.message}</p>}
-          <button type="submit" className={primaryButton} disabled={login.isPending}>
+          <button type="submit" className={`${primaryButton} py-2.5`} disabled={login.isPending}>
             {login.isPending ? "Signing in" : "Sign In"}
           </button>
         </form>

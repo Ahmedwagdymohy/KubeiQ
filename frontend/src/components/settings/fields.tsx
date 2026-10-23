@@ -1,7 +1,7 @@
 import type { ReactNode } from "react";
 
 export const input =
-  "w-full rounded-md border border-border bg-surface px-3 py-2 text-sm text-fg outline-none placeholder:text-subtle focus:border-accent";
+  "w-full rounded-md border border-control bg-bg px-3 py-2 text-sm text-fg outline-none placeholder:text-subtle focus:border-accent";
 
 export function Field({
   label,
@@ -16,7 +16,7 @@ export function Field({
     <label className="flex flex-col gap-1.5">
       <span className="text-sm font-medium text-muted">{label}</span>
       {children}
-      {hint && <span className="text-xs text-subtle">{hint}</span>}
+      {hint && <span className="text-xs text-muted">{hint}</span>}
     </label>
   );
 }
@@ -33,8 +33,8 @@ export function Section({
   children: ReactNode;
 }) {
   return (
-    <section id={id} className="scroll-mt-6 bg-bg px-6 py-8 sm:px-10">
-      <h2 className="text-lg font-semibold">{title}</h2>
+    <section id={id} className="px-5 py-6 sm:px-10 sm:py-8">
+      <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
       <p className="mt-1 max-w-2xl text-sm text-muted">{description}</p>
       <div className="mt-6">{children}</div>
     </section>
@@ -60,7 +60,7 @@ export function Switch({
     >
       <span
         className={`relative h-5 w-9 shrink-0 rounded-full border transition-colors ${
-          checked ? "border-accent bg-accent" : "border-border bg-surface-2"
+          checked ? "border-primary bg-primary" : "border-control bg-surface-2"
         }`}
       >
         <span
@@ -75,6 +75,6 @@ export function Switch({
 }
 
 export const primaryButton =
-  "rounded-md bg-accent px-4 py-2 text-sm font-medium text-accent-ink transition-colors hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-50";
+  "rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-ink transition-opacity hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-50";
 export const secondaryButton =
-  "rounded-md border border-border px-4 py-2 text-sm text-fg transition-colors hover:bg-surface-2 disabled:cursor-not-allowed disabled:opacity-50";
+  "rounded-md border border-control px-4 py-2 text-sm text-fg transition-colors hover:bg-surface-2 disabled:cursor-not-allowed disabled:opacity-50";

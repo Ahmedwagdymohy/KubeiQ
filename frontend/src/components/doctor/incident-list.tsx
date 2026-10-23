@@ -65,7 +65,7 @@ function IncidentRow({
   return (
     <li
       ref={row}
-      className={`scroll-mt-4 bg-bg ${focused ? "shadow-[inset_2px_0_0_var(--accent)]" : ""}`}
+      className={`relative scroll-mt-4 bg-bg ${focused || expanded ? "shadow-[inset_1px_0_0_var(--accent)]" : ""}`}
     >
       <button
         type="button"
@@ -90,7 +90,7 @@ function IncidentRow({
         </span>
         <span className="flex shrink-0 items-center gap-3 pt-0.5">
           <span className="text-sm text-muted" title="Confidence">
-            {diagnosis.confidence}%
+            {diagnosis.confidence}% sure
           </span>
           <ChevronIcon
             className={`text-subtle transition-transform ${expanded ? "rotate-90" : ""}`}

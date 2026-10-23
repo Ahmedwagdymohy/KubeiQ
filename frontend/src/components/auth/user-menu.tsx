@@ -7,7 +7,8 @@ import { useRouter } from "next/navigation";
 import { useMe } from "@/hooks/use-me";
 import { api } from "@/lib/api";
 
-export function UserMenu() {
+/** Account button. On the rail the menu opens to the right, elsewhere below. */
+export function UserMenu({ placement = "below" }: { placement?: "below" | "rail" }) {
   const me = useMe();
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -26,11 +27,15 @@ export function UserMenu() {
       <button
         type="button"
         aria-label="Account"
-        className="flex h-8 w-8 items-center justify-center rounded-full border border-border bg-surface text-sm font-semibold uppercase text-fg transition-colors hover:border-accent"
+        className="flex h-8 w-8 items-center justify-center rounded-full bg-surface-2 text-sm font-semibold uppercase text-fg transition-colors hover:bg-control"
       >
         {username.slice(0, 1)}
       </button>
-      <div className="invisible absolute right-0 top-full z-20 w-60 pt-3 opacity-0 transition-opacity group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100">
+      <div
+        className={`invisible absolute z-30 w-60 opacity-0 ${
+          placement === "rail" ? "bottom-0 left-full pl-3" : "right-0 top-full pt-3"
+        } transition-opacity group-focus-within:visible group-focus-within:opacity-100 group-hover:visible group-hover:opacity-100`}
+      >
         <div className="flex flex-col rounded-lg border border-border bg-bg p-2 text-sm shadow-xl shadow-black/20">
           <div className="flex flex-col gap-0.5 px-3 py-2">
             <span className="font-medium text-fg">{username}</span>

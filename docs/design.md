@@ -1,7 +1,13 @@
 # Design System
 
-Mood: **technical, calm, human.** A faint engineering grid, one cyan accent taken from the logo,
-crisp Manrope type. Confident and minimal, never "AI-generated looking".
+Mood: **technical, calm, human.** The app is styled as a **Console**: an operations screen read in
+long sessions. True neutral darks, quiet 1px lines, crisp Manrope type and one cyan accent taken
+from the logo. Confident and minimal, never "AI-generated looking".
+
+The one move: **every selection is the same 1px cyan line** (the active rail item, a tab, the
+selected row, the open incident, the active settings area). Colour otherwise goes on data
+(workload health, severity), never on chrome. Filled buttons are the inverted primary (white on
+dark, near-black on light), one per screen.
 
 ## Brand
 
@@ -16,16 +22,18 @@ as `kubeiq-theme`, applied before paint by `src/lib/theme.ts`).
 
 | Token | Dark | Light | Use |
 |-------|------|-------|-----|
-| `--bg` | `#000000` | `#ffffff` | page background |
-| `--surface` | `#0a0b0c` | `#f7f9fa` | hover rows, panels |
-| `--surface-2` | `#14171a` | `#eef2f4` | selected items, inputs |
-| `--border` | `#3a4046` | `#cdd4da` | dividers between sections, columns, cards |
+| `--bg` | `#000000` | `#ffffff` | page and panel background |
+| `--surface` | `#0b0c0d` | `#f6f8f9` | hover rows |
+| `--surface-2` | `#15171a` | `#eceff1` | selected items, skeletons |
+| `--border` | `#1f2326` | `#e3e7ea` | panel edges and row rules (a whisper) |
+| `--control` | `#353b40` | `#cdd4da` | input, select and outlined button borders |
 | `--text` | `#f5f7f8` | `#0b1115` | primary text |
-| `--text-muted` | `#a1a9b0` | `#4b5661` | secondary text |
-| `--text-subtle` | `#6b747c` | `#87929c` | captions, metadata |
-| `--accent` | `#39c1db` | `#0e8fa8` | buttons, highlights (darker in light for contrast) |
+| `--text-muted` | `#b3b9be` | `#4b5661` | secondary text |
+| `--text-subtle` | `#8b939a` | `#66707a` | captions, metadata (still 4.5:1) |
+| `--accent` | `#39c1db` | `#0e8fa8` | the 1px selection line, healthy data |
+| `--primary` | `#f5f7f8` | `#0b1115` | the one filled button (label in `--primary-ink`) |
 | `--warning` | `#fbbf24` | `#b45309` | warnings |
-| `--danger` | `#f87171` | `#dc2626` | critical issues, failures |
+| `--danger` | `#f2667a` | `#c4242a` | critical issues, failures |
 | `--terminal` | `#0b0e11` | `#0f1418` | command blocks (dark in both themes) |
 
 Never hard-code colors; use the Tailwind tokens (`bg-surface`, `text-muted`, `bg-accent`, ...).
@@ -38,12 +46,87 @@ Never hard-code colors; use the Tailwind tokens (`bg-surface`, `text-muted`, `bg
 
 ## Layout patterns
 
-- **App shell**: header (logo, Products menu, Docs, GitHub, theme toggle), hairline grid layout.
+- **App shell**: a 56px icon rail on the left (logo, Overview, the products, then Docs, Settings,
+  theme and account at the bottom). Icons carry a tooltip and an accessible name; the active one
+  brightens and gets the 1px cyan line on the rail's edge. On phones the rail becomes a slim top
+  bar (logo, theme, account) and a bottom bar of the five destinations with short labels.
+- **Overview** (`/`): answers "is anything broken right now?". A noun title with the finding
+  under it ("9 of 25 workloads need attention in kind-kubeiq-dev") and Investigate Cluster.
+  Workload Health shows a divided figure strip and one row per namespace with **one square per
+  workload** coloured by health (the product's signature element); a square opens the workload in
+  Cluster Manager. Failing Now lists the broken workloads with their reason and Investigate.
+  Recent Investigations and Clusters sit below. Panels: 1px border, 8px radius, no shadow.
+- **Panels**: `Panel` in `ui.tsx`, a 48px title row (14px semibold title, a text action on the
+  right). Loading shows flat `Skeleton` bars at the size of the value; errors stay in the block.
 - **Resizable sidebar** (Cluster Doctor): drag the divider; width remembered per browser.
 - **Incident list**: one row per issue — severity dot, workload name, "Kind in namespace",
   short root cause, confidence number, chevron. Click to expand: How to fix → commands →
   Check that it worked → Why it happens → Prevent it next time → Impact → Affected resources.
-- **Terminal block**: dark box, `$` prompt, one command per line, copy icon per line.
+- **Terminal block**: dark box with no window chrome, `# Design System
+
+Mood: **technical, calm, human.** The app is styled as a **Console**: an operations screen read in
+long sessions. True neutral darks, quiet 1px lines, crisp Manrope type and one cyan accent taken
+from the logo. Confident and minimal, never "AI-generated looking".
+
+The one move: **every selection is the same 1px cyan line** (the active rail item, a tab, the
+selected row, the open incident, the active settings area). Colour otherwise goes on data
+(workload health, severity), never on chrome. Filled buttons are the inverted primary (white on
+dark, near-black on light), one per screen.
+
+## Brand
+
+- Logo: `frontend/public/logo.png` (helm wheel + cube, silver and cyan). Transparent background,
+  works on dark and light. Favicons: `frontend/src/app/icon.png`, `apple-icon.png`.
+- Accent: logo cyan.
+
+## Themes
+
+Dark is the default; light follows the system or the header toggle (stored in `localStorage`
+as `kubeiq-theme`, applied before paint by `src/lib/theme.ts`).
+
+| Token | Dark | Light | Use |
+|-------|------|-------|-----|
+| `--bg` | `#000000` | `#ffffff` | page and panel background |
+| `--surface` | `#0b0c0d` | `#f6f8f9` | hover rows |
+| `--surface-2` | `#15171a` | `#eceff1` | selected items, skeletons |
+| `--border` | `#1f2326` | `#e3e7ea` | panel edges and row rules (a whisper) |
+| `--control` | `#353b40` | `#cdd4da` | input, select and outlined button borders |
+| `--text` | `#f5f7f8` | `#0b1115` | primary text |
+| `--text-muted` | `#b3b9be` | `#4b5661` | secondary text |
+| `--text-subtle` | `#8b939a` | `#66707a` | captions, metadata (still 4.5:1) |
+| `--accent` | `#39c1db` | `#0e8fa8` | the 1px selection line, healthy data |
+| `--primary` | `#f5f7f8` | `#0b1115` | the one filled button (label in `--primary-ink`) |
+| `--warning` | `#fbbf24` | `#b45309` | warnings |
+| `--danger` | `#f2667a` | `#c4242a` | critical issues, failures |
+| `--terminal` | `#0b0e11` | `#0f1418` | command blocks (dark in both themes) |
+
+Never hard-code colors; use the Tailwind tokens (`bg-surface`, `text-muted`, `bg-accent`, ...).
+
+## Typography
+
+- **Manrope for everything users read**: headings, labels, lists, progress, history.
+- Labels are normal case (`text-sm font-medium text-muted`), never mono uppercase.
+- **Mono (JetBrains Mono) only for things users copy or match exactly**: commands and resource refs.
+
+## Layout patterns
+
+- **App shell**: a 56px icon rail on the left (logo, Overview, the products, then Docs, Settings,
+  theme and account at the bottom). Icons carry a tooltip and an accessible name; the active one
+  brightens and gets the 1px cyan line on the rail's edge. On phones the rail becomes a slim top
+  bar (logo, theme, account) and a bottom bar of the five destinations with short labels.
+- **Overview** (`/`): answers "is anything broken right now?". A noun title with the finding
+  under it ("9 of 25 workloads need attention in kind-kubeiq-dev") and Investigate Cluster.
+  Workload Health shows a divided figure strip and one row per namespace with **one square per
+  workload** coloured by health (the product's signature element); a square opens the workload in
+  Cluster Manager. Failing Now lists the broken workloads with their reason and Investigate.
+  Recent Investigations and Clusters sit below. Panels: 1px border, 8px radius, no shadow.
+- **Panels**: `Panel` in `ui.tsx`, a 48px title row (14px semibold title, a text action on the
+  right). Loading shows flat `Skeleton` bars at the size of the value; errors stay in the block.
+- **Resizable sidebar** (Cluster Doctor): drag the divider; width remembered per browser.
+- **Incident list**: one row per issue — severity dot, workload name, "Kind in namespace",
+  short root cause, confidence number, chevron. Click to expand: How to fix → commands →
+  Check that it worked → Why it happens → Prevent it next time → Impact → Affected resources.
+ prompt, one command per line, copy icon per line.
   `<placeholders>` are highlighted (`text-terminal-warn`) with a "Replace the highlighted values" note.
 - **Progress**: live step list while running, paced so fast scans still read as a scan; collapses
   to one line afterwards (no durations shown).
@@ -63,6 +146,8 @@ Never hard-code colors; use the Tailwind tokens (`bg-surface`, `text-muted`, `bg
   `$` terminal.
 - **Dialogs** for changes: title as a question ("Restart checkout?"), one sentence on the effect,
   Cancel and the action. Deleting requires typing the name; the delete button uses `bg-danger`.
+- **Settings**: one view per area (`/settings#ai`, `#clusters`, ...), the area's name as the h1.
+  A side nav on desktop, a scrolling tab row on phones.
 - **Sign-in**: one centered card with the logo; the hint says the admin uses the master key.
   Generated passwords are shown once in a box with a copy button and "It will not be shown again".
 

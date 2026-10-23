@@ -36,12 +36,13 @@ export function ClusterPanel({
 
   return (
     <aside className="flex flex-col gap-5 bg-bg p-6">
+      <h1 className="text-lg font-semibold">Cluster Doctor</h1>
       <div className="flex items-center justify-between">
         <SectionLabel>Clusters</SectionLabel>
         <button
           type="button"
           onClick={() => clusters.refetch()}
-          className="text-sm text-subtle transition-colors hover:text-accent"
+          className="text-sm text-muted transition-colors hover:text-fg"
         >
           Refresh
         </button>
@@ -73,7 +74,7 @@ export function ClusterPanel({
           <select
             value={effective}
             onChange={(e) => onNamespace(e.target.value)}
-            className="rounded-md border border-border bg-surface px-3 py-2 text-sm text-fg outline-none focus:border-accent"
+            className="rounded-md border border-control bg-bg px-3 py-2 text-sm text-fg outline-none focus:border-accent"
           >
             {allNamespaces && <option value="">All namespaces</option>}
             {namespaces.data?.map((ns) => (
@@ -86,7 +87,7 @@ export function ClusterPanel({
             type="button"
             onClick={() => onInvestigate(effective)}
             disabled={running || !current.status?.reachable}
-            className="mt-2 rounded-md bg-accent px-4 py-3 font-medium text-accent-ink transition-colors hover:bg-accent-strong disabled:cursor-not-allowed disabled:opacity-50"
+            className="mt-2 rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-ink transition-opacity hover:opacity-85 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {running ? "Investigating" : "Investigate Cluster"}
           </button>
@@ -113,16 +114,17 @@ function ClusterItem({
     <button
       type="button"
       onClick={onClick}
-      className={`flex w-full flex-col gap-1 rounded-md border px-3 py-2.5 text-left transition-colors ${
-        active ? "border-accent/70 bg-surface-2" : "border-border bg-surface hover:bg-surface-2"
+      className={`relative flex w-full flex-col gap-1 rounded-md px-3 py-2.5 text-left transition-colors ${
+        active ? "bg-surface-2" : "hover:bg-surface"
       }`}
     >
+      {active && <span className="absolute inset-y-2 left-0 w-px bg-accent" />}
       <span className="flex items-center gap-2 text-sm font-medium">
         <span className={`h-1.5 w-1.5 rounded-full ${reachable ? "bg-accent" : "bg-danger"}`} />
         <span className="truncate">{cluster.name}</span>
-        {cluster.is_default && <span className="text-xs text-subtle">default</span>}
+        {cluster.is_default && <span className="text-xs text-muted">Default</span>}
       </span>
-      <span className="truncate text-xs text-subtle">
+      <span className="truncate text-xs text-muted">
         {reachable ? `Kubernetes ${cluster.status?.version}` : "Offline"}
       </span>
     </button>

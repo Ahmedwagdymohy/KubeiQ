@@ -12,7 +12,7 @@ export function AINotice() {
   return (
     <p className="text-sm text-muted">
       AI investigations are off.{" "}
-      <Link href="/settings#ai" className="text-accent hover:underline">
+      <Link href="/settings#ai" className="text-fg underline underline-offset-4">
         Add a model in Settings
       </Link>{" "}
       to get root causes for the problems rules cannot explain

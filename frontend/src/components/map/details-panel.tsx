@@ -70,7 +70,7 @@ export function DetailsPanel({
           {investigate && (
             <Link
               href={investigate}
-              className="mt-1 rounded-md bg-accent px-4 py-2.5 text-center text-sm font-medium text-accent-ink transition-colors hover:bg-accent-strong"
+              className="mt-1 rounded-md bg-primary px-4 py-2.5 text-center text-sm font-medium text-primary-ink transition-opacity hover:opacity-85"
             >
               Investigate with Cluster Doctor
             </Link>

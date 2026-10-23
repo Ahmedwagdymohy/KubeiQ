@@ -46,8 +46,8 @@ export function HistoryList({
             <button
               type="button"
               onClick={() => onOpen(item.id)}
-              className={`flex w-full items-start gap-3 rounded-md px-2 py-2.5 text-left transition-colors hover:bg-surface-2 ${
-                item.id === activeId ? "bg-surface-2" : ""
+              className={`flex w-full items-start gap-3 rounded-md px-2 py-2.5 text-left transition-colors ${
+                item.id === activeId ? "bg-surface-2" : "hover:bg-surface"
               }`}
             >
               <span className="pt-1.5">
@@ -56,13 +56,13 @@ export function HistoryList({
               <span className="flex min-w-0 flex-col gap-0.5">
                 <span className="text-sm font-medium text-fg">
                   {headline(item)}
-                  <span className="font-normal text-subtle"> · {timeAgo(item.created_at)}</span>
+                  <span className="font-normal text-muted"> · {timeAgo(item.created_at)}</span>
                 </span>
                 <span className="text-sm text-muted">
                   {item.namespace ?? "All namespaces"} on {item.cluster_id.replace(/^kubeconfig:/, "")}
                 </span>
                 {item.status === "completed" && !item.healthy && item.summary && (
-                  <span className="line-clamp-2 text-sm text-subtle">{item.summary}</span>
+                  <span className="line-clamp-2 text-sm text-muted">{item.summary}</span>
                 )}
                 {item.status === "failed" && item.error && (
                   <span className="line-clamp-2 text-sm text-danger/80">{item.error}</span>

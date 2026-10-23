@@ -43,7 +43,7 @@ export function KindSidebar({
           onChange={(e) => setFilter(e.target.value)}
           placeholder="Find a kind"
           aria-label="Find a kind"
-          className="w-full rounded-md border border-border bg-surface px-3 py-1.5 text-sm outline-none focus:border-accent"
+          className="w-full rounded-md border border-control bg-bg px-3 py-1.5 text-sm outline-none focus:border-accent"
         />
       </div>
       {loading && <p className="p-4 text-sm text-muted">Loading kinds</p>}
@@ -84,7 +84,7 @@ export function KindSidebar({
                       title={k.group ? `${k.kind} (${k.group})` : k.kind}
                       className={`truncate py-1.5 pl-10 pr-4 text-left text-sm transition-colors ${
                         active
-                          ? "bg-surface-2 text-fg shadow-[inset_2px_0_0_var(--accent)]"
+                          ? "text-fg shadow-[inset_1px_0_0_var(--accent)]"
                           : "text-muted hover:bg-surface hover:text-fg"
                       }`}
                     >

@@ -6,6 +6,7 @@ Update this file in the same commit that completes a task.
 ## Phase 1 — Foundation
 - [x] Repository governance: license, README, CLAUDE.md, ADRs, roadmap
 - [x] Design system (`docs/design.md`)
+- [~] App UI revamp: Console (icon rail, Overview with workload health, 1px selection line)
 - [x] Backend skeleton: FastAPI, config, structured logging, `/healthz` `/readyz`, tests
 - [x] Frontend skeleton: Next.js + Tailwind landing/dashboard shell with backend status
 - [x] Docker images + `docker-compose.yml`

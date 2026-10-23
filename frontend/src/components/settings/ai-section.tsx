@@ -155,7 +155,7 @@ function AIForm({ saved, providers }: { saved: AISettings; providers: Provider[]
             <Field label="API key">
               {saved.api_key_set && key === undefined ? (
                 <div className="flex items-center gap-3">
-                  <span className="flex-1 rounded-md border border-border bg-surface px-3 py-2 font-mono text-sm text-muted">
+                  <span className="flex-1 rounded-md border border-control bg-bg px-3 py-2 font-mono text-sm text-muted">
                     •••• {saved.api_key_hint}
                   </span>
                   <button type="button" className={secondaryButton} onClick={() => setKey("")}>

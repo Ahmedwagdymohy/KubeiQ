@@ -59,13 +59,8 @@ export function hasPlaceholder(command: string) {
 
 export function Terminal({ commands }: { commands: string[] }) {
   return (
-    <div className="overflow-hidden rounded-lg border border-border bg-terminal">
-      <div className="flex items-center gap-1.5 border-b border-white/10 px-4 py-2.5">
-        <span className="h-2.5 w-2.5 rounded-full bg-white/15" />
-        <span className="h-2.5 w-2.5 rounded-full bg-white/15" />
-        <span className="h-2.5 w-2.5 rounded-full bg-white/15" />
-      </div>
-      <ul className="flex flex-col py-2">
+    <div className="overflow-hidden rounded-lg bg-terminal">
+      <ul className="flex flex-col py-2.5">
         {commands.map((command) => (
           <li key={command} className="flex items-start gap-3 px-4 py-1.5 hover:bg-white/[0.03]">
             <span className="select-none font-mono text-sm leading-6 text-accent">$</span>
@@ -113,7 +108,7 @@ export function RichText({ text }: { text: string }) {
 /** Read-only text such as YAML or logs, in the terminal palette, with one copy button. */
 export function CodeBlock({ text, className = "" }: { text: string; className?: string }) {
   return (
-    <div className="relative overflow-hidden rounded-lg border border-border bg-terminal">
+    <div className="relative overflow-hidden rounded-lg bg-terminal">
       <div className="absolute right-2 top-2">
         <CopyButton text={text} />
       </div>
@@ -124,4 +119,32 @@ export function CodeBlock({ text, className = "" }: { text: string; className?: 
       </pre>
     </div>
   );
+}
+
+/** A bordered block with a title row. The action sits at the right of the title. */
+export function Panel({
+  title,
+  action,
+  children,
+  className = "",
+}: {
+  title: string;
+  action?: ReactNode;
+  children: ReactNode;
+  className?: string;
+}) {
+  return (
+    <section className={`flex min-w-0 flex-col rounded-lg border border-border bg-bg ${className}`}>
+      <div className="flex min-h-12 items-center justify-between gap-3 px-5 pt-1">
+        <h2 className="text-sm font-semibold">{title}</h2>
+        {action}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+/** Placeholder bar at the size of the value it stands in for. */
+export function Skeleton({ className = "" }: { className?: string }) {
+  return <span className={`block rounded bg-surface-2 ${className}`} />;
 }

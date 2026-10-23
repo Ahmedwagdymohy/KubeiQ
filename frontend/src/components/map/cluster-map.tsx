@@ -4,7 +4,6 @@ import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useMemo, useState } from "react";
 
-import { AppHeader } from "@/components/app-header";
 import { DetailsPanel } from "@/components/map/details-panel";
 import { MapCanvas } from "@/components/map/map-canvas";
 import { MapContext } from "@/components/map/map-context";
@@ -16,7 +15,7 @@ import { collapseGraph, findGroupContaining, getMainNode, groupGraph } from "@/l
 const REFRESH_MS = 10_000;
 
 const control =
-  "rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-fg outline-none focus:border-accent";
+  "rounded-md border border-control bg-bg px-3 py-1.5 text-sm text-fg outline-none focus:border-accent";
 
 function Toggle({ on, onClick, children }: { on: boolean; onClick: () => void; children: string }) {
   return (
@@ -25,7 +24,7 @@ function Toggle({ on, onClick, children }: { on: boolean; onClick: () => void; c
       aria-pressed={on}
       onClick={onClick}
       className={`rounded-md border px-3 py-1.5 text-sm transition-colors ${
-        on ? "border-accent/70 bg-surface-2 text-fg" : "border-border text-muted hover:text-fg"
+        on ? "border-accent text-fg" : "border-control text-muted hover:text-fg"
       }`}
     >
       {children}
@@ -95,9 +94,9 @@ export function ClusterMapView() {
   const problems = (counts?.error ?? 0) + (counts?.warning ?? 0);
 
   return (
-    <div className="flex h-screen flex-col">
-      <AppHeader />
-      <div className="flex flex-wrap items-center gap-3 border-b border-border px-6 py-3">
+    <div className="flex h-[calc(100dvh-6.5rem)] flex-col md:h-dvh">
+      <div className="flex flex-wrap items-center gap-3 border-b border-border px-5 py-3 sm:px-6">
+        <h1 className="mr-2 text-base font-semibold">Cluster Map</h1>
         <select
           aria-label="Cluster"
           value={cluster ?? ""}
@@ -156,7 +155,7 @@ export function ClusterMapView() {
               </span>
             </>
           )}
-          <span className="flex items-center gap-2 text-subtle">
+          <span className="flex items-center gap-2 text-muted">
             {map.isFetching ? <Spinner /> : <span className="h-2 w-2 rounded-full bg-accent" />}
             Live
           </span>

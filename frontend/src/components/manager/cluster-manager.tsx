@@ -4,7 +4,6 @@ import { useQuery } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 
-import { AppHeader } from "@/components/app-header";
 import { DEFAULT_KIND, kindKey } from "@/components/manager/kinds";
 import { KindSidebar } from "@/components/manager/kind-sidebar";
 import { ObjectPanel } from "@/components/manager/object-panel";
@@ -13,7 +12,7 @@ import { useAllNamespaces } from "@/hooks/use-me";
 import { api } from "@/lib/api";
 
 const control =
-  "rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-fg outline-none focus:border-accent";
+  "rounded-md border border-control bg-bg px-3 py-1.5 text-sm text-fg outline-none focus:border-accent";
 
 type Selected = { namespace: string | null; name: string };
 
@@ -73,9 +72,9 @@ export function ClusterManager() {
   };
 
   return (
-    <div className="flex h-screen flex-col">
-      <AppHeader />
-      <div className="flex flex-wrap items-center gap-3 border-b border-border px-6 py-3">
+    <div className="flex h-[calc(100dvh-6.5rem)] flex-col md:h-dvh">
+      <div className="flex flex-wrap items-center gap-3 border-b border-border px-5 py-3 sm:px-6">
+        <span className="mr-2 text-base font-semibold">Cluster Manager</span>
         <select
           aria-label="Cluster"
           value={cluster ?? ""}
@@ -133,7 +132,7 @@ export function ClusterManager() {
             </optgroup>
           ))}
         </select>
-        <span className="ml-auto hidden text-sm text-subtle sm:inline">Read-only by default</span>
+        <span className="ml-auto hidden text-sm text-muted sm:inline">Read-only by default</span>
       </div>
 
       <div className="flex min-h-0 flex-1">

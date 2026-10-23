@@ -7,6 +7,17 @@ import { Spinner } from "@/components/ui";
 import { api, type KindInfo } from "@/lib/api";
 
 const REFRESH_MS = 15_000;
+/** Columns of figures (ready counts, restarts, ages) line up on the right. The Table API calls
+ * most of them strings, so the values decide. */
+function figureColumns(rows: { cells: unknown[] }[], count: number): boolean[] {
+  return Array.from({ length: count }, (_, i) => {
+    const values = rows
+      .map((r) => r.cells[i])
+      .filter((v) => v !== null && v !== undefined && v !== "");
+    return values.length > 0 && values.every((v) => /^\d/.test(String(v)));
+  });
+}
+
 const BAD = /(Error|BackOff|Failed|Pending|Unknown|NotReady|Evicted|OOMKilled|Terminating)/;
 
 export function ResourceTable({
@@ -31,6 +42,8 @@ export function ResourceTable({
   });
   const showNamespace = kind.namespaced && !namespace;
   const q = filter.trim().toLowerCase();
+  const figures = figureColumns(list.data?.rows ?? [], list.data?.columns.length ?? 0);
+  const align = (i: number) => (figures[i] ? "text-right" : "");
   const rows = (list.data?.rows ?? []).filter(
     (r) => !q || r.name.toLowerCase().includes(q) || (r.namespace ?? "").includes(q),
   );
@@ -47,7 +60,7 @@ export function ResourceTable({
           onChange={(e) => setFilter(e.target.value)}
           placeholder="Filter by name"
           aria-label="Filter by name"
-          className="ml-auto w-56 rounded-md border border-border bg-surface px-3 py-1.5 text-sm outline-none focus:border-accent"
+          className="ml-auto w-56 rounded-md border border-control bg-bg px-3 py-1.5 text-sm outline-none focus:border-accent"
         />
       </div>
       <div className="min-h-0 flex-1 overflow-auto">
@@ -60,16 +73,20 @@ export function ResourceTable({
         )}
         {list.data && rows.length > 0 && (
           <table className="w-full text-left text-sm">
-            <thead className="sticky top-0 border-b border-border bg-bg text-xs text-subtle">
+            <thead className="sticky top-0 border-b border-border bg-bg text-xs text-muted">
               <tr>
                 {list.data.columns.slice(0, 1).map((c) => (
-                  <th key={c.name} className="px-6 py-2 font-medium" title={c.description}>
+                  <th key={c.name} className="px-6 py-2 font-normal" title={c.description}>
                     {c.name}
                   </th>
                 ))}
-                {showNamespace && <th className="px-4 py-2 font-medium">Namespace</th>}
-                {list.data.columns.slice(1).map((c) => (
-                  <th key={c.name} className="px-4 py-2 font-medium" title={c.description}>
+                {showNamespace && <th className="px-4 py-2 font-normal">Namespace</th>}
+                {list.data.columns.slice(1).map((c, i) => (
+                  <th
+                    key={c.name}
+                    className={`px-4 py-2 font-normal ${align(i + 1)}`}
+                    title={c.description}
+                  >
                     {c.name}
                   </th>
                 ))}
@@ -84,21 +101,19 @@ export function ResourceTable({
                     key={`${row.namespace}/${row.name}`}
                     onClick={() => onSelect({ namespace: row.namespace, name: row.name })}
                     className={`cursor-pointer transition-colors ${
-                      active ? "bg-surface-2" : "hover:bg-surface"
+                      active
+                        ? "bg-surface-2 shadow-[inset_1px_0_0_var(--accent)]"
+                        : "hover:bg-surface"
                     }`}
                   >
                     <td className="max-w-[360px] truncate px-6 py-2.5 font-medium">{row.name}</td>
-                    {showNamespace && (
-                      <td className="px-4 py-2.5 text-muted">{row.namespace}</td>
-                    )}
+                    {showNamespace && <td className="px-4 py-2.5 text-muted">{row.namespace}</td>}
                     {row.cells.slice(1).map((cell, i) => {
                       const text = cell === null || cell === undefined ? "" : String(cell);
                       return (
                         <td
                           key={i}
-                          className={`max-w-[280px] truncate px-4 py-2.5 ${
-                            BAD.test(text) ? "text-danger" : "text-muted"
-                          }`}
+                          className={`max-w-[280px] truncate px-4 py-2.5 ${align(i + 1)} ${BAD.test(text) ? "text-danger" : "text-muted"}`}
                           title={text}
                         >
                           {text}

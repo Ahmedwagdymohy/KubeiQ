@@ -11,14 +11,19 @@ import {
   type CSSProperties,
 } from "react";
 
-import { AppHeader } from "@/components/app-header";
 import { ClusterPanel } from "@/components/doctor/cluster-panel";
 import { HistoryList } from "@/components/doctor/history-list";
 import { IncidentList } from "@/components/doctor/incident-list";
 import { ProgressTimeline } from "@/components/doctor/progress-timeline";
 import { Dot } from "@/components/ui";
 import { useInvestigation } from "@/hooks/use-investigation";
-import { api, type Investigation, type InvestigationStatus, type ProgressEvent } from "@/lib/api";
+import {
+  api,
+  type Diagnosis,
+  type Investigation,
+  type InvestigationStatus,
+  type ProgressEvent,
+} from "@/lib/api";
 
 const SIDEBAR_KEY = "kubeiq-sidebar-width";
 const SIDEBAR_MIN = 280;
@@ -109,6 +114,16 @@ export function Doctor() {
     }
   }, [linkedId, investigation]);
 
+  // With nothing linked, open the latest investigation so the screen starts with real results.
+  const latest = useQuery({ queryKey: ["investigations"], queryFn: () => api.investigations(20) });
+  useEffect(() => {
+    const first = latest.data?.[0];
+    if (first && !linkedId && !params.get("cluster") && !openedLink.current) {
+      openedLink.current = true;
+      investigation.open(first.id);
+    }
+  }, [latest.data, linkedId, params, investigation]);
+
   // Keep the URL in sync so the current investigation can be shared.
   useEffect(() => {
     if (investigation.id && investigation.id !== linkedId) {
@@ -125,11 +140,13 @@ export function Doctor() {
     setNamespace("");
   };
 
-  const waitingForLink = linkedId && !investigation.status && !investigation.error;
+  const waitingForLink =
+    (linkedId || latest.isPending || Boolean(latest.data?.length)) &&
+    !investigation.status &&
+    !investigation.error;
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <AppHeader />
+    <div className="flex flex-1 flex-col">
       <main
         style={{ "--sidebar": `${width}px` } as CSSProperties}
         className="mx-auto grid w-full max-w-[1680px] flex-1 grid-cols-[minmax(0,1fr)] gap-px border-x border-border bg-border lg:grid-cols-[var(--sidebar)_minmax(0,1fr)]"
@@ -225,16 +242,35 @@ function Steps({ events, status }: { events: ProgressEvent[]; status: Investigat
   );
 }
 
+function SeverityCounts({ diagnoses }: { diagnoses: Diagnosis[] }) {
+  const critical = diagnoses.filter((d) => d.severity === "critical").length;
+  const warning = diagnoses.filter((d) => d.severity === "warning").length;
+  return (
+    <span className="flex items-center gap-4 text-sm text-muted">
+      <span className="flex items-center gap-2">
+        <Dot tone="critical" />
+        {critical} critical
+      </span>
+      <span className="flex items-center gap-2">
+        <Dot tone="warning" />
+        {warning} warning
+      </span>
+    </span>
+  );
+}
+
 function EmptyState() {
   return (
-    <div className="bg-grid flex flex-1 flex-col items-center justify-center bg-bg px-6 py-24 text-center">
-      <h1 className="text-3xl font-medium tracking-tight sm:text-4xl">
-        <span className="text-accent">Cluster</span> Doctor
-      </h1>
-      <p className="mt-4 max-w-md text-muted">
+    <div className="flex flex-1 flex-col bg-bg p-6 sm:p-8">
+      <h2 className="text-lg font-semibold">No Investigations Yet</h2>
+      <p className="mt-1 max-w-xl text-muted">
         Pick a cluster and a namespace, then run an investigation to see what is broken and how to
         fix it
       </p>
+      <div className="mt-6 max-w-xl rounded-lg border border-dashed border-control px-5 py-4 text-sm text-muted">
+        Results show here: each broken workload with its root cause, the commands that fix it and
+        how to check that it worked
+      </div>
     </div>
   );
 }
@@ -269,12 +305,12 @@ function Results({ investigation, focus }: { investigation: Investigation; focus
 
   if (report.healthy) {
     return (
-      <div className="bg-grid flex flex-col items-center bg-bg px-6 py-16 text-center">
+      <div className="flex flex-col bg-bg p-6 sm:p-8">
         <span className="flex items-center gap-2 text-sm text-muted">
           <Dot tone="healthy" /> Healthy
         </span>
-        <h2 className="mt-4 text-2xl font-semibold">No Issues Found</h2>
-        <p className="mt-2 max-w-lg text-muted">
+        <h2 className="mt-2 text-lg font-semibold">No Issues Found</h2>
+        <p className="mt-1 max-w-lg text-muted">
           Checked {checked.join(", ") || "the cluster"} in {scope}. Everything is running as
           expected
         </p>
@@ -285,13 +321,16 @@ function Results({ investigation, focus }: { investigation: Investigation; focus
   const count = report.diagnoses.length;
   return (
     <>
-      <div className="flex flex-wrap items-baseline justify-between gap-2 bg-bg px-6 py-5 sm:px-8">
-        <h2 className="text-lg font-semibold">
-          {count} issue{count === 1 ? "" : "s"} found
-        </h2>
-        <span className="text-sm text-subtle">
-          Checked {checked.slice(0, 3).join(", ")} in {scope}
-        </span>
+      <div className="flex flex-wrap items-baseline justify-between gap-2 bg-bg px-6 pb-4 pt-6 sm:px-8">
+        <div className="flex flex-col gap-1">
+          <h2 className="text-lg font-semibold">
+            {count} {count === 1 ? "Issue" : "Issues"} Found
+          </h2>
+          <span className="text-sm text-muted">
+            Checked {checked.slice(0, 3).join(", ")} in {scope}
+          </span>
+        </div>
+        <SeverityCounts diagnoses={report.diagnoses} />
       </div>
       <IncidentList key={investigation.id} diagnoses={report.diagnoses} focus={focus} />
     </>
