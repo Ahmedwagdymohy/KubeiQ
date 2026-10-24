@@ -161,7 +161,7 @@ one input, never the only one.
 | Concern | MVP | Scale |
 |---------|-----|-------|
 | Jobs | in-process async tasks | Redis queue + worker pods |
-| Storage | SQLite | Postgres |
+| Storage | SQLite (local dev), Postgres (Docker) | Managed Postgres |
 | Realtime | SSE from API process | SSE backed by Redis pub/sub |
 | Clusters | kubeconfig | in-cluster agents over outbound tunnel |
 | Tenancy | single org | `org_id` everywhere → managed multi-tenant SaaS |

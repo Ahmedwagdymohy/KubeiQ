@@ -77,7 +77,9 @@ Update this file in the same commit that completes a task.
 ## Phase 5 — Production & distribution
 - [ ] Helm chart
 - [ ] In-cluster agent (outbound connection, no open ports) as a second `ClusterSource`
-- [ ] Release pipeline: versioned images to GHCR, changelog
+- [x] Production Compose stack: one-origin proxy with automatic HTTPS, Postgres, generated secrets, readiness on the database
+- [x] Versioned multi-arch images to GHCR (`main`, `x.y.z`, `latest`); the installer pulls them
+- [ ] Changelog and the first tagged release
 
 ## Later — Cluster Doctor features
 - [ ] "Explain" chat on each incident: ask follow-up questions with the incident's evidence as context

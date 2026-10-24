@@ -1,32 +1,70 @@
+# KubeiQ: one entry point (Caddy) in front of the app, the API and Postgres.
+# Deployment settings (port, domain, version, database password) come from ./.env, which
+# deploy/install.sh creates. App settings (master key, AI model) live in ./backend/.env.
 services:
-  backend:
-    build: ./backend
+  proxy:
+    image: caddy:2.10-alpine
     ports:
-      - "${KUBEIQ_BACKEND_PORT:-8000}:8000"
+      - "${KUBEIQ_PORT:-3000}:80"
+      - "${KUBEIQ_HTTPS_PORT:-3443}:443"
+    environment:
+      # No domain: plain HTTP on KUBEIQ_PORT. A domain: HTTPS with an automatic certificate.
+      KUBEIQ_SITE: ${KUBEIQ_DOMAIN:-:80}
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - kubeiq-caddy:/data
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_started
+    restart: unless-stopped
+
+  backend:
+    image: ghcr.io/ahmedwagdymohy/kubeiq-backend:${KUBEIQ_VERSION:-main}
+    build: ./backend
     env_file:
       - path: ./backend/.env
         required: false
     environment:
+      KUBEIQ_ENV: production
+      KUBEIQ_DATABASE_URL: ${KUBEIQ_DATABASE_URL:-postgresql+asyncpg://kubeiq:${POSTGRES_PASSWORD:-kubeiq}@postgres:5432/kubeiq}
       KUBEIQ_KUBECONFIG: /home/kubeiq/.kube/config
       KUBEIQ_KUBECONFIG_LOCALHOST_ALIAS: host.docker.internal
-      KUBEIQ_CORS_ORIGINS: '["http://localhost:${KUBEIQ_FRONTEND_PORT:-3000}"]'
+    extra_hosts:
+      # Lets the backend reach kind/minikube/k3d API servers on the host, on Linux too.
+      - "host.docker.internal:host-gateway"
     volumes:
-      # Read-only access to local kubeconfig for the kubeconfig ClusterSource
+      # Read-only access to the host kubeconfig. More kubeconfigs can be uploaded in Settings.
       - ${KUBECONFIG_DIR:-~/.kube}:/home/kubeiq/.kube:ro
-      # Investigation history (SQLite). Set KUBEIQ_DATABASE_URL to use Postgres instead.
+      # Generated keys and other local state.
       - kubeiq-data:/data
+    depends_on:
+      postgres:
+        condition: service_healthy
     restart: unless-stopped
 
   frontend:
-    build:
-      context: ./frontend
-      args:
-        NEXT_PUBLIC_API_BASE_URL: http://localhost:${KUBEIQ_BACKEND_PORT:-8000}
-    ports:
-      - "${KUBEIQ_FRONTEND_PORT:-3000}:3000"
-    depends_on:
-      - backend
+    image: ghcr.io/ahmedwagdymohy/kubeiq-frontend:${KUBEIQ_VERSION:-main}
+    build: ./frontend
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: kubeiq
+      POSTGRES_DB: kubeiq
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-kubeiq}
+    volumes:
+      - kubeiq-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kubeiq -d kubeiq"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
     restart: unless-stopped
 
 volumes:
   kubeiq-data:
+  kubeiq-postgres:
+  kubeiq-caddy:

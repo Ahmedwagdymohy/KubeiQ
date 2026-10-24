@@ -1,0 +1,25 @@
+# One origin for the app and the API, so the browser needs no CORS and cookies stay first-party.
+# KUBEIQ_SITE comes from docker-compose.yml: ":80" (plain HTTP, published as KUBEIQ_PORT) or
+# KUBEIQ_DOMAIN, served over HTTPS with a Let's Encrypt certificate (ports 80 and 443 public).
+{$KUBEIQ_SITE} {
+	handle /api/* {
+		# Investigation progress is streamed over SSE; flush every event immediately.
+		reverse_proxy backend:8000 {
+			flush_interval -1
+		}
+	}
+	handle /healthz {
+		reverse_proxy backend:8000
+	}
+	handle {
+		encode zstd gzip
+		reverse_proxy frontend:3000
+	}
+
+	header {
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		X-Frame-Options DENY
+		-Server
+	}
+}
