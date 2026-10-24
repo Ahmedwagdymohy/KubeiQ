@@ -1,9 +1,12 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 
 import { Dot, SectionLabel } from "@/components/ui";
 import { api, type InvestigationSummary } from "@/lib/api";
+
+/** Investigations shown at first and loaded by each Show more. */
+const PAGE_SIZE = 5;
 
 export function timeAgo(iso: string): string {
   const seconds = Math.max(0, (Date.now() - new Date(iso).getTime()) / 1000);
@@ -34,19 +37,26 @@ export function HistoryList({
   activeId: string | null;
   onOpen: (id: string) => void;
 }) {
-  const history = useQuery({ queryKey: ["investigations"], queryFn: () => api.investigations(20) });
+  const history = useInfiniteQuery({
+    queryKey: ["investigations", "history"],
+    queryFn: ({ pageParam }) => api.investigations(PAGE_SIZE, pageParam),
+    initialPageParam: undefined as string | undefined,
+    // A full page means there may be more; the next page starts before its last item.
+    getNextPageParam: (last) => (last.length === PAGE_SIZE ? last.at(-1)?.created_at : undefined),
+  });
+  const items = history.data?.pages.flat();
 
   return (
     <section className="flex flex-col gap-3 bg-bg p-6">
-      <SectionLabel>Recent investigations</SectionLabel>
-      {history.data?.length === 0 && <p className="text-sm text-subtle">No investigations yet</p>}
+      <SectionLabel>Recent Investigations</SectionLabel>
+      {items?.length === 0 && <p className="text-sm text-subtle">No investigations yet</p>}
       <ul className="-mx-2 flex flex-col gap-0.5">
-        {history.data?.map((item) => (
+        {items?.map((item) => (
           <li key={item.id}>
             <button
               type="button"
               onClick={() => onOpen(item.id)}
-              className={`flex w-full items-start gap-3 rounded-md px-2 py-2.5 text-left transition-colors hover:bg-surface-2 ${
+              className={`flex w-full items-start gap-3 rounded-lg px-2 py-2.5 text-left transition-colors hover:bg-surface ${
                 item.id === activeId ? "bg-surface-2" : ""
               }`}
             >
@@ -59,7 +69,8 @@ export function HistoryList({
                   <span className="font-normal text-subtle"> · {timeAgo(item.created_at)}</span>
                 </span>
                 <span className="text-sm text-muted">
-                  {item.namespace ?? "All namespaces"} on {item.cluster_id.replace(/^kubeconfig:/, "")}
+                  {item.namespace ?? "All namespaces"} on{" "}
+                  <span className="font-mono text-xs">{item.cluster_id.replace(/^kubeconfig:/, "")}</span>
                 </span>
                 {item.status === "completed" && !item.healthy && item.summary && (
                   <span className="line-clamp-2 text-sm text-subtle">{item.summary}</span>
@@ -72,6 +83,16 @@ export function HistoryList({
           </li>
         ))}
       </ul>
+      {history.hasNextPage && (
+        <button
+          type="button"
+          onClick={() => history.fetchNextPage()}
+          disabled={history.isFetchingNextPage}
+          className="self-start text-sm font-medium text-muted transition-colors hover:text-fg disabled:opacity-60"
+        >
+          {history.isFetchingNextPage ? "Loading" : "Show more"}
+        </button>
+      )}
     </section>
   );
 }

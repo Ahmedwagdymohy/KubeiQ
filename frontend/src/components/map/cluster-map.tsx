@@ -2,21 +2,21 @@
 
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-import { AppHeader } from "@/components/app-header";
 import { DetailsPanel } from "@/components/map/details-panel";
 import { MapCanvas } from "@/components/map/map-canvas";
 import { MapContext } from "@/components/map/map-context";
 import { Dot, Spinner } from "@/components/ui";
 import { useAllNamespaces } from "@/hooks/use-me";
 import { api } from "@/lib/api";
+import { resolveCluster, setClusterScope, useClusterPicked, useClusterScope } from "@/lib/scope";
 import { collapseGraph, findGroupContaining, getMainNode, groupGraph } from "@/lib/map/graph";
 
 const REFRESH_MS = 10_000;
 
 const control =
-  "rounded-md border border-border bg-surface px-3 py-1.5 text-sm text-fg outline-none focus:border-accent";
+  "h-8 rounded-lg border border-control bg-bg px-2.5 text-sm text-fg outline-none transition-colors focus:border-accent";
 
 function Toggle({ on, onClick, children }: { on: boolean; onClick: () => void; children: string }) {
   return (
@@ -24,8 +24,10 @@ function Toggle({ on, onClick, children }: { on: boolean; onClick: () => void; c
       type="button"
       aria-pressed={on}
       onClick={onClick}
-      className={`rounded-md border px-3 py-1.5 text-sm transition-colors ${
-        on ? "border-accent/70 bg-surface-2 text-fg" : "border-border text-muted hover:text-fg"
+      className={`h-8 rounded-lg border px-3 text-sm transition-colors ${
+        on
+          ? "border-control bg-surface-2 font-medium text-fg"
+          : "border-control bg-bg text-muted hover:bg-surface hover:text-fg"
       }`}
     >
       {children}
@@ -44,8 +46,14 @@ export function ClusterMapView() {
   const [expandAll, setExpandAll] = useState(false);
   const [query, setQuery] = useState("");
 
-  const cluster =
-    chosen ?? clusters.data?.find((c) => c.is_default)?.id ?? clusters.data?.[0]?.id ?? null;
+  const scoped = useClusterScope();
+  const cluster = chosen ?? resolveCluster(clusters.data, scoped);
+
+  // A ?cluster= link puts that cluster in scope for the other products too.
+  useEffect(() => {
+    const linked = params.get("cluster");
+    if (linked) setClusterScope(linked, false);
+  }, [params]);
   const namespaces = useQuery({
     queryKey: ["namespaces", cluster],
     queryFn: () => api.namespaces(cluster!),
@@ -71,6 +79,12 @@ export function ClusterMapView() {
     });
   };
 
+  useClusterPicked((id) => {
+    setChosen(id);
+    setNamespace("");
+    update({ cluster: id, namespace: "" });
+  });
+
   const grouped = useMemo(
     () => (map.data ? groupGraph(map.data.nodes, map.data.edges, { problemsOnly, query }) : null),
     [map.data, problemsOnly, query],
@@ -95,25 +109,8 @@ export function ClusterMapView() {
   const problems = (counts?.error ?? 0) + (counts?.warning ?? 0);
 
   return (
-    <div className="flex h-screen flex-col">
-      <AppHeader />
-      <div className="flex flex-wrap items-center gap-3 border-b border-border px-6 py-3">
-        <select
-          aria-label="Cluster"
-          value={cluster ?? ""}
-          onChange={(e) => {
-            setChosen(e.target.value);
-            setNamespace("");
-            update({ cluster: e.target.value, namespace: "" });
-          }}
-          className={control}
-        >
-          {clusters.data?.map((c) => (
-            <option key={c.id} value={c.id}>
-              {c.name}
-            </option>
-          ))}
-        </select>
+    <div className="flex h-full min-h-0 flex-1 flex-col">
+      <div className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-2.5 sm:px-5">
         <select
           aria-label="Namespace"
           value={scope}
@@ -157,7 +154,7 @@ export function ClusterMapView() {
             </>
           )}
           <span className="flex items-center gap-2 text-subtle">
-            {map.isFetching ? <Spinner /> : <span className="h-2 w-2 rounded-full bg-accent" />}
+            {map.isFetching ? <Spinner /> : <span className="h-2 w-2 rounded-full bg-healthy" />}
             Live
           </span>
         </div>
@@ -169,7 +166,7 @@ export function ClusterMapView() {
             <button
               type="button"
               onClick={() => setSelectedId(null)}
-              className="absolute left-4 top-4 z-10 rounded-md border border-border bg-bg px-3 py-1.5 text-sm text-muted shadow-lg shadow-black/10 transition-colors hover:text-fg"
+              className="absolute left-4 top-4 z-10 rounded-lg border border-border bg-bg px-3 py-1.5 text-sm text-muted shadow-md shadow-black/5 transition-colors hover:text-fg"
             >
               ← All resources <span className="text-subtle">/</span> <span className="text-fg">{focusName}</span>
             </button>

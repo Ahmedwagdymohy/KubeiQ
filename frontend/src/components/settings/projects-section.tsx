@@ -30,7 +30,7 @@ export function ProjectsSection() {
       title="Projects"
       description="A project gives its members access to clusters and namespaces. Viewers can look and investigate; editors can also make changes when changes are turned on"
     >
-      <div className="flex max-w-3xl flex-col gap-4">
+      <div className="flex flex-col gap-4">
         {projects.data?.map((project) =>
           editing === project.id ? (
             <ProjectForm
@@ -95,7 +95,7 @@ function ProjectCard({
     },
   });
   return (
-    <div className="flex flex-col gap-3 rounded-md border border-border px-4 py-3">
+    <div className="flex flex-col gap-3 rounded-lg border border-border bg-bg px-4 py-3">
       <div className="flex items-start justify-between gap-4">
         <div className="flex flex-col gap-0.5">
           <span className="text-sm font-medium">{project.name}</span>
@@ -209,7 +209,7 @@ function ProjectForm({
   const unused = clusters.filter((c) => !scopes.some((s) => s.cluster_id === c.id));
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-5 rounded-md border border-border p-4">
+    <form onSubmit={submit} className="flex flex-col gap-5 rounded-lg border border-border bg-bg p-4">
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Name">
           <input

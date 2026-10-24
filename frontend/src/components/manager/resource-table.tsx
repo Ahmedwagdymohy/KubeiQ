@@ -31,15 +31,21 @@ export function ResourceTable({
   });
   const showNamespace = kind.namespaced && !namespace;
   const q = filter.trim().toLowerCase();
+  // Counts and ready ratios line up on the right like any figure column.
+  const numeric = (list.data?.columns ?? []).map((c, i) => {
+    if (c.type === "integer" || c.type === "number") return true;
+    const cells = (list.data?.rows ?? []).map((r) => r.cells[i]).filter((v) => v !== null && v !== "");
+    return cells.length > 0 && cells.every((v) => typeof v === "number" || /^\d+(\/\d+)?$/.test(String(v)));
+  });
   const rows = (list.data?.rows ?? []).filter(
     (r) => !q || r.name.toLowerCase().includes(q) || (r.namespace ?? "").includes(q),
   );
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center gap-3 border-b border-border px-6 py-3">
-        <h1 className="font-semibold">{kind.label}</h1>
-        {list.data && <span className="text-sm text-subtle">{rows.length}</span>}
+      <div className="flex items-center gap-3 border-b border-border px-4 py-2.5 sm:px-5">
+        <h2 className="font-semibold">{kind.label}</h2>
+        {list.data && <span className="text-sm tabular-nums text-subtle">{rows.length}</span>}
         {list.isFetching && <Spinner />}
         <input
           type="search"
@@ -47,7 +53,7 @@ export function ResourceTable({
           onChange={(e) => setFilter(e.target.value)}
           placeholder="Filter by name"
           aria-label="Filter by name"
-          className="ml-auto w-56 rounded-md border border-border bg-surface px-3 py-1.5 text-sm outline-none focus:border-accent"
+          className="ml-auto h-8 w-56 rounded-lg border border-control bg-bg px-2.5 text-sm outline-none transition-colors focus:border-accent"
         />
       </div>
       <div className="min-h-0 flex-1 overflow-auto">
@@ -63,19 +69,23 @@ export function ResourceTable({
             <thead className="sticky top-0 border-b border-border bg-bg text-xs text-subtle">
               <tr>
                 {list.data.columns.slice(0, 1).map((c) => (
-                  <th key={c.name} className="px-6 py-2 font-medium" title={c.description}>
+                  <th key={c.name} className="whitespace-nowrap px-4 py-2 font-medium sm:px-5" title={c.description}>
                     {c.name}
                   </th>
                 ))}
                 {showNamespace && <th className="px-4 py-2 font-medium">Namespace</th>}
-                {list.data.columns.slice(1).map((c) => (
-                  <th key={c.name} className="px-4 py-2 font-medium" title={c.description}>
+                {list.data.columns.slice(1).map((c, i) => (
+                  <th
+                    key={c.name}
+                    className={`whitespace-nowrap px-4 py-2 font-medium ${numeric[i + 1] ? "text-right" : ""}`}
+                    title={c.description}
+                  >
                     {c.name}
                   </th>
                 ))}
               </tr>
             </thead>
-            <tbody className="divide-y divide-border">
+            <tbody className="divide-y divide-border/70">
               {rows.map((row) => {
                 const active =
                   selected?.name === row.name && selected.namespace === (row.namespace ?? null);
@@ -87,7 +97,7 @@ export function ResourceTable({
                       active ? "bg-surface-2" : "hover:bg-surface"
                     }`}
                   >
-                    <td className="max-w-[360px] truncate px-6 py-2.5 font-medium">{row.name}</td>
+                    <td className="max-w-[360px] truncate px-4 py-2.5 font-medium sm:px-5">{row.name}</td>
                     {showNamespace && (
                       <td className="px-4 py-2.5 text-muted">{row.namespace}</td>
                     )}
@@ -96,9 +106,9 @@ export function ResourceTable({
                       return (
                         <td
                           key={i}
-                          className={`max-w-[280px] truncate px-4 py-2.5 ${
-                            BAD.test(text) ? "text-danger" : "text-muted"
-                          }`}
+                          className={`max-w-[280px] truncate px-4 py-2.5 tabular-nums ${
+                            numeric[i + 1] ? "text-right" : ""
+                          } ${BAD.test(text) ? "text-danger" : "text-muted"}`}
                           title={text}
                         >
                           {text}

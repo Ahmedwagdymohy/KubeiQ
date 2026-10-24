@@ -1,45 +1,77 @@
 import Link from "next/link";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 
-export function Pill({ children }: { children: ReactNode }) {
-  return (
-    <span className="inline-flex items-center gap-2 rounded-full border border-border bg-surface px-3 py-1 text-xs text-muted">
-      <span className="h-1.5 w-1.5 rounded-full bg-accent" />
-      {children}
-    </span>
-  );
-}
+/** Stagger index for a `data-rise` part (80ms per step). */
+export const rise = (i: number) => ({ "--i": i }) as CSSProperties;
 
-export function PrimaryLink({ href, children }: { href: string; children: ReactNode }) {
-  return (
-    <Link
-      href={href}
-      className="rounded-md bg-accent px-6 py-3 text-center font-medium text-accent-ink transition-colors hover:bg-accent-strong"
-    >
-      {children}
-    </Link>
-  );
-}
+type Tone = "field" | "ink" | "inverse";
 
-export function SecondaryLink({ href, children }: { href: string; children: ReactNode }) {
-  const className =
-    "rounded-md border border-fg/80 px-6 py-3 text-center font-medium transition-colors hover:bg-surface-2";
+const TONES: Record<Tone, string> = {
+  // cyan rectangle with dark ink: the one action colour
+  field: "bg-field text-field-ink hover:bg-field-deep",
+  // the page's ink as a fill: used on a cyan field
+  ink: "bg-fg text-bg hover:bg-fg/85",
+  // used on an inverse field
+  inverse: "bg-inverse-ink text-inverse hover:bg-inverse-ink/85",
+};
+
+/** The one button shape on the site: a square-cornered, chunky rectangle. */
+export function Action({
+  href,
+  children,
+  tone = "field",
+  className = "",
+}: {
+  href: string;
+  children: ReactNode;
+  tone?: Tone;
+  className?: string;
+}) {
+  const cls = `press inline-flex min-h-14 items-center justify-center px-7 text-lg font-bold ${TONES[tone]} ${className}`;
   return href.startsWith("http") ? (
-    <a href={href} className={className}>
+    <a href={href} className={cls}>
       {children}
     </a>
   ) : (
-    <Link href={href} className={className}>
+    <Link href={href} className={cls}>
       {children}
     </Link>
   );
 }
 
-export function SectionHeading({ title, description }: { title: string; description?: string }) {
+/** A plain text link with an underline that appears on hover. */
+export function TextLink({ href, children, className = "" }: { href: string; children: ReactNode; className?: string }) {
+  const cls = `underline decoration-transparent decoration-2 underline-offset-4 transition-colors hover:decoration-current ${className}`;
+  return href.startsWith("http") ? (
+    <a href={href} className={cls}>
+      {children}
+    </a>
+  ) : (
+    <Link href={href} className={cls}>
+      {children}
+    </Link>
+  );
+}
+
+export function SectionHeading({
+  title,
+  description,
+  className = "",
+}: {
+  title: string;
+  description?: string;
+  className?: string;
+}) {
   return (
-    <div className="flex flex-col gap-3">
-      <h2 className="text-3xl font-medium leading-tight tracking-tight sm:text-4xl">{title}</h2>
-      {description && <p className="max-w-2xl text-lg text-muted">{description}</p>}
+    <div className={`flex flex-col gap-5 ${className}`}>
+      <h2 data-rise className="text-[clamp(34px,4vw,60px)] font-extrabold leading-[0.98] tracking-[-0.035em]">
+        {title}
+      </h2>
+      {description && (
+        <p data-rise style={rise(1)} className="max-w-[46ch] text-lg leading-relaxed">
+          {description}
+        </p>
+      )}
     </div>
   );
 }

@@ -30,17 +30,13 @@ export function UsersSection() {
       id="users"
       title="Users"
       description="People who can sign in. Admins manage everything; other users see the clusters and namespaces of their projects"
+      aside={data && <PlanUsage used={data.users.length} max={data.max_users} plan={data.plan} />}
     >
-      <div className="flex max-w-3xl flex-col gap-4">
-        {data && (
-          <p className="text-sm text-muted">
-            {data.users.length} of {data.max_users} users on the {data.plan} plan
-          </p>
-        )}
+      <div className="flex flex-col gap-4">
         {secret && (
           <SecretOnce label={`Password for ${secret.username}`} value={secret.password} />
         )}
-        <div className="flex flex-col divide-y divide-border rounded-md border border-border">
+        <div className="flex flex-col divide-y divide-border rounded-lg border border-border bg-bg">
           {data?.users.map((user) => (
             <UserRow key={user.id} user={user} onChanged={showPassword} />
           ))}
@@ -166,7 +162,7 @@ function AddUser({ onAdded }: { onAdded: (user: User) => void }) {
   };
 
   return (
-    <form onSubmit={submit} className="flex flex-col gap-4 rounded-md border border-border p-4">
+    <form onSubmit={submit} className="flex flex-col gap-4 rounded-lg border border-border bg-bg p-4">
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Username" hint="Lowercase letters, numbers, dots and dashes">
           <input
@@ -206,5 +202,26 @@ function AddUser({ onAdded }: { onAdded: (user: User) => void }) {
         </button>
       </div>
     </form>
+  );
+}
+
+/** Seats used on the plan, as a bar at the true ratio with both ends labelled. */
+function PlanUsage({ used, max, plan }: { used: number; max: number; plan: string }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <span className="text-fg">
+        {used} of {max} users on the {plan} plan
+      </span>
+      <span className="block h-1.5 w-full overflow-hidden rounded-full bg-surface-2">
+        <span
+          className="block h-full rounded-full bg-fg"
+          style={{ width: `${Math.min(100, (used / Math.max(1, max)) * 100)}%` }}
+        />
+      </span>
+      <span className="flex justify-between text-xs tabular-nums text-subtle">
+        <span>0</span>
+        <span>{max}</span>
+      </span>
+    </div>
   );
 }

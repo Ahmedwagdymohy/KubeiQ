@@ -1,81 +1,106 @@
 @import "tailwindcss";
 
-/* Design tokens — see docs/design.md. Dark is the default; light via system or toggle. */
+/* Design tokens: see docs/design.md ("Sheet" theme). Light is the default; dark follows the
+   system or the theme toggle. The frame holds the sidebar and top bar; pages sit on the sheet. */
 :root {
-  color-scheme: dark;
-  --bg: #000000;
-  --surface: #0a0b0c;
-  --surface-2: #14171a;
-  --border: #3a4046;
-  --grid: rgba(255, 255, 255, 0.05);
-  --text: #f5f7f8;
-  --text-muted: #a1a9b0;
-  --text-subtle: #6b747c;
-  --accent: #39c1db;
-  --accent-strong: #66d3e8;
-  --accent-ink: #03161b;
-  --warning: #fbbf24;
-  --danger: #f87171;
-  --terminal: #0b0e11;
-  --terminal-text: #e3e9ee;
-  --terminal-warn: #fbbf24;
-}
-
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme="dark"]) {
-    color-scheme: light;
-    --bg: #ffffff;
-    --surface: #f7f9fa;
-    --surface-2: #eef2f4;
-    --border: #cdd4da;
-    --grid: rgba(15, 23, 42, 0.05);
-    --text: #0b1115;
-    --text-muted: #4b5661;
-    --text-subtle: #87929c;
-    --accent: #0e8fa8;
-    --accent-strong: #0b7a90;
-    --accent-ink: #ffffff;
-    --warning: #b45309;
-    --danger: #dc2626;
-    --terminal: #0f1418;
-    --terminal-text: #e3e9ee;
-    --terminal-warn: #fbbf24;
-  }
-}
-
-:root[data-theme="light"] {
   color-scheme: light;
+  --frame: #edf2f4;
+  --frame-hover: #e2e9ec;
   --bg: #ffffff;
-  --surface: #f7f9fa;
-  --surface-2: #eef2f4;
-  --border: #cdd4da;
+  --surface: #f6f8f9;
+  --surface-2: #edf1f3;
+  --border: #e1e7ea;
+  --control: #ccd4d9;
   --grid: rgba(15, 23, 42, 0.05);
   --text: #0b1115;
-  --text-muted: #4b5661;
-  --text-subtle: #87929c;
-  --accent: #0e8fa8;
-  --accent-strong: #0b7a90;
+  --text-muted: #47525c;
+  --text-subtle: #5f6a75;
+  --accent: #0b7f96;
+  --accent-strong: #096a7e;
   --accent-ink: #ffffff;
-  --warning: #b45309;
-  --danger: #dc2626;
+  --healthy: #0e8fa8;
+  --warning: #a8590a;
+  --warning-soft: #fdf3e2;
+  --danger: #c4242a;
+  --danger-soft: #fdecea;
   --terminal: #0f1418;
   --terminal-text: #e3e9ee;
   --terminal-warn: #fbbf24;
 }
 
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --frame: #0b0c0d;
+    --frame-hover: #17191b;
+    --bg: #000000;
+    --surface: #0c0d0e;
+    --surface-2: #17191b;
+    --border: #212427;
+    --control: #3a3f44;
+    --grid: rgba(255, 255, 255, 0.05);
+    --text: #f5f7f8;
+    --text-muted: #b4b9be;
+    --text-subtle: #8b9298;
+    --accent: #39c1db;
+    --accent-strong: #66d3e8;
+    --accent-ink: #03161b;
+    --healthy: #39c1db;
+    --warning: #f0b43c;
+    --warning-soft: #241b0b;
+    --danger: #f2706d;
+    --danger-soft: #2a1414;
+    --terminal: #0b0e11;
+    --terminal-text: #e3e9ee;
+    --terminal-warn: #fbbf24;
+  }
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --frame: #0b0c0d;
+  --frame-hover: #17191b;
+  --bg: #000000;
+  --surface: #0c0d0e;
+  --surface-2: #17191b;
+  --border: #212427;
+  --control: #3a3f44;
+  --grid: rgba(255, 255, 255, 0.05);
+  --text: #f5f7f8;
+  --text-muted: #b4b9be;
+  --text-subtle: #8b9298;
+  --accent: #39c1db;
+  --accent-strong: #66d3e8;
+  --accent-ink: #03161b;
+  --healthy: #39c1db;
+  --warning: #f0b43c;
+  --warning-soft: #241b0b;
+  --danger: #f2706d;
+  --danger-soft: #2a1414;
+  --terminal: #0b0e11;
+  --terminal-text: #e3e9ee;
+  --terminal-warn: #fbbf24;
+}
+
 @theme inline {
+  --color-frame: var(--frame);
+  --color-frame-hover: var(--frame-hover);
   --color-bg: var(--bg);
   --color-surface: var(--surface);
   --color-surface-2: var(--surface-2);
   --color-border: var(--border);
+  --color-control: var(--control);
   --color-fg: var(--text);
   --color-muted: var(--text-muted);
   --color-subtle: var(--text-subtle);
   --color-accent: var(--accent);
   --color-accent-strong: var(--accent-strong);
   --color-accent-ink: var(--accent-ink);
+  --color-healthy: var(--healthy);
   --color-warning: var(--warning);
+  --color-warning-soft: var(--warning-soft);
   --color-danger: var(--danger);
+  --color-danger-soft: var(--danger-soft);
   --color-terminal: var(--terminal);
   --color-terminal-fg: var(--terminal-text);
   --color-terminal-warn: var(--terminal-warn);
@@ -84,17 +109,9 @@
 }
 
 body {
-  background: var(--bg);
+  background: var(--frame);
   color: var(--text);
   font-family: var(--font-manrope), ui-sans-serif, system-ui, sans-serif;
-}
-
-/* Faint engineering grid used behind hero sections */
-.bg-grid {
-  background-image:
-    linear-gradient(to right, var(--grid) 1px, transparent 1px),
-    linear-gradient(to bottom, var(--grid) 1px, transparent 1px);
-  background-size: 48px 48px;
 }
 
 /* Show the right theme-toggle icon without JS (server and client markup stay identical) */

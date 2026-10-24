@@ -24,11 +24,11 @@ export function ThemeToggle() {
       type="button"
       onClick={toggle}
       aria-label="Toggle light and dark mode"
-      className="rounded-md p-2 text-muted transition-colors hover:bg-surface-2 hover:text-fg"
+      className="press p-2.5 hover:bg-field-deep"
     >
       {/* Both icons render; CSS shows the right one, so server and client markup match. */}
-      <SunIcon className="show-in-dark" />
-      <MoonIcon className="show-in-light" />
+      <SunIcon width={20} height={20} className="show-in-dark" />
+      <MoonIcon width={20} height={20} className="show-in-light" />
     </button>
   );
 }

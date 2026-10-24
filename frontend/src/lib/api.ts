@@ -361,8 +361,11 @@ export const api = {
       body: JSON.stringify({ cluster_id: clusterId, namespace }),
     }),
   investigation: (id: string) => request<Investigation>(`/api/v1/investigations/${id}`),
-  investigations: (limit = 20) =>
-    request<InvestigationSummary[]>(`/api/v1/investigations?limit=${limit}`),
+  /** Newest first; pass the last item's created_at as `before` for the next page. */
+  investigations: (limit = 20, before?: string) =>
+    request<InvestigationSummary[]>(
+      `/api/v1/investigations?limit=${limit}${before ? `&before=${encodeURIComponent(before)}` : ""}`,
+    ),
   providers: () => request<Provider[]>("/api/v1/settings/providers"),
   aiSettings: () => request<AISettings>("/api/v1/settings/ai"),
   saveAISettings: (body: AISettingsInput) =>
@@ -440,5 +443,3 @@ export function streamInvestigation(
   return () => source.close();
 }
 
-/** Backwards-compatible helper used by the landing page status pill. */
-export const getHealth = api.health;

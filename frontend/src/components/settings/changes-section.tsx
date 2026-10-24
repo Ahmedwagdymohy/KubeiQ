@@ -28,7 +28,7 @@ export function ChangesSection() {
       title="Cluster Changes"
       description="KubeiQ is read-only by default. Turn this on to let admins and project editors scale, restart, cordon and delete resources from Cluster Manager. Every change is confirmed and recorded in Activity"
     >
-      <div className="flex max-w-3xl flex-col gap-4">
+      <div className="flex flex-col gap-4">
         <Switch
           checked={enabled}
           onChange={(value) => save.mutate(value)}

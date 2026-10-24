@@ -11,7 +11,6 @@ import {
   type CSSProperties,
 } from "react";
 
-import { AppHeader } from "@/components/app-header";
 import { ClusterPanel } from "@/components/doctor/cluster-panel";
 import { HistoryList } from "@/components/doctor/history-list";
 import { IncidentList } from "@/components/doctor/incident-list";
@@ -19,6 +18,7 @@ import { ProgressTimeline } from "@/components/doctor/progress-timeline";
 import { Dot } from "@/components/ui";
 import { useInvestigation } from "@/hooks/use-investigation";
 import { api, type Investigation, type InvestigationStatus, type ProgressEvent } from "@/lib/api";
+import { resolveCluster, setClusterScope, useClusterPicked, useClusterScope } from "@/lib/scope";
 
 const SIDEBAR_KEY = "kubeiq-sidebar-width";
 const SIDEBAR_MIN = 280;
@@ -92,6 +92,13 @@ export function Doctor() {
   const { width, startDrag } = useSidebarWidth();
   const linkedId = params.get("id");
   const openedLink = useRef(false);
+  const scoped = useClusterScope();
+
+  // A ?cluster= link puts that cluster in scope for the other products too.
+  useEffect(() => {
+    const cluster = params.get("cluster");
+    if (cluster) setClusterScope(cluster, false);
+  }, [params]);
 
   useEffect(() => {
     const cluster = params.get("cluster");
@@ -117,29 +124,27 @@ export function Doctor() {
     }
   }, [investigation.id, linkedId, router, focus]);
 
-  const selected =
-    chosen ?? clusters.data?.find((c) => c.is_default)?.id ?? clusters.data?.[0]?.id ?? null;
+  const selected = chosen ?? resolveCluster(clusters.data, scoped);
 
-  const choose = (id: string) => {
+  useClusterPicked((id) => {
     setChosen(id);
     setNamespace("");
-  };
+  });
 
   const waitingForLink = linkedId && !investigation.status && !investigation.error;
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <AppHeader />
-      <main
+    <div className="flex min-h-full flex-1 flex-col">
+      <div
         style={{ "--sidebar": `${width}px` } as CSSProperties}
-        className="mx-auto grid w-full max-w-[1680px] flex-1 grid-cols-[minmax(0,1fr)] gap-px border-x border-border bg-border lg:grid-cols-[var(--sidebar)_minmax(0,1fr)]"
+        className="grid w-full flex-1 grid-cols-[minmax(0,1fr)] gap-px bg-border lg:grid-cols-[var(--sidebar)_minmax(0,1fr)]"
       >
         <div className="relative flex min-w-0 flex-col gap-px">
           <ClusterPanel
             selected={selected}
             namespace={namespace}
             running={investigation.running}
-            onSelect={choose}
+            onSelect={(id) => setClusterScope(id)}
             onNamespace={setNamespace}
             onInvestigate={(ns) => selected && investigation.start(selected, ns || null)}
           />
@@ -183,7 +188,7 @@ export function Doctor() {
             </>
           )}
         </div>
-      </main>
+      </div>
     </div>
   );
 }
@@ -227,14 +232,14 @@ function Steps({ events, status }: { events: ProgressEvent[]; status: Investigat
 
 function EmptyState() {
   return (
-    <div className="bg-grid flex flex-1 flex-col items-center justify-center bg-bg px-6 py-24 text-center">
-      <h1 className="text-3xl font-medium tracking-tight sm:text-4xl">
-        <span className="text-accent">Cluster</span> Doctor
-      </h1>
-      <p className="mt-4 max-w-md text-muted">
-        Pick a cluster and a namespace, then run an investigation to see what is broken and how to
-        fix it
+    <div className="flex flex-1 flex-col items-start justify-center bg-bg px-6 py-24 sm:px-12">
+      <h2 className="text-xl font-semibold tracking-tight">No Investigation Open</h2>
+      <p className="mt-2 max-w-lg text-muted">
+        Pick a cluster and a namespace, then investigate. KubeiQ checks pods, workloads, services,
+        nodes and warning events, and returns each problem as one root cause with the exact
+        commands to fix it
       </p>
+      <p className="mt-6 text-sm text-subtle">Or open an earlier investigation from the list</p>
     </div>
   );
 }
@@ -269,7 +274,7 @@ function Results({ investigation, focus }: { investigation: Investigation; focus
 
   if (report.healthy) {
     return (
-      <div className="bg-grid flex flex-col items-center bg-bg px-6 py-16 text-center">
+      <div className="flex flex-col items-center bg-bg px-6 py-16 text-center">
         <span className="flex items-center gap-2 text-sm text-muted">
           <Dot tone="healthy" /> Healthy
         </span>

@@ -40,7 +40,7 @@ export function ActivitySection() {
       title="Activity"
       description="Sign-ins, access and settings changes, and every change made to a cluster"
     >
-      <div className="max-w-3xl overflow-x-auto rounded-md border border-border">
+      <div className="overflow-x-auto rounded-lg border border-border bg-bg">
         <table className="w-full text-left text-sm">
           <thead className="border-b border-border text-xs text-subtle">
             <tr>

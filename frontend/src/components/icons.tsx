@@ -101,3 +101,30 @@ export const ManagerIcon = (props: IconProps) => (
     <path d="M3 9h18M9 9v11" />
   </Icon>
 );
+
+export const OverviewIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <rect x="3" y="4" width="18" height="4" rx="1" />
+    <rect x="3" y="11" width="18" height="4" rx="1" />
+    <path d="M3 19h11" />
+  </Icon>
+);
+
+export const DocsIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M6 3h9l4 4v14H6z" />
+    <path d="M14 3v5h5M9 13h7M9 17h5" />
+  </Icon>
+);
+
+export const MenuIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M4 7h16M4 12h16M4 17h16" />
+  </Icon>
+);
+
+export const RefreshIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M20 11a8 8 0 0 0-14.6-4.5L4 8M4 4v4h4M4 13a8 8 0 0 0 14.6 4.5L20 16M20 20v-4h-4" />
+  </Icon>
+);

@@ -8,7 +8,7 @@ import { CodeBlock, Spinner } from "@/components/ui";
 import { api } from "@/lib/api";
 
 const control =
-  "rounded-md border border-border bg-surface px-2 py-1 text-sm text-fg outline-none focus:border-accent";
+  "h-8 rounded-lg border border-control bg-bg px-2 text-sm text-fg outline-none focus:border-accent";
 
 export function PodLogsView({
   cluster,

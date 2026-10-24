@@ -164,6 +164,27 @@ def test_failed_investigation_records_friendly_error(
     assert body["events"][-1]["step"] == "done"
 
 
+def test_history_pages_with_before_cursor(
+    client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(runner, "diagnose", fake_diagnose())
+    ids = []
+    for _ in range(3):
+        investigation_id = client.post(
+            "/api/v1/investigations", json={"cluster_id": "kubeconfig:up"}
+        ).json()["id"]
+        wait_finished(client, investigation_id)
+        ids.append(investigation_id)
+
+    first = client.get("/api/v1/investigations", params={"limit": 2}).json()
+    assert [h["id"] for h in first] == [ids[2], ids[1]]
+
+    rest = client.get(
+        "/api/v1/investigations", params={"limit": 2, "before": first[-1]["created_at"]}
+    ).json()
+    assert [h["id"] for h in rest] == [ids[0]]
+
+
 def test_unknown_cluster_is_rejected(client: TestClient) -> None:
     response = client.post("/api/v1/investigations", json={"cluster_id": "kubeconfig:nope"})
     assert response.status_code == 404

@@ -17,7 +17,7 @@ export function AboutSection() {
     : [];
   return (
     <Section id="about" title="About" description="This KubeiQ installation">
-      <dl className="grid max-w-3xl grid-cols-[auto_minmax(0,1fr)] gap-x-10 gap-y-2 text-sm">
+      <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-10 gap-y-2 text-sm">
         {rows.map(([k, v]) => (
           <div key={k} className="contents">
             <dt className="text-subtle">{k}</dt>

@@ -37,3 +37,12 @@ export const PRODUCTS: Product[] = [
     icon: ManagerIcon,
   },
 ];
+
+/** The one archival picture on the site: the chart under the product screenshots on the home page. */
+export const PICTURE_CREDITS = [
+  {
+    title: "Admiralty Chart No 2613, Cape Levi to Fecamp",
+    creator: "United Kingdom Hydrographic Office, 1894",
+    page: "https://commons.wikimedia.org/wiki/File:Admiralty_Chart_No_2613_France_N._Coast_Sheet_XI_Cape_Levi_to_Fecamp,_Published_1894.jpg",
+  },
+];

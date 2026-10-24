@@ -1,7 +1,10 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 
-import { Pill, PrimaryLink, SecondaryLink, SectionHeading } from "@/components/ui";
+import { FeatureRows, Screen, Split } from "@/components/blocks";
+import { FieldHero } from "@/components/field-hero";
+import { InstallBand } from "@/components/install-band";
+import { rise } from "@/components/ui";
 
 export const metadata: Metadata = {
   title: "Cluster Map",
@@ -12,99 +15,107 @@ export const metadata: Metadata = {
 const FEATURES = [
   {
     title: "See How It Connects",
-    description: "Deployments, pods, services, ingresses, volume claims, configs and secrets, linked the way Kubernetes links them",
+    text: "Deployments, pods, services, ingresses, volume claims, configs and secrets, linked the way Kubernetes links them",
   },
   {
     title: "Spot What Is Broken",
-    description: "Red means broken, with the reason in one line, so you know where to look before you open a terminal",
+    text: "Red means broken, with the reason in one line, so you know where to look before you open a terminal",
   },
   {
     title: "Investigate in One Click",
-    description: "Click a broken resource and Cluster Doctor opens on it with the root cause and the commands to fix it",
+    text: "Click a broken resource and Cluster Doctor opens on it with the root cause and the commands to fix it",
   },
   {
     title: "Always Current",
-    description: "The map refreshes every few seconds, so you watch a fix roll out and the red turn into cyan",
+    text: "The map refreshes every few seconds, so you watch a fix roll out and the red turn into cyan",
   },
 ];
 
 export default function MapProductPage() {
   return (
     <>
-      <section className="bg-grid flex flex-col items-center px-6 py-24 text-center">
-        <Pill>Included in KubeiQ</Pill>
-        <h1 className="mt-8 text-4xl font-medium leading-tight tracking-tight sm:text-6xl">
-          Cluster <span className="text-accent">Map</span>
-        </h1>
-        <p className="mt-6 max-w-2xl text-lg text-muted">
-          A live picture of your namespace. Every app and the resources behind it, how they connect
-          and which ones are broken, with the reason
-        </p>
-        <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-          <PrimaryLink href="/install">Get Started</PrimaryLink>
-          <SecondaryLink href="/products/doctor">Cluster Doctor</SecondaryLink>
-        </div>
-        <div className="mt-16 w-full max-w-5xl overflow-hidden rounded-lg border border-border shadow-2xl shadow-black/30">
-          <Image
-            src="/screens/map-overview-dark.png"
-            alt="Cluster Map overview with each app as a card, broken apps in red"
-            width={1600}
-            height={936}
-            className="show-in-dark h-auto w-full"
+      <FieldHero
+        lines={["Cluster", "Map"]}
+        size="title"
+        shape="screen"
+        sentence="A live chart of your namespace. Every app and the resources behind it, how they connect and which ones are broken, with the reason"
+        figure={
+          <Screen
+            dark="/screens/map-overview-dark.jpg"
+            light="/screens/map-expanded-light.jpg"
+            alt="Cluster Map with each app and its resources, broken ones in red"
             priority
           />
-          <Image
-            src="/screens/map-expanded-light.png"
-            alt="Cluster Map with every app expanded into deployments, pods and configs"
-            width={1600}
-            height={936}
-            className="show-in-light h-auto w-full"
-          />
+        }
+      />
+
+      <section data-reveal className="frame flex flex-col gap-12 pt-[clamp(96px,12vw,200px)]">
+        <div className="grid gap-5 md:grid-cols-12">
+          <h2 data-rise className="text-[clamp(34px,4vw,60px)] font-extrabold leading-[0.98] tracking-[-0.035em] md:col-span-6">
+            Charted Like a Coast
+          </h2>
+          <p data-rise style={rise(1)} className="max-w-[46ch] text-lg leading-relaxed md:col-span-5 md:col-start-8 md:self-end">
+            A sea chart shows the soundings, the rocks and the safe passage. Cluster Map does the same for
+            a namespace: what is there, how it links up and where it is broken
+          </p>
+        </div>
+        <div className="grid gap-6 md:grid-cols-2">
+          <figure data-rise style={rise(2)} className="flex flex-col gap-3">
+            <div className="relative aspect-[4/3] overflow-hidden bg-surface">
+              <Image
+                src="/screens/map-overview-dark.jpg"
+                alt="Cluster Map of kubeiq-demo: each app as a card, broken ones in red"
+                fill
+                sizes="(min-width: 768px) 50vw, 100vw"
+                className="object-cover object-left-top"
+              />
+            </div>
+            <figcaption className="text-base text-muted">kubeiq-demo on Cluster Map: what is there and what is broken</figcaption>
+          </figure>
+          <figure data-rise style={rise(3)} className="flex flex-col gap-3">
+            <div className="relative aspect-[4/3] overflow-hidden bg-surface">
+              <Image
+                src="/screens/doctor-incident-dark.jpg"
+                alt="Cluster Doctor opened from a broken node, with the root cause and the fix"
+                fill
+                sizes="(min-width: 768px) 50vw, 100vw"
+                className="object-cover object-left-top"
+              />
+            </div>
+            <figcaption className="text-base text-muted">One click on a red node opens Cluster Doctor on it</figcaption>
+          </figure>
         </div>
       </section>
 
-      <section className="grid gap-px border-t border-border bg-border md:grid-cols-2 lg:grid-cols-4">
-        {FEATURES.map((f) => (
-          <div key={f.title} className="flex flex-col gap-3 bg-bg p-8">
-            <h3 className="text-lg font-medium">{f.title}</h3>
-            <p className="text-muted">{f.description}</p>
-          </div>
-        ))}
-      </section>
+      <FeatureRows
+        title="What the Map Shows"
+        intro="Built for the moment something is wrong and you need the whole picture before you touch anything"
+        rows={FEATURES}
+      />
 
-      <section className="grid items-center gap-12 border-t border-border px-6 py-20 sm:px-12 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
-        <SectionHeading
-          title="From Red Node to Fix"
-          description="Click a broken pod and see why it fails in one line. One more click opens Cluster Doctor on that workload with the exact commands to fix it and to check that it worked"
-        />
-        <div className="overflow-hidden rounded-lg border border-border shadow-2xl shadow-black/30">
-          <Image
-            src="/screens/map-details-dark.png"
+      <Split
+        title="From Red Node to Fix"
+        picture={
+          <Screen
+            dark="/screens/map-expanded-light.jpg"
             alt="A broken pod selected on the map, showing the missing environment variable and the Investigate button"
-            width={1600}
-            height={936}
-            className="h-auto w-full"
           />
-        </div>
-      </section>
-
-      <section className="border-t border-border px-6 py-16 text-center sm:px-12">
-        <p className="mx-auto max-w-2xl text-sm text-subtle">
+        }
+      >
+        <p>
+          Click a broken pod and see why it fails in one line. One more click opens Cluster Doctor on that
+          workload with the commands to fix it and to check that it worked
+        </p>
+        <p className="text-base text-muted">
           Cluster Map builds on the resource map of{" "}
-          <a href="https://github.com/kubernetes-sigs/headlamp" className="text-accent hover:underline">
+          <a href="https://github.com/kubernetes-sigs/headlamp" className="font-semibold text-accent hover:underline">
             Headlamp
           </a>
           , the Kubernetes project, with health and investigations from KubeiQ
         </p>
-      </section>
+      </Split>
 
-      <section className="bg-grid flex flex-col items-center gap-6 border-t border-border px-6 py-24 text-center">
-        <h2 className="text-3xl font-medium tracking-tight sm:text-4xl">Included in Every Install</h2>
-        <p className="max-w-xl text-lg text-muted">
-          Install KubeiQ once and Cluster Map is ready under the Products menu
-        </p>
-        <PrimaryLink href="/install">Get Started</PrimaryLink>
-      </section>
+      <InstallBand sentence="Install KubeiQ once and Cluster Map is ready under the Products menu" />
     </>
   );
 }

@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
-import Image from "next/image";
 
-import { Pill, PrimaryLink, SecondaryLink, SectionHeading } from "@/components/ui";
+import { FeatureRows, Screen, Split } from "@/components/blocks";
+import { FieldHero } from "@/components/field-hero";
+import { InstallBand } from "@/components/install-band";
+import { rise } from "@/components/ui";
 
 export const metadata: Metadata = {
   title: "Cluster Manager",
@@ -12,89 +14,120 @@ export const metadata: Metadata = {
 const FEATURES = [
   {
     title: "Every Resource",
-    description: "Workloads, networking, config, storage, access and your custom resources, found on the cluster itself",
+    text: "Workloads, networking, config, storage, access and your custom resources, found on the cluster itself",
   },
   {
     title: "YAML, Events and Logs",
-    description: "Open any object to read its YAML and recent events. Pods show live logs, including the run before the last crash",
+    text: "Open any object to read its YAML and recent events. Pods show live logs, including the run before the last crash",
   },
   {
     title: "Safe by Default",
-    description: "Read-only until an admin turns changes on. Secret values are never read, only names and metadata",
+    text: "Read-only until an admin turns changes on. Secret values are never read, only names and metadata",
   },
   {
     title: "Changes You Can Trust",
-    description: "Scale, restart, cordon and delete with a confirmation, limited to project editors, and recorded in Activity",
+    text: "Scale, restart, cordon and delete with a confirmation, limited to project editors, and recorded in Activity",
   },
+];
+
+/** Sample entries showing how Activity reads; each change and refusal gets one row. */
+const ACTIVITY = [
+  { time: "09:42", who: "maya", what: "Restarted", target: "checkout", ok: true },
+  { time: "09:40", who: "omar", what: "Scaled to 3", target: "orders", ok: false },
+  { time: "09:31", who: "maya", what: "Cordoned", target: "kind-worker", ok: true },
 ];
 
 export default function ManagerProductPage() {
   return (
     <>
-      <section className="bg-grid flex flex-col items-center px-6 py-24 text-center">
-        <Pill>Included in KubeiQ</Pill>
-        <h1 className="mt-8 text-4xl font-medium leading-tight tracking-tight sm:text-6xl">
-          Cluster <span className="text-accent">Manager</span>
-        </h1>
-        <p className="mt-6 max-w-2xl text-lg text-muted">
-          Everything in your cluster in one place. Find any resource, read its YAML, events and
-          logs, and jump to the map or an investigation in one click
-        </p>
-        <div className="mt-10 flex flex-col gap-3 sm:flex-row">
-          <PrimaryLink href="/install">Get Started</PrimaryLink>
-          <SecondaryLink href="/products/map">Cluster Map</SecondaryLink>
-        </div>
-        <div className="mt-16 w-full max-w-5xl overflow-hidden rounded-lg border border-border shadow-2xl shadow-black/30">
-          <Image
-            src="/screens/manager-dark.png"
+      <FieldHero
+        lines={["Cluster", "Manager"]}
+        size="title"
+        shape="screen"
+        sentence="Everything in your cluster in one place. Find any resource, read its YAML, events and logs, and jump to the map or an investigation"
+        figure={
+          <Screen
+            dark="/screens/manager-dark.jpg"
+            light="/screens/manager-light.jpg"
             alt="Cluster Manager listing deployments with one deployment open"
-            width={1600}
-            height={1000}
-            className="show-in-dark h-auto w-full"
             priority
           />
-          <Image
-            src="/screens/manager-light.png"
-            alt="Cluster Manager listing deployments with one deployment open"
-            width={1600}
-            height={1000}
-            className="show-in-light h-auto w-full"
-          />
-        </div>
-      </section>
+        }
+      />
 
-      <section className="grid gap-px border-t border-border bg-border md:grid-cols-2 lg:grid-cols-4">
-        {FEATURES.map((f) => (
-          <div key={f.title} className="flex flex-col gap-3 bg-bg p-8">
-            <h3 className="text-lg font-medium">{f.title}</h3>
-            <p className="text-muted">{f.description}</p>
-          </div>
-        ))}
-      </section>
+      <FeatureRows
+        title="The Whole Cluster, Read Safely"
+        intro="One table per kind, built from the server's own columns, and a panel for the object you pick"
+        rows={FEATURES}
+      />
 
-      <section className="grid items-center gap-12 border-t border-border px-6 py-20 sm:px-12 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
-        <SectionHeading
-          title="Logs Without a Terminal"
-          description="Follow a pod's logs live, switch containers, or read the run before the last restart. When something looks wrong, Investigate opens Cluster Doctor on that workload"
-        />
-        <div className="overflow-hidden rounded-lg border border-border shadow-2xl shadow-black/30">
-          <Image
-            src="/screens/manager-logs-dark.png"
-            alt="Live logs of a pod in Cluster Manager"
-            width={1600}
-            height={1000}
-            className="h-auto w-full"
-          />
-        </div>
-      </section>
-
-      <section className="bg-grid flex flex-col items-center gap-6 border-t border-border px-6 py-24 text-center">
-        <h2 className="text-3xl font-medium tracking-tight sm:text-4xl">Included in Every Install</h2>
-        <p className="max-w-xl text-lg text-muted">
-          Install KubeiQ once and Cluster Manager is ready under the Products menu
+      <Split
+        title="Logs Without a Terminal"
+        picture={<Screen dark="/screens/manager-logs-dark.jpg" alt="Live logs of a pod in Cluster Manager" />}
+      >
+        <p>
+          Follow a pod&apos;s logs live, switch containers, or read the run before the last restart. When
+          something looks wrong, Investigate opens Cluster Doctor on that workload
         </p>
-        <PrimaryLink href="/install">Get Started</PrimaryLink>
+      </Split>
+
+      <section data-reveal className="frame grid gap-10 pt-[clamp(96px,12vw,200px)] md:grid-cols-12 md:gap-6">
+        <div className="flex flex-col gap-6 md:col-span-5">
+          <h2 data-rise className="text-[clamp(34px,4vw,60px)] font-extrabold leading-[0.98] tracking-[-0.035em]">
+            Every Change in the Log
+          </h2>
+          <p data-rise style={rise(1)} className="max-w-[44ch] text-lg leading-relaxed">
+            A ship keeps a log of every course change. Cluster Manager does the same: every scale, restart,
+            cordon or delete, and every attempt that was refused, lands in Activity with who, what and when
+          </p>
+          <figure data-rise style={rise(2)} className="flex flex-col gap-3">
+            <Screen dark="/screens/activity.jpg" alt="Settings, Activity: sign-ins and every cluster change with who and when" />
+            <figcaption className="text-base text-muted">Activity in Settings, from a demo install</figcaption>
+          </figure>
+        </div>
+        <div className="flex flex-col gap-6 md:col-span-6 md:col-start-7">
+          <div data-ui data-rise style={rise(2)} className="flex max-w-md flex-col gap-4 rounded-lg border border-border bg-bg p-6">
+            <p className="font-semibold">Restart checkout?</p>
+            <p className="text-sm text-muted">
+              Kubernetes replaces its pods one by one, the same as kubectl rollout restart. This is recorded in
+              the activity log.
+            </p>
+            <div className="flex justify-end gap-2">
+              <span className="rounded-md border border-border px-4 py-2 text-sm font-medium">Cancel</span>
+              <span className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-accent-ink">Restart</span>
+            </div>
+          </div>
+          <div data-ui data-rise style={rise(3)} className="rounded-lg border border-border bg-bg">
+            <p className="border-b border-border px-5 py-3 text-sm font-semibold">Activity</p>
+            <table className="w-full text-left text-sm">
+              <thead className="text-muted">
+                <tr>
+                  <th className="px-5 py-2 font-normal">Time</th>
+                  <th className="px-2 py-2 font-normal">Who</th>
+                  <th className="px-2 py-2 font-normal">What</th>
+                  <th className="px-5 py-2 text-right font-normal">Result</th>
+                </tr>
+              </thead>
+              <tbody>
+                {ACTIVITY.map((a) => (
+                  <tr key={a.time} className="border-t border-border">
+                    <td className="px-5 py-2.5 tabular-nums text-muted">{a.time}</td>
+                    <td className="px-2 py-2.5">{a.who}</td>
+                    <td className="px-2 py-2.5">
+                      {a.what} <code className="font-mono text-[13px]">{a.target}</code>
+                    </td>
+                    <td className={`px-5 py-2.5 text-right font-medium ${a.ok ? "" : "text-danger"}`}>
+                      {a.ok ? "Done" : "Refused"}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </section>
+
+      <InstallBand sentence="Install KubeiQ once and Cluster Manager is ready under the Products menu" />
     </>
   );
 }
