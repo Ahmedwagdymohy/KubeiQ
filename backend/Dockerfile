@@ -18,5 +18,7 @@ ENV PATH="/app/.venv/bin:$PATH" PYTHONUNBUFFERED=1 \
 VOLUME ["/data"]
 USER kubeiq
 EXPOSE 8000
-HEALTHCHECK --interval=30s --timeout=3s CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz')"
-CMD ["uvicorn", "kubeiq.main:app", "--host", "0.0.0.0", "--port", "8000"]
+HEALTHCHECK --interval=10s --timeout=3s --start-period=20s CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/readyz')"
+# Behind the proxy: trust X-Forwarded-* so cookies are marked Secure over HTTPS. The API port is
+# not published by docker-compose.yml, so only the proxy can reach it.
+CMD ["uvicorn", "kubeiq.main:app", "--host", "0.0.0.0", "--port", "8000", "--proxy-headers", "--forwarded-allow-ips", "*"]
