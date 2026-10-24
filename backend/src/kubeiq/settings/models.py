@@ -56,6 +56,7 @@ class KubeconfigOut(BaseModel):
 class LocalKubeconfig(BaseModel):
     path: str
     contexts: int
+    error: str | None = None
 
 
 class ChangesSettings(BaseModel):

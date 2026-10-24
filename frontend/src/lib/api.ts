@@ -167,7 +167,7 @@ export type About = {
   version: string;
   database: string;
   secrets: string;
-  local_kubeconfig: { path: string; contexts: number };
+  local_kubeconfig: { path: string; contexts: number; error: string | null };
 };
 
 export type Role = "admin" | "user";

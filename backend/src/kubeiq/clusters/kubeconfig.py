@@ -35,10 +35,17 @@ class KubeconfigSource(ClusterSource):
         self._servers: dict[str, str] = {}
         self._default: str | None = None
         self._clients: dict[str, ApiClient] = {}
+        self._error: str | None = None
 
     @property
     def path(self) -> Path:
         return Path(self._path or k8s_config.kube_config.KUBE_CONFIG_DEFAULT_LOCATION).expanduser()
+
+    @property
+    def error(self) -> str | None:
+        """Why the file could not be read (for example, permissions), or None."""
+        self._reload_if_changed()
+        return self._error
 
     def list_clusters(self) -> list[ClusterInfo]:
         self._reload_if_changed()
@@ -91,6 +98,11 @@ class KubeconfigSource(ClusterSource):
             if self._contexts:
                 logger.warning("Kubeconfig {} no longer exists", path)
             self._reset(None)
+            self._error = None
+            return
+        except OSError as exc:
+            # Usually permissions: the file belongs to another user than the one KubeiQ runs as.
+            self._fail(f"Cannot read {path}: {exc.strerror or exc}", None)
             return
         if mtime == self._mtime:
             return
@@ -100,8 +112,7 @@ class KubeconfigSource(ClusterSource):
                 raw = yaml.safe_load(path.read_text()) or {}
                 clusters = {c["name"]: c.get("cluster", {}) for c in raw.get("clusters") or []}
             except Exception as exc:
-                logger.error("Failed to read kubeconfig {}: {}", path, exc)
-                self._reset(mtime)
+                self._fail(f"Cannot read {path}: {getattr(exc, 'strerror', None) or exc}", mtime)
                 return
             self._contexts = {c["name"]: c for c in contexts}
             self._servers = {
@@ -111,7 +122,14 @@ class KubeconfigSource(ClusterSource):
             self._default = current["name"] if current else None
             self._clients.clear()
             self._mtime = mtime
+            self._error = None
             logger.info("Loaded {} context(s) from {}", len(self._contexts), path)
+
+    def _fail(self, error: str, mtime: float | None) -> None:
+        if error != self._error:
+            logger.error(error)
+        self._reset(mtime)
+        self._error = error
 
     def _reset(self, mtime: float | None) -> None:
         self._contexts, self._servers, self._clients = {}, {}, {}

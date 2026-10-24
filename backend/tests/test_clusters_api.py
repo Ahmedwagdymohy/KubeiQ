@@ -62,3 +62,13 @@ def test_get_cluster_with_slashes_in_id() -> None:
 
 def test_get_unknown_cluster_returns_404() -> None:
     assert client.get("/api/v1/clusters/kubeconfig:missing").status_code == 404
+
+
+class BrokenSource(FakeSource):
+    def list_clusters(self) -> list[ClusterInfo]:
+        raise PermissionError(13, "Permission denied")
+
+
+def test_broken_source_does_not_hide_other_clusters() -> None:
+    registry = FakeRegistry([BrokenSource(), FakeSource()])
+    assert [c.name for c in registry.list_clusters()] == ["up", "down"]

@@ -20,7 +20,14 @@ class ClusterRegistry:
         self._sources = sources
 
     def list_clusters(self) -> list[ClusterInfo]:
-        return [cluster for source in self._sources for cluster in source.list_clusters()]
+        clusters: list[ClusterInfo] = []
+        for source in self._sources:
+            # One broken source (an unreadable file) must not hide the clusters of the others.
+            try:
+                clusters.extend(source.list_clusters())
+            except Exception:
+                logger.exception("Could not list clusters from {}", type(source).__name__)
+        return clusters
 
     def get_cluster(self, cluster_id: str) -> ClusterInfo:
         for cluster in self.list_clusters():

@@ -33,9 +33,16 @@ export function ClustersSection() {
             <span className="text-sm font-medium">Server kubeconfig</span>
             <span className="text-sm text-muted">
               <code className="font-mono text-xs">{about.data.local_kubeconfig.path}</code> ·{" "}
-              {about.data.local_kubeconfig.contexts} context
-              {about.data.local_kubeconfig.contexts === 1 ? "" : "s"}
+              {about.data.local_kubeconfig.error
+                ? "Not readable"
+                : `${about.data.local_kubeconfig.contexts} context${about.data.local_kubeconfig.contexts === 1 ? "" : "s"}`}
             </span>
+            {about.data.local_kubeconfig.error && (
+              <p className="text-xs text-warning">
+                {about.data.local_kubeconfig.error}. Upload the file below instead, or run the
+                installer again so KubeiQ runs as the user that owns it
+              </p>
+            )}
           </div>
         )}
 
@@ -44,6 +51,7 @@ export function ClustersSection() {
             key={file.id}
             file={file}
             clusters={clusters.data ?? []}
+            failed={clusters.isError}
             removing={remove.isPending && remove.variables === file.id}
             onRemove={() => {
               if (window.confirm(`Remove ${file.name}? KubeiQ will stop connecting to its clusters.`))
@@ -61,11 +69,13 @@ export function ClustersSection() {
 function KubeconfigCard({
   file,
   clusters,
+  failed,
   removing,
   onRemove,
 }: {
   file: StoredKubeconfig;
   clusters: Cluster[];
+  failed: boolean;
   removing: boolean;
   onRemove: () => void;
 }) {
@@ -88,11 +98,13 @@ function KubeconfigCard({
           const status = cluster?.status;
           return (
             <li key={ctx} className="flex items-center gap-2 text-sm">
-              <Dot tone={!status ? "info" : status.reachable ? "healthy" : "critical"} />
+              <Dot tone={!status ? (failed ? "critical" : "info") : status.reachable ? "healthy" : "critical"} />
               <span>{ctx}</span>
               <span className="text-xs text-subtle">
                 {!status
-                  ? "Checking"
+                  ? failed
+                    ? "Could not check this cluster"
+                    : "Checking"
                   : status.reachable
                     ? `Kubernetes ${status.version}`
                     : (status.error ?? "Unreachable")}

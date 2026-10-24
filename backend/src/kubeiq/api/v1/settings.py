@@ -127,5 +127,7 @@ async def about(base: SettingsDep) -> AboutOut:
         secrets="Encrypted with KUBEIQ_SECRET_KEY"
         if base.secret_key
         else "Encrypted with a key generated on this server",
-        local_kubeconfig=LocalKubeconfig(path=str(local.path), contexts=len(local.list_clusters())),
+        local_kubeconfig=LocalKubeconfig(
+            path=str(local.path), contexts=len(local.list_clusters()), error=local.error
+        ),
     )
