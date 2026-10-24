@@ -170,6 +170,8 @@ export type About = {
   local_kubeconfig: { path: string; contexts: number };
 };
 
+export type WorkloadPod = { name: string; status: string; ready: string; restarts: number };
+
 export type Role = "admin" | "user";
 export type ProjectRole = "viewer" | "editor";
 export type ProjectAccess = { project_id: string; project: string; role: ProjectRole };
@@ -400,6 +402,8 @@ export const api = {
     request<KubeEvent[]>(
       `/api/v1/manager/events?${query({ cluster_id: clusterId, kind, namespace, name })}`,
     ),
+  workloadPods: (clusterId: string, ref: ObjectRef & { namespace: string }) =>
+    request<WorkloadPod[]>(`/api/v1/manager/pods?${query({ cluster_id: clusterId, ...ref })}`),
   logs: (
     clusterId: string,
     namespace: string,

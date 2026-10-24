@@ -68,6 +68,7 @@ Update this file in the same commit that completes a task.
 - [x] Phase A, read-only: kind discovery grouped into categories (custom resources included), lists via the Table API, YAML, events, live pod logs
 - [x] Secrets as metadata only; values never fetched
 - [x] Investigate and Show on map from any object
+- [x] Logs on Deployments, StatefulSets, DaemonSets, ReplicaSets, Jobs and Services: pick one of their pods, problems first
 - [x] Phase B, opt-in changes: admin switch, scale, restart, delete, cordon/uncordon, editors only, confirmations, activity log
 - [x] Website product page and pricing (free up to 3 users)
 - [ ] Phase C: exec into containers, port-forward, edit YAML with a diff, Helm releases (each behind its own switch and audit)

@@ -5,6 +5,16 @@ export const kindKey = (k: Pick<KindInfo, "group" | "version" | "resource">) =>
 
 export const DEFAULT_KIND = "core/v1/pods";
 
+/** Kinds whose Logs tab shows the logs of the pods they select (group/resource). */
+export const SELECTS_PODS = new Set([
+  "apps/deployments",
+  "apps/statefulsets",
+  "apps/daemonsets",
+  "apps/replicasets",
+  "batch/jobs",
+  "/services",
+]);
+
 /** Kinds Cluster Doctor can investigate, as used in its `focus` links. */
 export const INVESTIGABLE = new Set([
   "Pod",
