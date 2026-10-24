@@ -172,7 +172,11 @@ export type About = {
 
 export type GkeProject = { project_id: string; internal_ip: boolean };
 export type GkeSettings = {
-  identity: { email: string | null; error: string | null };
+  identity: {
+    email: string | null;
+    error: string | null;
+    vm: { name: string; zone: string; project_id: string } | null;
+  };
   projects: (GkeProject & { clusters: number; error: string | null })[];
 };
 

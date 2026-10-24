@@ -66,7 +66,8 @@ def source_with(responses: dict[str, FakeResponse]) -> tuple[GkeSource, FakeCred
             project = url.split("/projects/")[1].split("/")[0]
             return responses[project]
 
-    return GkeSource(credentials=lambda: credentials, session=Session), credentials  # type: ignore[arg-type,return-value]
+    source = GkeSource(credentials=lambda: credentials, session=Session, metadata=lambda: None)  # type: ignore[arg-type,return-value]
+    return source, credentials
 
 
 def test_discovers_clusters_of_each_project() -> None:
@@ -163,7 +164,7 @@ def test_identity_without_google_credentials() -> None:
     def missing() -> Any:
         raise DefaultCredentialsError("none")
 
-    assert GkeSource(credentials=missing).identity().error == NO_IDENTITY
+    assert GkeSource(credentials=missing, metadata=lambda: None).identity().error == NO_IDENTITY
 
 
 def test_identity_reports_the_service_account() -> None:
@@ -192,3 +193,27 @@ def test_settings_api_saves_projects_and_lists_clusters() -> None:
         "/api/v1/settings/gke", json={"projects": [{"project_id": "Not A Project"}]}
     )
     assert invalid.status_code == 422
+
+
+def test_identity_includes_the_vm_from_metadata() -> None:
+    metadata = {
+        "instance": {"name": "kubeiq-vm", "zone": "projects/123/zones/us-central1-a"},
+        "project": {"projectId": "prod-project"},
+    }
+    calls = []
+
+    def read() -> dict[str, Any]:
+        calls.append(1)
+        return metadata
+
+    source = GkeSource(credentials=FakeCredentials, metadata=read)  # type: ignore[arg-type]
+    vm = source.identity().vm
+    assert vm is not None
+    assert (vm.name, vm.zone, vm.project_id) == ("kubeiq-vm", "us-central1-a", "prod-project")
+    source.identity()
+    assert len(calls) == 1  # read once
+
+
+def test_identity_off_google_cloud_has_no_vm() -> None:
+    source = GkeSource(credentials=FakeCredentials, metadata=lambda: None)  # type: ignore[arg-type]
+    assert source.identity().vm is None

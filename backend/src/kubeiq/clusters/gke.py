@@ -15,6 +15,7 @@ from pathlib import Path
 from typing import Any, Protocol, cast
 
 import google.auth
+import requests
 from google.auth.credentials import Credentials
 from google.auth.exceptions import DefaultCredentialsError, GoogleAuthError
 from google.auth.transport.requests import AuthorizedSession, Request
@@ -44,9 +45,18 @@ class GkeProject(BaseModel):
     internal_ip: bool = False
 
 
+class GceVm(BaseModel):
+    """The Google Cloud VM KubeiQ runs on, to fill in the commands that set its service account."""
+
+    name: str
+    zone: str
+    project_id: str
+
+
 class GkeIdentity(BaseModel):
     email: str | None = None
     error: str | None = None
+    vm: GceVm | None = None
 
 
 class GkeProjectStatus(GkeProject):
@@ -72,6 +82,20 @@ class _Cluster:
     ca: bytes
 
 
+def _read_metadata() -> dict[str, Any] | None:
+    """The VM's metadata, or None off Google Cloud. One quick request, no retries."""
+    try:
+        response = requests.get(
+            "http://169.254.169.254/computeMetadata/v1/?recursive=true",
+            headers={"Metadata-Flavor": "Google"},
+            timeout=1,
+        )
+        data: dict[str, Any] = response.json() if response.ok else {}
+    except (RequestException, ValueError):
+        return None
+    return data or None
+
+
 def _authorized_session(credentials: Credentials) -> HttpSession:
     return cast(HttpSession, AuthorizedSession(credentials))  # type: ignore[no-untyped-call]
 
@@ -88,9 +112,13 @@ class GkeSource(ClusterSource):
         self,
         credentials: Callable[[], Credentials] = _default_credentials,
         session: Callable[[Credentials], HttpSession] | None = None,
+        metadata: Callable[[], dict[str, Any] | None] = _read_metadata,
     ) -> None:
         self._credentials_factory = credentials
         self._session_factory = session or _authorized_session
+        self._metadata = metadata
+        self._vm: GceVm | None = None
+        self._vm_checked = False
         self._credentials: Credentials | None = None
         self._lock = threading.Lock()
         self._token_lock = threading.Lock()
@@ -130,17 +158,32 @@ class GkeSource(ClusterSource):
     # Blocking calls to Google below: run them in a thread.
 
     def identity(self) -> GkeIdentity:
-        """Which Google account KubeiQ runs as, and whether it can call the GKE API."""
+        """Which Google account KubeiQ runs as, whether it can call the GKE API, and its VM."""
+        vm = self.vm()
         try:
             credentials = self._get_credentials()
             self._refresh(credentials)
         except GkeError as exc:
-            return GkeIdentity(error=str(exc))
+            return GkeIdentity(error=str(exc), vm=vm)
         email, scopes = _vm_service_account(credentials)
         email = email or getattr(credentials, "service_account_email", None)
         if scopes is not None and CLOUD_PLATFORM not in scopes:
-            return GkeIdentity(email=email, error=NO_SCOPE)
-        return GkeIdentity(email=email)
+            return GkeIdentity(email=email, error=NO_SCOPE, vm=vm)
+        return GkeIdentity(email=email, vm=vm)
+
+    def vm(self) -> GceVm | None:
+        """Read once: a VM's name, zone and project do not change while KubeiQ runs."""
+        if not self._vm_checked:
+            self._vm_checked = True
+            data = self._metadata() or {}
+            instance, project = data.get("instance") or {}, data.get("project") or {}
+            if instance.get("name") and instance.get("zone") and project.get("projectId"):
+                self._vm = GceVm(
+                    name=instance["name"],
+                    zone=str(instance["zone"]).rsplit("/", 1)[-1],
+                    project_id=project["projectId"],
+                )
+        return self._vm
 
     def discover(self) -> None:
         """List the clusters of every configured project through the GKE API."""
