@@ -8,7 +8,6 @@ import { ActivitySection } from "@/components/settings/activity-section";
 import { AISection } from "@/components/settings/ai-section";
 import { ChangesSection } from "@/components/settings/changes-section";
 import { ClustersSection } from "@/components/settings/clusters-section";
-import { GkeSection } from "@/components/settings/gke-section";
 import { ProjectsSection } from "@/components/settings/projects-section";
 import { UsersSection } from "@/components/settings/users-section";
 import { useHash } from "@/hooks/use-hash";
@@ -17,12 +16,7 @@ import { areaFromHash, settingsAreas, type SettingsArea } from "@/lib/settings-n
 
 const VIEWS: Record<SettingsArea, () => ReactNode> = {
   ai: () => <AISection />,
-  clusters: () => (
-    <>
-      <ClustersSection />
-      <GkeSection />
-    </>
-  ),
+  clusters: () => <ClustersSection />,
   changes: () => <ChangesSection />,
   users: () => <UsersSection />,
   projects: () => <ProjectsSection />,

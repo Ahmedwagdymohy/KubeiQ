@@ -64,7 +64,7 @@ export function Terminal({ commands }: { commands: string[] }) {
         {commands.map((command) => (
           <li key={command} className="flex items-start gap-3 px-4 py-1.5 hover:bg-white/[0.03]">
             <span className="select-none font-mono text-sm leading-6 text-accent">$</span>
-            <code className="min-w-0 flex-1 whitespace-pre-wrap break-words font-mono text-sm leading-6 text-terminal-fg">
+            <code className="min-w-0 flex-1 whitespace-pre-wrap break-words font-mono text-sm leading-6 text-terminal-fg [font-variant-ligatures:none]">
               {command.split(PLACEHOLDER).map((part, i) =>
                 i % 2 ? (
                   <span key={i} className="text-terminal-warn">
