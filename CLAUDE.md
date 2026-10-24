@@ -32,6 +32,7 @@ features (teams, SSO, RBAC, audit, more clusters), never core usefulness.
 | 0006 | One platform, one install; products are modules (own route, API, enable flag). Marketing site in `website/` is separate from the app |
 | 0008 | Sign-in: master key admin (LiteLLM-style), users, sessions; projects scope clusters/namespaces (viewer/editor); free plan 3 users |
 | 0009 | Cluster changes are off by default; admin switch, editors only, confirmed in UI, every attempt audited |
+| 0010 | Production: Caddy serves app + API on one origin (HTTPS with a domain), Postgres in Compose, images on GHCR |
 
 Do not reverse an ADR silently — write a new ADR that supersedes it.
 
@@ -66,7 +67,7 @@ frontend/           The self-hosted app: Next.js (TypeScript, Tailwind, App Rout
   src/lib/api.ts      typed API client and SSE helper; lib/scope.ts = cluster in scope (top bar), lib/fleet.ts = workload health
 website/            Marketing site (kubeiq.io): landing, product pages, pricing, install. Static export
 ee/                 Commercial features (separate license)
-deploy/             Compose / Helm assets, install.sh (the one-line installer)
+deploy/             install.sh (the one-line installer), Caddyfile (the proxy in docker-compose.yml), rbac/
 examples/           Intentionally broken workloads for testing diagnoses
 docs/               Architecture, roadmap, ADRs
 ```
@@ -91,7 +92,7 @@ cd website && pnpm install && pnpm dev   # http://localhost:3001
 pnpm lint && pnpm build                 # static export to website/out
 
 # Full stack
-docker compose up --build             # frontend :3000, backend :8000
+docker compose up --build             # proxy, app, API and Postgres; everything on :3000
 make check                            # everything CI runs; run before every commit
 make fmt                              # auto-format backend
 cd backend && uv run alembic revision --autogenerate -m "..."   # new DB migration
