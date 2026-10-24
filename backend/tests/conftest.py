@@ -16,10 +16,8 @@ from kubeiq.db.migrate import upgrade_database
 from kubeiq.main import create_app
 from kubeiq.settings import crypto
 
-MASTER_KEY = "kiq-test-master-key"
+MASTER_KEY = os.environ["KUBEIQ_MASTER_KEY"]  # set in tests/__init__.py
 AUTH = {"Authorization": f"Bearer {MASTER_KEY}"}
-
-os.environ["KUBEIQ_MASTER_KEY"] = MASTER_KEY
 
 
 @pytest.fixture(scope="session", autouse=True)
