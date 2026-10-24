@@ -1,0 +1,43 @@
+name: Website
+
+# Builds the marketing site (static export) and deploys it to Cloudflare Pages:
+# https://kubeiq.pages.dev. Needs the CLOUDFLARE_API_TOKEN secret (Cloudflare Pages: Edit).
+on:
+  push:
+    branches: [main]
+    paths:
+      - "website/**"
+      - ".github/workflows/website.yml"
+  workflow_dispatch:
+
+concurrency:
+  group: website
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: website
+    steps:
+      - uses: actions/checkout@v5
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: website/package.json
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: website/pnpm-lock.yaml
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: 9d6e970daf4b5592b52dc6f1fdf2ba7b
+          workingDirectory: website
+          command: pages deploy out --project-name kubeiq --branch main --commit-hash ${{ github.sha }}

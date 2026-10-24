@@ -65,7 +65,7 @@ frontend/           The self-hosted app: Next.js (TypeScript, Tailwind, App Rout
   src/components/     UI building blocks (ui.tsx, icons.tsx), shell/ (sidebar + top bar frame), overview/, doctor/ ...
   src/hooks/          use-investigation (SSE progress), use-me (signed-in user, access), use-can-edit, use-hash
   src/lib/api.ts      typed API client and SSE helper; lib/scope.ts = cluster in scope (top bar), lib/fleet.ts = workload health
-website/            Marketing site (kubeiq.io): landing, product pages, pricing, install. Static export
+website/            Marketing site (live at kubeiq.pages.dev): landing, product pages, pricing, install. Static export
 ee/                 Commercial features (separate license)
 deploy/             install.sh (the one-line installer), Caddyfile (the proxy in docker-compose.yml), rbac/
 examples/           Intentionally broken workloads for testing diagnoses
@@ -90,6 +90,7 @@ pnpm lint && pnpm build
 # Website (marketing)
 cd website && pnpm install && pnpm dev   # http://localhost:3001
 pnpm lint && pnpm build                 # static export to website/out
+# Pushes to main that touch website/ deploy it to Cloudflare Pages (.github/workflows/website.yml)
 
 # Full stack
 docker compose up --build             # proxy, app, API and Postgres; everything on :3000
