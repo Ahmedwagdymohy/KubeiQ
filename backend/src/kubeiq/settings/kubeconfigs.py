@@ -30,8 +30,8 @@ def inspect(content: str) -> tuple[dict[str, Any], list[str], list[str]]:
         if auth.get("exec"):
             command = auth["exec"].get("command", "a CLI")
             warnings.append(
-                f"User {name} logs in with '{command}'. That command must be installed where "
-                "KubeiQ runs; otherwise use a ServiceAccount token instead"
+                f"User {name} logs in with '{command}', which KubeiQ cannot run. Create a "
+                "read-only kubeconfig with the connect command shown under Add Cluster"
             )
         if auth.get("auth-provider"):
             warnings.append(f"User {name} uses a legacy auth-provider plugin, which may not work")

@@ -1,5 +1,6 @@
 """Apply saved settings on top of the environment and keep cluster sources in sync."""
 
+import asyncio
 import time
 from typing import Any
 
@@ -8,7 +9,8 @@ from pydantic import SecretStr
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from kubeiq.agent.llm import LiteLLMClient, LLMError
-from kubeiq.clusters.registry import get_uploaded_source
+from kubeiq.clusters.gke import GkeProject
+from kubeiq.clusters.registry import get_gke_source, get_uploaded_source
 from kubeiq.core.config import Settings
 from kubeiq.settings import repository
 from kubeiq.settings.crypto import decrypt, encrypt
@@ -112,6 +114,25 @@ async def sync_uploaded_clusters(session: AsyncSession) -> None:
         for row in await repository.list_kubeconfigs(session)
     }
     get_uploaded_source().set_files(files)
+
+
+async def load_gke_projects(session: AsyncSession) -> list[GkeProject]:
+    value = await repository.get_value(session, repository.GKE_KEY) or {}
+    return [GkeProject(**p) for p in value.get("projects") or []]
+
+
+async def sync_gke(session: AsyncSession) -> None:
+    """Load the saved GKE projects into the cluster registry (startup and after changes)."""
+    get_gke_source().set_projects(await load_gke_projects(session))
+
+
+async def refresh_gke_forever(interval: float = 300) -> None:
+    """Find new or removed GKE clusters every few minutes, while projects are configured."""
+    source = get_gke_source()
+    while True:
+        if source.projects:
+            await asyncio.to_thread(source.discover)
+        await asyncio.sleep(interval)
 
 
 async def changes_enabled(session: AsyncSession) -> bool:

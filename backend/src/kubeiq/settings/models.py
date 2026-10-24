@@ -5,6 +5,8 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
+from kubeiq.clusters.gke import GkeIdentity, GkeProject, GkeProjectStatus
+
 
 class AISettingsIn(BaseModel):
     enabled: bool = True
@@ -51,6 +53,15 @@ class KubeconfigOut(BaseModel):
     contexts: list[str]
     warnings: list[str] = Field(default_factory=list)
     created_at: datetime
+
+
+class GkeSettingsIn(BaseModel):
+    projects: list[GkeProject] = Field(max_length=50)
+
+
+class GkeSettingsOut(BaseModel):
+    identity: GkeIdentity
+    projects: list[GkeProjectStatus]
 
 
 class LocalKubeconfig(BaseModel):

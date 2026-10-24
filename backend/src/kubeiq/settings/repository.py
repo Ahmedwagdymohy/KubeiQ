@@ -11,6 +11,7 @@ __all__ = ["StoredKubeconfig"]
 
 AI_KEY = "ai"
 CHANGES_KEY = "changes"
+GKE_KEY = "gke"
 
 
 async def get_value(
