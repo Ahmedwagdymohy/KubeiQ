@@ -1,5 +1,6 @@
 """Shared test setup: every API call signs in with a fixed master key."""
 
+import asyncio
 import os
 from collections.abc import Iterator
 from pathlib import Path
@@ -11,6 +12,7 @@ from kubeiq.auth import master
 from kubeiq.clusters import registry as registry_module
 from kubeiq.core import config
 from kubeiq.db import session as db_session
+from kubeiq.db.migrate import upgrade_database
 from kubeiq.main import create_app
 from kubeiq.settings import crypto
 
@@ -18,6 +20,12 @@ MASTER_KEY = "kiq-test-master-key"
 AUTH = {"Authorization": f"Bearer {MASTER_KEY}"}
 
 os.environ["KUBEIQ_MASTER_KEY"] = MASTER_KEY
+
+
+@pytest.fixture(scope="session", autouse=True)
+def _scratch_database() -> None:
+    """The shared scratch database (tests/__init__.py) gets the schema once per run."""
+    asyncio.run(upgrade_database())
 
 
 @pytest.fixture(autouse=True)
