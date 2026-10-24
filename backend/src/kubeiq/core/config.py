@@ -1,10 +1,11 @@
 """Application settings loaded from environment variables (prefix ``KUBEIQ_``)."""
 
+import json
 from functools import lru_cache
-from typing import Literal
+from typing import Annotated, Literal
 
-from pydantic import SecretStr
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import SecretStr, field_validator
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -13,7 +14,9 @@ class Settings(BaseSettings):
     env: Literal["development", "production", "test"] = "development"
     log_level: str = "INFO"
     log_json: bool = False
-    cors_origins: list[str] = ["http://localhost:3000"]
+    # Only needed when the app and the API are on different origins (local development).
+    # A JSON list or a comma-separated string: http://localhost:3000,http://localhost:3002
+    cors_origins: Annotated[list[str], NoDecode] = ["http://localhost:3000"]
 
     # SQLite by default (zero setup). Postgres: postgresql+asyncpg://user:pass@host/kubeiq
     database_url: str = "sqlite+aiosqlite:///./kubeiq.db"
@@ -46,6 +49,16 @@ class Settings(BaseSettings):
     llm_temperature: float = 0.0
     agent_max_steps: int = 6
     agent_max_incidents: int = 3  # cap AI investigations per run to bound cost
+
+    @field_validator("cors_origins", mode="before")
+    @classmethod
+    def _split_origins(cls, value: object) -> object:
+        if isinstance(value, str):
+            value = value.strip()
+            if value.startswith("["):
+                return json.loads(value)
+            return [origin.strip() for origin in value.split(",") if origin.strip()]
+        return value
 
 
 @lru_cache
