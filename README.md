@@ -105,6 +105,26 @@ docker compose exec -T postgres pg_dump -U kubeiq kubeiq | gzip > kubeiq-$(date 
 cp .env backend/.env /path/to/backups/
 ```
 
+### Connect Your Clusters
+
+KubeiQ reads the clusters in your kubeconfig (`~/.kube`). For anything else, open
+**Settings › Clusters**:
+
+- **Any cluster (GKE, EKS, AKS, on-prem).** Run one command where `kubectl` already reaches the
+  cluster. It creates a read-only service account for KubeiQ (no access to Secrets) and prints a
+  kubeconfig to add in Settings. KubeiQ never gets your own credentials.
+
+  ```bash
+  curl -fsSL https://raw.githubusercontent.com/Ahmedwagdymohy/KubeiQ/main/deploy/connect.sh \
+    | sh -s -- --name prod > kubeiq-prod.yaml
+  ```
+
+  Add `--changes` to allow the changes Cluster Manager offers; run it with `--remove` to revoke.
+- **GKE, with KubeiQ on a Google Cloud VM.** Add your project IDs under Google Cloud. KubeiQ uses
+  the VM's service account, so no key is stored and tokens expire within the hour. Grant that
+  service account `roles/container.clusterViewer` on the project, and read-only access in each
+  cluster with `connect.sh --google-identity <service-account-email>`.
+
 ### Try It on Broken Workloads
 
 [`examples/broken-workloads`](examples/broken-workloads) holds ten intentionally broken workloads
