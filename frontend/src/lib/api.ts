@@ -10,7 +10,7 @@ export type Health = {
 export type Cluster = {
   id: string;
   name: string;
-  method: "kubeconfig" | "upload" | "token" | "agent";
+  method: "kubeconfig" | "upload" | "gke" | "token" | "agent";
   server: string | null;
   namespace: string | null;
   is_default: boolean;
@@ -168,6 +168,12 @@ export type About = {
   database: string;
   secrets: string;
   local_kubeconfig: { path: string; contexts: number; error: string | null };
+};
+
+export type GkeProject = { project_id: string; internal_ip: boolean };
+export type GkeSettings = {
+  identity: { email: string | null; error: string | null };
+  projects: (GkeProject & { clusters: number; error: string | null })[];
 };
 
 export type Role = "admin" | "user";
@@ -382,6 +388,9 @@ export const api = {
   deleteKubeconfig: (id: string) =>
     request<void>(`/api/v1/settings/kubeconfigs/${id}`, { method: "DELETE" }),
   about: () => request<About>("/api/v1/settings/about"),
+  gke: () => request<GkeSettings>("/api/v1/settings/gke"),
+  putGke: (projects: GkeProject[]) =>
+    request<GkeSettings>("/api/v1/settings/gke", { method: "PUT", body: JSON.stringify({ projects }) }),
   kinds: (clusterId: string) =>
     request<KindCategory[]>(`/api/v1/manager/resources?${query({ cluster_id: clusterId })}`),
   resources: (clusterId: string, kind: KindInfo, namespace: string | null) =>

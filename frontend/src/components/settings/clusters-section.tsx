@@ -8,6 +8,20 @@ import { Dot, Terminal } from "@/components/ui";
 import { api, type Cluster, type StoredKubeconfig } from "@/lib/api";
 
 const FLATTEN = "kubectl config view --minify --flatten --context=<context> > cluster.yaml";
+const CONNECT_URL = "https://raw.githubusercontent.com/Ahmedwagdymohy/KubeiQ/main/deploy/connect.sh";
+
+/** First give kubectl access to the cluster the usual way, then create KubeiQ's own access. */
+const PROVIDERS = [
+  { id: "gke", label: "GKE", login: "gcloud container clusters get-credentials <cluster> --region <region> --project <project>" },
+  { id: "eks", label: "EKS", login: "aws eks update-kubeconfig --name <cluster> --region <region>" },
+  { id: "aks", label: "AKS", login: "az aks get-credentials --resource-group <resource-group> --name <cluster>" },
+  { id: "other", label: "Other", login: null },
+] as const;
+
+function connectCommand(name: string, other: boolean) {
+  const n = name.trim() || "<name>";
+  return `curl -fsSL ${CONNECT_URL} | sh -s -- --name ${n}${other ? " --context <context>" : ""} > kubeiq-${n}.yaml`;
+}
 
 export function ClustersSection() {
   const queryClient = useQueryClient();
@@ -126,6 +140,8 @@ function AddKubeconfig({ onAdded }: { onAdded: () => void }) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [content, setContent] = useState("");
+  const [provider, setProvider] = useState<(typeof PROVIDERS)[number]["id"]>("gke");
+  const chosen = PROVIDERS.find((p) => p.id === provider) ?? PROVIDERS[0];
   const add = useMutation({
     mutationFn: () => api.addKubeconfig(name.trim(), content),
     onSuccess: () => {
@@ -145,13 +161,54 @@ function AddKubeconfig({ onAdded }: { onAdded: () => void }) {
   if (!open) {
     return (
       <button type="button" className={`${secondaryButton} self-start`} onClick={() => setOpen(true)}>
-        Add kubeconfig
+        Add Cluster
       </button>
     );
   }
 
   return (
     <div className="flex flex-col gap-4 rounded-lg border border-border bg-bg p-4">
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-1">
+          <span className="text-sm font-medium">Create Read-Only Access</span>
+          <span className="text-[13px] text-subtle">
+            Run these where kubectl can reach the cluster. KubeiQ gets its own read-only service
+            account, never your credentials, and no access to Secrets
+          </span>
+        </div>
+        <div role="tablist" aria-label="Where the cluster runs" className="flex flex-wrap gap-1.5">
+          {PROVIDERS.map((p) => (
+            <button
+              key={p.id}
+              type="button"
+              role="tab"
+              aria-selected={p.id === provider}
+              onClick={() => setProvider(p.id)}
+              className={`h-8 rounded-lg px-3 text-sm transition-colors ${
+                p.id === provider ? "bg-surface-2 font-medium text-fg" : "text-muted hover:text-fg"
+              }`}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
+        <Terminal
+          commands={[
+            ...(chosen.login ? [chosen.login] : []),
+            connectCommand(name, chosen.login === null),
+          ]}
+        />
+        {provider === "gke" && (
+          <p className="text-[13px] text-subtle">
+            KubeiQ runs on Google Cloud? Connect with its Google identity under Google Cloud below,
+            with no key at all
+          </p>
+        )}
+        <p className="text-[13px] text-subtle">
+          Then add the file it writes here. To remove KubeiQ&apos;s access later, run the same
+          command with <code className="font-mono text-xs">--remove</code>
+        </p>
+      </div>
       <Field label="Name" hint="Lowercase letters, numbers and dashes, e.g. production">
         <input
           className={input}
@@ -178,8 +235,8 @@ function AddKubeconfig({ onAdded }: { onAdded: () => void }) {
       />
       <div className="flex flex-col gap-2">
         <p className="text-xs text-subtle">
-          Certificates must be inside the file, not file paths. To export one context with everything
-          included:
+          Or add any kubeconfig with the certificates inside the file. To export one context with
+          everything included:
         </p>
         <Terminal commands={[FLATTEN]} />
       </div>
