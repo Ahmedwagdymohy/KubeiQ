@@ -27,7 +27,7 @@ export function ClustersSection() {
   const about = useQuery({ queryKey: ["settings", "about"], queryFn: api.about });
   const files = useQuery({ queryKey: ["settings", "kubeconfigs"], queryFn: api.kubeconfigs });
   const gke = useQuery({ queryKey: ["settings", "gke"], queryFn: api.gke });
-  const clusters = useQuery({ queryKey: ["clusters"], queryFn: api.clusters });
+  const clusters = useQuery({ queryKey: ["clusters", "all"], queryFn: api.allClusters });
   const all = clusters.data ?? [];
   const failed = clusters.isError;
 
@@ -135,11 +135,20 @@ function Choice({
   );
 }
 
-function AddCluster({ gkeAvailable, onAdded }: { gkeAvailable: boolean; onAdded: () => void }) {
+/** The two ways to connect a cluster. `onAdded` gets the name of an added kubeconfig. */
+export function AddCluster({
+  gkeAvailable,
+  onAdded,
+  title = "Add a Cluster",
+}: {
+  gkeAvailable: boolean;
+  onAdded: (kubeconfig?: string) => void;
+  title?: string;
+}) {
   const [method, setMethod] = useState<"kubeconfig" | "gcp" | null>(null);
   return (
     <div className="flex flex-col gap-3">
-      <h2 className="text-sm font-medium">Add a Cluster</h2>
+      <h2 className="text-sm font-medium">{title}</h2>
       <div role="radiogroup" aria-label="How to connect" className="grid gap-3 sm:grid-cols-2">
         <Choice
           selected={method === "kubeconfig"}
@@ -161,7 +170,13 @@ function AddCluster({ gkeAvailable, onAdded }: { gkeAvailable: boolean; onAdded:
   );
 }
 
-function KubeconfigPanel({ onAdded, onClose }: { onAdded: () => void; onClose: () => void }) {
+function KubeconfigPanel({
+  onAdded,
+  onClose,
+}: {
+  onAdded: (kubeconfig: string) => void;
+  onClose: () => void;
+}) {
   const [source, setSource] = useState<"create" | "existing">("create");
   const [provider, setProvider] = useState<(typeof PROVIDERS)[number]["id"]>("gke");
   const [name, setName] = useState("");
@@ -172,10 +187,10 @@ function KubeconfigPanel({ onAdded, onClose }: { onAdded: () => void; onClose: (
 
   const add = useMutation({
     mutationFn: () => api.addKubeconfig(name.trim(), content),
-    onSuccess: () => {
+    onSuccess: (file) => {
       setName("");
       setContent("");
-      onAdded();
+      onAdded(file.name);
       onClose();
     },
   });

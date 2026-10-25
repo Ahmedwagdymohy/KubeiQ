@@ -17,7 +17,9 @@ export function Providers({ children }: { children: ReactNode }) {
   );
   return (
     <QueryClientProvider client={client}>
-      <AuthGate>{pathname === "/login" ? children : <AppShell>{children}</AppShell>}</AuthGate>
+      <AuthGate>
+        {pathname === "/login" || pathname === "/welcome" ? children : <AppShell>{children}</AppShell>}
+      </AuthGate>
     </QueryClientProvider>
   );
 }

@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
 
 import { Field, input, primaryButton, secondaryButton, Section } from "@/components/settings/fields";
+import { PlanUsage } from "@/components/settings/plan-usage";
 import {
   api,
   type Cluster,
@@ -18,7 +19,9 @@ const EMPTY: ProjectInput = { name: "", description: null, scopes: [], members: 
 export function ProjectsSection() {
   const projects = useQuery({ queryKey: ["projects"], queryFn: api.projects });
   const users = useQuery({ queryKey: ["users"], queryFn: api.users });
-  const clusters = useQuery({ queryKey: ["clusters"], queryFn: api.clusters });
+  const clusters = useQuery({ queryKey: ["clusters", "all"], queryFn: api.allClusters });
+  const plan = useQuery({ queryKey: ["plan"], queryFn: api.plan });
+  const atProjectLimit = !!plan.data && plan.data.projects.used >= plan.data.projects.max;
   // "new" for the add form, a project id while editing, null when closed
   const [editing, setEditing] = useState<string | null>(null);
 
@@ -28,7 +31,15 @@ export function ProjectsSection() {
     <Section
       id="projects"
       title="Projects"
-      description="A project gives its members access to clusters and namespaces. Viewers can look and investigate; editors can also make changes when changes are turned on"
+      description="A project holds the clusters KubeiQ works with, and who can use them. Viewers can look and investigate; editors can also make changes when changes are turned on"
+      aside={
+        plan.data && (
+          <div className="flex flex-col gap-5">
+            <PlanUsage {...plan.data.projects} plan={plan.data.plan} noun={["project", "projects"]} />
+            <PlanUsage {...plan.data.clusters} plan={plan.data.plan} noun={["cluster", "clusters"]} />
+          </div>
+        )
+      }
     >
       <div className="flex flex-col gap-4">
         {projects.data?.map((project) =>
@@ -51,7 +62,7 @@ export function ProjectsSection() {
         )}
         {projects.data?.length === 0 && editing !== "new" && (
           <p className="text-sm text-muted">
-            No projects yet. Admins see everything; add a project to give other users access.
+            No projects yet. KubeiQ works with the clusters you add to a project.
           </p>
         )}
         {projects.error && <p className="text-sm text-danger">{projects.error.message}</p>}
@@ -61,6 +72,11 @@ export function ProjectsSection() {
             people={people}
             onDone={() => setEditing(null)}
           />
+        ) : atProjectLimit ? (
+          <p className="text-sm text-muted">
+            The {plan.data?.plan} plan includes {plan.data?.projects.max} project. Add clusters to it,
+            or upgrade to Pro for more projects.
+          </p>
         ) : (
           <div>
             <button type="button" className={secondaryButton} onClick={() => setEditing("new")}>
@@ -92,6 +108,10 @@ function ProjectCard({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
       queryClient.invalidateQueries({ queryKey: ["users"] });
+      // Projects decide which clusters KubeiQ works with, and the plan usage.
+      queryClient.invalidateQueries({ queryKey: ["clusters"] });
+      queryClient.invalidateQueries({ queryKey: ["plan"] });
+      queryClient.invalidateQueries({ queryKey: ["me"] });
     },
   });
   return (
@@ -196,6 +216,10 @@ function ProjectForm({
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["projects"] });
       queryClient.invalidateQueries({ queryKey: ["users"] });
+      // Projects decide which clusters KubeiQ works with, and the plan usage.
+      queryClient.invalidateQueries({ queryKey: ["clusters"] });
+      queryClient.invalidateQueries({ queryKey: ["plan"] });
+      queryClient.invalidateQueries({ queryKey: ["me"] });
       onDone();
     },
   });
