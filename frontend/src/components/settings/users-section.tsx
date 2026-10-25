@@ -87,6 +87,7 @@ function UserRow({ user, onChanged }: { user: User; onChanged: (user: User) => v
           {user.username}
           <span className="ml-2 text-xs font-normal text-muted">
             {user.role === "admin" ? "Admin" : "User"}
+            {user.auth_provider === "google" && " · Google"}
           </span>
         </span>
         <span className="text-xs text-subtle">{access}</span>
@@ -169,7 +170,10 @@ function AddUser({ onAdded }: { onAdded: (user: User) => void }) {
   return (
     <form onSubmit={submit} className="flex flex-col gap-4 rounded-lg border border-border bg-bg p-4">
       <div className="grid gap-4 sm:grid-cols-2">
-        <Field label="Username" hint="Lowercase letters, numbers, dots and dashes">
+        <Field
+          label="Username"
+          hint="Lowercase letters, numbers, dots and dashes. Use their email address to let them sign in with Google"
+        >
           <input
             className={input}
             value={username}

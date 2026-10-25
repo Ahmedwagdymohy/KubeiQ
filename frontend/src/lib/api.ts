@@ -180,6 +180,21 @@ export type GkeSettings = {
   projects: (GkeProject & { clusters: number; error: string | null })[];
 };
 
+export type GoogleSettings = {
+  enabled: boolean;
+  client_id: string;
+  client_secret_set: boolean;
+  client_secret_hint: string | null;
+  allowed_domains: string[];
+  redirect_uri: string;
+};
+export type GoogleSettingsInput = {
+  enabled: boolean;
+  client_id: string;
+  client_secret: string | null; // null keeps the saved secret
+  allowed_domains: string[];
+};
+
 export type Usage = { used: number; max: number };
 export type Plan = { plan: string; users: Usage; projects: Usage; clusters: Usage };
 
@@ -195,6 +210,7 @@ export type Me = {
   access: { cluster_id: string; namespaces: string[] | null; role: ProjectRole }[];
   changes_enabled: boolean;
   setup_needed: boolean;
+  auth_provider: "password" | "google";
 };
 
 export type User = {
@@ -202,6 +218,7 @@ export type User = {
   username: string;
   role: Role;
   builtin: boolean;
+  auth_provider: "password" | "google";
   created_at: string;
   projects: ProjectAccess[];
   password?: string | null; // only right after it was generated
@@ -352,6 +369,10 @@ export const api = {
   login: (username: string, password: string) =>
     request<Me>("/api/v1/auth/login", json("POST", { username, password })),
   logout: () => request<void>("/api/v1/auth/logout", json("POST")),
+  signInMethods: () => request<{ google: boolean }>("/api/v1/auth/providers"),
+  googleSettings: () => request<GoogleSettings>("/api/v1/settings/google"),
+  saveGoogleSettings: (body: GoogleSettingsInput) =>
+    request<GoogleSettings>("/api/v1/settings/google", json("PUT", body)),
   changePassword: (current: string, next: string) =>
     request<void>("/api/v1/auth/password", json("POST", { current, new: next })),
   users: () => request<Users>("/api/v1/users"),

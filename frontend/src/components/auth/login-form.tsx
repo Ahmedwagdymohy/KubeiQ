@@ -1,13 +1,24 @@
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
+import { GoogleMark } from "@/components/auth/google-mark";
 import { Logo } from "@/components/logo";
-import { Field, input, primaryButton } from "@/components/settings/fields";
+import { Field, input, primaryButton, secondaryButton } from "@/components/settings/fields";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { api } from "@/lib/api";
+import { api, API_BASE_URL } from "@/lib/api";
+
+/** Why a Google sign-in came back to this page (?error= from the callback). */
+const GOOGLE_ERRORS: Record<string, string> = {
+  not_invited: "This Google account has no access. Ask an admin to add your email.",
+  user_limit: "KubeiQ has reached its user limit. Ask an admin to make room.",
+  expired: "The sign-in took too long or was opened in another tab. Try again.",
+  cancelled: "Google sign-in was cancelled.",
+  google_off: "Sign in with Google is turned off.",
+  failed: "Google could not confirm this account. Try again.",
+};
 
 /** Only same-site paths, so ?next= cannot send people to another site. */
 function safeNext(value: string | null) {
@@ -20,6 +31,9 @@ export function LoginForm() {
   const queryClient = useQueryClient();
   const [username, setUsername] = useState("admin");
   const [password, setPassword] = useState("");
+  const methods = useQuery({ queryKey: ["auth", "providers"], queryFn: api.signInMethods });
+  const googleError = GOOGLE_ERRORS[params.get("error") ?? ""];
+  const googleUrl = `${API_BASE_URL}/api/v1/auth/google/start?next=${encodeURIComponent(safeNext(params.get("next")))}`;
 
   const login = useMutation({
     mutationFn: () => api.login(username.trim(), password),
@@ -49,6 +63,20 @@ export function LoginForm() {
             <Logo />
             <h1 className="text-lg font-semibold">Sign In</h1>
           </div>
+          {googleError && <p className="text-sm text-danger">{googleError}</p>}
+          {methods.data?.google && (
+            <>
+              <a href={googleUrl} className={`${secondaryButton} h-10 w-full`}>
+                <GoogleMark />
+                Continue with Google
+              </a>
+              <div className="flex items-center gap-3 text-xs text-subtle">
+                <span className="h-px flex-1 bg-border" />
+                or with a password
+                <span className="h-px flex-1 bg-border" />
+              </div>
+            </>
+          )}
           <Field label="Username">
             <input
               className={input}
