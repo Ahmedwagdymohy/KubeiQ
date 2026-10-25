@@ -40,11 +40,10 @@ class GoogleSignInError(Exception):
 class GoogleConfig:
     client_id: str
     client_secret: str
-    allowed_domains: tuple[str, ...]
 
 
 def defaults() -> dict[str, Any]:
-    return {"enabled": False, "client_id": "", "client_secret": None, "allowed_domains": []}
+    return {"enabled": False, "client_id": "", "client_secret": None}
 
 
 async def load_settings(session: AsyncSession) -> dict[str, Any]:
@@ -56,11 +55,7 @@ async def load_config(session: AsyncSession) -> GoogleConfig | None:
     saved = await load_settings(session)
     if not (saved["enabled"] and saved["client_id"] and saved["client_secret"]):
         return None
-    return GoogleConfig(
-        client_id=saved["client_id"],
-        client_secret=decrypt(saved["client_secret"]),
-        allowed_domains=tuple(saved["allowed_domains"]),
-    )
+    return GoogleConfig(client_id=saved["client_id"], client_secret=decrypt(saved["client_secret"]))
 
 
 def start(config: GoogleConfig, redirect_uri: str, next_path: str) -> tuple[str, str]:
@@ -121,7 +116,3 @@ def verified_email(config: GoogleConfig, code: str, redirect_uri: str, flow: dic
     if claims.get("nonce") != flow["nonce"] or not claims.get("email_verified"):
         raise GoogleSignInError("failed")
     return str(claims["email"]).lower()
-
-
-def domain_allowed(config: GoogleConfig, email: str) -> bool:
-    return email.rsplit("@", 1)[-1] in config.allowed_domains

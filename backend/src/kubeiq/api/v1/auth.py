@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from fastapi.responses import RedirectResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from kubeiq.auth import google, plan, repository
+from kubeiq.auth import google, repository
 from kubeiq.auth.deps import COOKIE, CurrentUser, principal_for, throttle
 from kubeiq.auth.master import is_master_key
 from kubeiq.auth.models import LoginIn, Me, PasswordChangeIn, ProjectAccess, ScopeAccess
@@ -146,7 +146,7 @@ async def google_callback(
         flow = google.unseal(request.cookies.get(google.STATE_COOKIE), state)
         redirect_uri = str(request.url_for("google_callback"))
         email = await asyncio.to_thread(google.verified_email, config, code, redirect_uri, flow)
-        user = await _google_user(session, config, email)
+        user = await _google_user(session, email)
     except google.GoogleSignInError as exc:
         await repository.record(session, "google", "auth.login", ok=False, detail=exc.code)
         response = RedirectResponse(
@@ -160,19 +160,11 @@ async def google_callback(
     return response
 
 
-async def _google_user(session: AsyncSession, config: google.GoogleConfig, email: str) -> User:
-    """The user with this email, or a new one when its domain is allowed and the plan has room."""
+async def _google_user(session: AsyncSession, email: str) -> User:
+    """The user an admin allowed with this email, under Users. Nobody else gets in."""
     user = await repository.get_user_by_name(session, email)
-    if user is not None:
-        return user
-    if not google.domain_allowed(config, email):
+    if user is None:
         raise google.GoogleSignInError("not_invited")
-    if await repository.count_users(session) >= plan.max_users():
-        raise google.GoogleSignInError("user_limit")
-    user = User(username=email, password_hash=None, role="user", auth_provider="google")
-    session.add(user)
-    await session.commit()
-    await repository.record(session, email, "user.create", target=email, detail="google")
     return user
 
 

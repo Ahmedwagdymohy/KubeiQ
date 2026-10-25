@@ -163,7 +163,6 @@ def _google_view(saved: dict[str, Any], request: Request) -> GoogleSettingsOut:
         client_id=saved["client_id"],
         client_secret_set=bool(secret),
         client_secret_hint=decrypt(secret)[-4:] if secret else None,
-        allowed_domains=saved["allowed_domains"],
         redirect_uri=str(request.url_for("google_callback")),
     )
 
@@ -177,7 +176,7 @@ async def get_google(request: Request, session: SessionDep) -> GoogleSettingsOut
 async def put_google(
     body: GoogleSettingsIn, request: Request, session: SessionDep, admin: AdminUser
 ) -> GoogleSettingsOut:
-    """Sign in with Google: the OAuth client and which domains may join on their own."""
+    """Sign in with Google: the OAuth client. Only people allowed under Users can sign in."""
     current = await google.load_settings(session)
     saved = {
         "enabled": body.enabled,
@@ -185,9 +184,6 @@ async def put_google(
         "client_secret": current["client_secret"]
         if body.client_secret is None
         else (encrypt(body.client_secret.strip()) if body.client_secret.strip() else None),
-        "allowed_domains": sorted(
-            {d.strip().lower().lstrip("@") for d in body.allowed_domains if d.strip()}
-        ),
     }
     if saved["enabled"] and not (saved["client_id"] and saved["client_secret"]):
         raise HTTPException(
