@@ -53,6 +53,13 @@ class KubeEvent(BaseModel):
     last_seen: str | None
 
 
+class WorkloadPod(BaseModel):
+    name: str
+    status: str  # waiting reason (CrashLoopBackOff, ...) or phase
+    ready: str  # "1/2"
+    restarts: int
+
+
 class PodLogs(BaseModel):
     container: str
     containers: list[str]

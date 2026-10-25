@@ -5,11 +5,11 @@ import Link from "next/link";
 import { useState } from "react";
 
 import { CloseIcon } from "@/components/icons";
-import { INVESTIGABLE, ON_MAP } from "@/components/manager/kinds";
+import { INVESTIGABLE, ON_MAP, SELECTS_PODS } from "@/components/manager/kinds";
 import { ObjectActions } from "@/components/manager/object-actions";
 import { ObjectEvents } from "@/components/manager/object-events";
 import { ObjectOverview } from "@/components/manager/object-overview";
-import { PodLogsView } from "@/components/manager/pod-logs";
+import { PodLogsView, WorkloadLogs } from "@/components/manager/pod-logs";
 import { CodeBlock } from "@/components/ui";
 import { api, type KindInfo } from "@/lib/api";
 
@@ -36,11 +36,12 @@ export function ObjectPanel({
     refetchInterval: 15_000,
   });
   const isPod = kind.group === "" && kind.resource === "pods";
+  const hasLogs = Boolean(namespace) && (isPod || SELECTS_PODS.has(`${kind.group}/${kind.resource}`));
   const tabs: [Tab, string][] = [
     ["overview", "Overview"],
     ["yaml", "YAML"],
     ["events", "Events"],
-    ...(isPod ? ([["logs", "Logs"]] as [Tab, string][]) : []),
+    ...(hasLogs ? ([["logs", "Logs"]] as [Tab, string][]) : []),
   ];
   const scope = `cluster=${encodeURIComponent(cluster)}&namespace=${encodeURIComponent(namespace ?? "")}`;
   const ref_ = namespace ? `${kind.kind}/${namespace}/${name}` : `${kind.kind}/${name}`;
@@ -127,9 +128,12 @@ export function ObjectPanel({
         {tab === "events" && (
           <ObjectEvents cluster={cluster} kind={kind.kind} namespace={namespace} name={name} />
         )}
-        {tab === "logs" && isPod && namespace && (
-          <PodLogsView cluster={cluster} namespace={namespace} pod={name} />
-        )}
+        {tab === "logs" && namespace && hasLogs &&
+          (isPod ? (
+            <PodLogsView cluster={cluster} namespace={namespace} pod={name} />
+          ) : (
+            <WorkloadLogs cluster={cluster} kind={kind} namespace={namespace} name={name} />
+          ))}
       </div>
     </aside>
   );

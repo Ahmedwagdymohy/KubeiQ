@@ -26,6 +26,7 @@ from kubeiq.products.manager.models import (
     ObjectDetail,
     PodLogs,
     ResourceList,
+    WorkloadPod,
 )
 from kubeiq.settings.service import changes_enabled
 
@@ -133,6 +134,23 @@ async def logs(
     check(user, "read", cluster_id, namespace)
     api = _client(registry, cluster_id)
     return await _call(resources.pod_logs, api, namespace, pod, container, tail, previous)
+
+
+@router.get("/pods", response_model=list[WorkloadPod])
+async def pods_of(
+    registry: Registry,
+    user: CurrentUser,
+    cluster_id: ClusterId,
+    group: str,
+    version: str,
+    resource: str,
+    namespace: str,
+    name: str,
+) -> list[WorkloadPod]:
+    """The pods of a workload or Service, to read their logs from its own panel."""
+    check(user, "read", cluster_id, namespace)
+    api = _client(registry, cluster_id)
+    return await _call(resources.workload_pods, api, group, version, resource, namespace, name)
 
 
 @router.post("/actions", response_model=ActionResult)

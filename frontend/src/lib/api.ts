@@ -196,6 +196,8 @@ export type GoogleSettingsInput = {
 export type Usage = { used: number; max: number };
 export type Plan = { plan: string; users: Usage; projects: Usage; clusters: Usage };
 
+export type WorkloadPod = { name: string; status: string; ready: string; restarts: number };
+
 export type Role = "admin" | "user";
 export type InviteRole = "admin" | "editor" | "viewer";
 export type ProjectRole = "viewer" | "editor";
@@ -443,6 +445,8 @@ export const api = {
     request<KubeEvent[]>(
       `/api/v1/manager/events?${query({ cluster_id: clusterId, kind, namespace, name })}`,
     ),
+  workloadPods: (clusterId: string, ref: ObjectRef & { namespace: string }) =>
+    request<WorkloadPod[]>(`/api/v1/manager/pods?${query({ cluster_id: clusterId, ...ref })}`),
   logs: (
     clusterId: string,
     namespace: string,

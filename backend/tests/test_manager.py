@@ -115,3 +115,78 @@ def test_changes_are_off_until_an_admin_turns_them_on(client: TestClient) -> Non
 
     actions_logged = [e["action"] for e in client.get("/api/v1/audit").json()]
     assert "settings.changes" in actions_logged
+
+
+def test_label_selector_from_workloads_and_services() -> None:
+    from kubeiq.products.manager.resources import label_selector
+
+    assert label_selector({"matchLabels": {"app": "payment"}}) == "app=payment"
+    assert label_selector({"app": "web", "tier": "front"}) == "app=web,tier=front"  # Service
+    assert (
+        label_selector(
+            {
+                "matchLabels": {"app": "api"},
+                "matchExpressions": [
+                    {"key": "env", "operator": "In", "values": ["prod", "stage"]},
+                    {"key": "canary", "operator": "DoesNotExist"},
+                ],
+            }
+        )
+        == "app=api,env in (prod,stage),!canary"
+    )
+    assert label_selector(None) == ""
+
+
+def test_workload_pods_lists_selected_pods_problems_first(monkeypatch: pytest.MonkeyPatch) -> None:
+    from typing import Any
+
+    from kubeiq.products.manager import resources
+
+    def pod(name: str, ready: bool, restarts: int, waiting: str | None = None) -> dict[str, Any]:
+        state = {"waiting": {"reason": waiting}} if waiting else {"running": {}}
+        return {
+            "metadata": {"name": name},
+            "spec": {"containers": [{"name": "app"}]},
+            "status": {
+                "phase": "Running",
+                "containerStatuses": [{"ready": ready, "restartCount": restarts, "state": state}],
+            },
+        }
+
+    calls: list[tuple[str, Any]] = []
+
+    def fake_request(_api: object, _method: str, path: str, *, query: Any = None, **_: Any) -> Any:
+        calls.append((path, query))
+        if path.endswith("/deployments/payment"):
+            return {"spec": {"selector": {"matchLabels": {"app": "payment"}}}}
+        return {
+            "items": [pod("payment-ok", True, 0), pod("payment-bad", False, 12, "CrashLoopBackOff")]
+        }
+
+    monkeypatch.setattr(resources, "request", fake_request)
+    pods = resources.workload_pods(None, "apps", "v1", "deployments", "shop", "payment")  # type: ignore[arg-type]
+
+    assert [(p.name, p.status, p.ready, p.restarts) for p in pods] == [
+        ("payment-bad", "CrashLoopBackOff", "0/1", 12),
+        ("payment-ok", "Running", "1/1", 0),
+    ]
+    assert calls[1] == (
+        "/api/v1/namespaces/shop/pods",
+        [("labelSelector", "app=payment"), ("limit", 100)],
+    )
+    assert resources.workload_pods(None, "", "v1", "configmaps", "shop", "x") == []  # type: ignore[arg-type]
+
+
+def test_pods_endpoint_checks_access(client: TestClient) -> None:
+    response = client.get(
+        "/api/v1/manager/pods",
+        params={
+            "cluster_id": "kubeconfig:missing",
+            "group": "apps",
+            "version": "v1",
+            "resource": "deployments",
+            "namespace": "shop",
+            "name": "payment",
+        },
+    )
+    assert response.status_code == 404

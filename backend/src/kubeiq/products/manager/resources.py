@@ -13,6 +13,7 @@ from kubeiq.products.manager.models import (
     PodLogs,
     ResourceList,
     Row,
+    WorkloadPod,
 )
 
 LIST_LIMIT = 500
@@ -145,4 +146,79 @@ def pod_logs(
     lines = text.splitlines()
     return PodLogs(
         container=chosen, containers=containers, lines=lines, truncated=len(lines) >= tail
+    )
+
+
+# Kinds whose pods are found through spec.selector: their logs are the logs of those pods.
+SELECTS_PODS = {
+    ("apps", "deployments"),
+    ("apps", "statefulsets"),
+    ("apps", "daemonsets"),
+    ("apps", "replicasets"),
+    ("batch", "jobs"),
+    ("", "services"),
+}
+MAX_WORKLOAD_PODS = 100
+
+
+def label_selector(spec_selector: dict[str, Any] | None) -> str:
+    """A Kubernetes label selector string from spec.selector (a LabelSelector, or a Service map)."""
+    if not spec_selector:
+        return ""
+    if "matchLabels" not in spec_selector and "matchExpressions" not in spec_selector:
+        return ",".join(f"{k}={v}" for k, v in spec_selector.items())  # Service selector
+    parts = [f"{k}={v}" for k, v in (spec_selector.get("matchLabels") or {}).items()]
+    for expr in spec_selector.get("matchExpressions") or []:
+        key, op, values = expr.get("key"), expr.get("operator"), expr.get("values") or []
+        if op == "In":
+            parts.append(f"{key} in ({','.join(values)})")
+        elif op == "NotIn":
+            parts.append(f"{key} notin ({','.join(values)})")
+        elif op == "Exists":
+            parts.append(key)
+        elif op == "DoesNotExist":
+            parts.append(f"!{key}")
+    return ",".join(parts)
+
+
+def workload_pods(
+    api: ApiClient, group: str, version: str, resource: str, namespace: str, name: str
+) -> list[WorkloadPod]:
+    """The pods a workload or Service selects, the ones with problems first."""
+    if (group, resource) not in SELECTS_PODS:
+        return []
+    obj = request(api, "GET", resource_path(group, version, resource, namespace, name))
+    selector = label_selector((obj.get("spec") or {}).get("selector"))
+    if not selector:
+        return []
+    listing = request(
+        api,
+        "GET",
+        resource_path("", "v1", "pods", namespace),
+        query=[("labelSelector", selector), ("limit", MAX_WORKLOAD_PODS)],
+    )
+    pods = [_workload_pod(item) for item in listing.get("items") or []]
+    return sorted(
+        pods, key=lambda p: (p.ready.split("/")[0] == p.ready.split("/")[1], -p.restarts, p.name)
+    )
+
+
+def _workload_pod(item: dict[str, Any]) -> WorkloadPod:
+    status = item.get("status") or {}
+    statuses = (status.get("initContainerStatuses") or []) + (status.get("containerStatuses") or [])
+    main = status.get("containerStatuses") or []
+    waiting = next(
+        (
+            s["state"]["waiting"].get("reason")
+            for s in statuses
+            if (s.get("state") or {}).get("waiting")
+        ),
+        None,
+    )
+    total = len((item.get("spec") or {}).get("containers") or []) or len(main)
+    return WorkloadPod(
+        name=item["metadata"]["name"],
+        status=waiting or status.get("phase") or "Unknown",
+        ready=f"{sum(bool(s.get('ready')) for s in main)}/{total}",
+        restarts=sum(int(s.get("restartCount") or 0) for s in statuses),
     )
