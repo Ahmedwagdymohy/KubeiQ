@@ -69,7 +69,7 @@ def test_uploaded_kubeconfig_becomes_a_cluster(client: TestClient) -> None:
     assert created.status_code == 201
     assert created.json()["contexts"] == ["staging"]
 
-    ids = [c["id"] for c in client.get("/api/v1/clusters").json()]
+    ids = [c["id"] for c in client.get("/api/v1/clusters", params={"all": True}).json()]
     assert "upload:staging/staging" in ids
 
     duplicate = client.post(

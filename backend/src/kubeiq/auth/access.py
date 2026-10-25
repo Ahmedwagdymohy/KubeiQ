@@ -17,6 +17,9 @@ class Grant:
 class Access:
     admin: bool = False
     grants: tuple[Grant, ...] = field(default_factory=tuple)
+    # For admins: the clusters in any project. Admins may act on any cluster (to set projects
+    # up), but lists show only these. None: no filter.
+    in_projects: frozenset[str] | None = None
 
     def can(self, action: Action, cluster_id: str, namespace: str | None) -> bool:
         """``namespace=None`` means all namespaces or a cluster-wide resource."""
@@ -33,7 +36,9 @@ class Access:
 
     def clusters(self) -> set[str] | None:
         """Clusters the user can see at all; None means all."""
-        return None if self.admin else {g.cluster_id for g in self.grants}
+        if self.admin:
+            return None if self.in_projects is None else set(self.in_projects)
+        return {g.cluster_id for g in self.grants}
 
     def namespaces(self, cluster_id: str) -> set[str] | None:
         """Namespaces the user can see in a cluster; None means all."""

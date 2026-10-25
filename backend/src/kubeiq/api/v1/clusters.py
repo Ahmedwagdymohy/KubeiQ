@@ -3,7 +3,7 @@
 import asyncio
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from kubernetes.client import CoreV1Api
 
 from kubeiq.auth.deps import CurrentUser
@@ -28,8 +28,13 @@ async def list_clusters(
     probe: Annotated[
         bool, Query(alias="check", description="Probe each cluster for reachability")
     ] = True,
+    every: Annotated[
+        bool, Query(alias="all", description="Admins: every connected cluster, not only projects'")
+    ] = False,
 ) -> list[ClusterResponse]:
-    allowed = user.access.clusters()
+    if every and not user.is_admin:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "Only admins can list every cluster")
+    allowed = None if every else user.access.clusters()
     clusters = [c for c in registry.list_clusters() if allowed is None or c.id in allowed]
     statuses: list[ClusterStatus | None] = (
         list(await asyncio.gather(*(registry.check(c.id) for c in clusters)))
@@ -44,7 +49,8 @@ async def list_clusters(
 @router.get("/{cluster_id:path}/namespaces", response_model=list[str])
 async def list_namespaces(cluster_id: str, registry: Registry, user: CurrentUser) -> list[str]:
     clusters = user.access.clusters()
-    if clusters is not None and cluster_id not in clusters:
+    # Admins reach any connected cluster, to add it to a project; lists show projects' only.
+    if not user.is_admin and clusters is not None and cluster_id not in clusters:
         raise HTTPException(status_code=403, detail="Your projects do not include this cluster")
     allowed = user.access.namespaces(cluster_id)
     if allowed is not None:
@@ -65,11 +71,11 @@ async def list_namespaces(cluster_id: str, registry: Registry, user: CurrentUser
 @router.get("/{cluster_id:path}", response_model=ClusterResponse)
 async def get_cluster(cluster_id: str, registry: Registry, user: CurrentUser) -> ClusterResponse:
     allowed = user.access.clusters()
-    if allowed is not None and cluster_id not in allowed:
+    if not user.is_admin and allowed is not None and cluster_id not in allowed:
         raise HTTPException(status_code=403, detail="Your projects do not include this cluster")
     try:
         cluster = registry.get_cluster(cluster_id)
-        status = await registry.check(cluster_id)
+        probe = await registry.check(cluster_id)
     except ClusterNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
-    return ClusterResponse(**cluster.model_dump(), status=status)
+    return ClusterResponse(**cluster.model_dump(), status=probe)

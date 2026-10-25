@@ -10,7 +10,9 @@ from kubeiq.auth import plan, repository
 from kubeiq.auth.deps import AdminUser
 from kubeiq.auth.models import (
     AuditOut,
+    PlanOut,
     ProjectAccess,
+    Usage,
     UserCreated,
     UserIn,
     UserOut,
@@ -52,6 +54,18 @@ async def _get(session: AsyncSession, user_id: str) -> User:
     if user is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "User not found")
     return user
+
+
+@router.get("/plan", response_model=PlanOut)
+async def plan_usage(admin: AdminUser, session: SessionDep) -> PlanOut:
+    """What the plan allows and what this install uses."""
+    projects = await repository.list_projects(session)
+    return PlanOut(
+        plan=plan.plan_name(),
+        users=Usage(used=await repository.count_users(session), max=plan.max_users()),
+        projects=Usage(used=len(projects), max=plan.max_projects()),
+        clusters=Usage(used=len(repository.clusters_of(projects)), max=plan.max_clusters()),
+    )
 
 
 @router.get("/users", response_model=UsersOut)

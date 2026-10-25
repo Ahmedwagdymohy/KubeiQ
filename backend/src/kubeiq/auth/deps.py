@@ -30,9 +30,13 @@ class Principal:
         return self.role == "admin"
 
 
+async def admin_access(session: AsyncSession) -> Access:
+    return Access(admin=True, in_projects=frozenset(await repository.project_clusters(session)))
+
+
 async def principal_for(session: AsyncSession, user: User) -> Principal:
     if user.role == "admin":
-        return Principal(user.id, user.username, "admin", Access(admin=True))
+        return Principal(user.id, user.username, "admin", await admin_access(session))
     grants = []
     for member, project in await repository.memberships(session, user.id):
         for scope in repository.scopes_of(project):
@@ -54,7 +58,9 @@ async def current_principal(
     if auth.lower().startswith("bearer "):
         if is_master_key(auth[7:].strip()):
             # API calls with the master key act as the built-in admin without touching the DB.
-            return Principal("master", get_settings().admin_username, "admin", Access(admin=True))
+            return Principal(
+                "master", get_settings().admin_username, "admin", await admin_access(session)
+            )
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid API key")
     token = request.cookies.get(COOKIE)
     user = await repository.user_for_token(session, token) if token else None

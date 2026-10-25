@@ -43,6 +43,7 @@ async def _me(session: AsyncSession, user_id: str, username: str, role: str) -> 
         role=role,
         projects=projects,
         changes_enabled=await changes_enabled(session),
+        setup_needed=role == "admin" and not await repository.list_projects(session),
     )
 
 
