@@ -6,6 +6,7 @@ The agent receives one incident at a time with only the evidence relevant to it.
 import json
 from typing import Any
 
+from kubeiq.agent.diagnosis import Diagnosis
 from kubeiq.collectors.models import EvidenceBundle
 from kubeiq.detectors.models import Finding, Incident
 
@@ -99,4 +100,52 @@ def build_incident_context(incident: Incident, bundle: EvidenceBundle) -> str:
     }
     return "Investigate this incident and find the root cause.\n\n" + json.dumps(
         context, indent=1, default=str
+    )
+
+
+CHAT_SYSTEM_PROMPT = """\
+You are a senior Kubernetes SRE helping an engineer with one incident that was already
+diagnosed. The diagnosis and its evidence are below. Answer their follow-up questions.
+
+How to answer:
+- Ground every answer in the diagnosis and evidence. Use the tools to check the live state of
+  the cluster when the question needs it (current logs, events, pods, config).
+- Tools are read-only. Never claim you changed anything.
+- If you cannot know something, say so plainly and say how the engineer can find out.
+- Stay on this incident and this cluster. Decline unrelated requests in one sentence.
+- Secrets are redacted as [REDACTED]; never ask for secret values.
+
+Style:
+- Short and direct, like a colleague in chat: a few sentences, or a short list with "- ".
+- Name the exact resource, container, setting, value or log line.
+- Put commands in a fenced code block, one complete kubectl command per line, with real names
+  and namespaces. Use <placeholders> only for values you cannot know, named after what they
+  hold.
+- Plain text only: no headings, no tables, no JSON.
+"""
+
+
+def build_chat_context(diagnosis: Diagnosis, cluster_id: str) -> str:
+    view = diagnosis.model_dump(
+        mode="json",
+        include={
+            "title",
+            "workload",
+            "severity",
+            "root_cause",
+            "explanation",
+            "fix_steps",
+            "commands",
+            "verify",
+            "prevention",
+            "confidence",
+            "evidence",
+            "affected",
+            "related",
+            "note",
+        },
+        exclude_none=True,
+    )
+    return "The incident and its diagnosis:\n\n" + json.dumps(
+        {"cluster": cluster_id, **view}, indent=1
     )

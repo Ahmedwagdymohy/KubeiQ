@@ -1,9 +1,9 @@
 """API-facing investigation schemas."""
 
 from datetime import UTC, datetime
-from typing import Annotated
+from typing import Annotated, Literal
 
-from pydantic import AfterValidator, BaseModel, ConfigDict
+from pydantic import AfterValidator, BaseModel, ConfigDict, Field
 
 from kubeiq.agent.diagnosis import DiagnosisReport
 
@@ -52,3 +52,23 @@ class InvestigationSummary(BaseModel):
 class InvestigationDetail(InvestigationSummary):
     report: DiagnosisReport | None = None
     events: list[EventOut] = []
+
+
+class ChatQuestion(BaseModel):
+    incident_id: str
+    message: str = Field(min_length=1, max_length=2000)
+
+
+class ChatMessageOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    role: Literal["user", "assistant"]
+    author: str | None
+    content: str
+    created_at: UtcDatetime
+
+
+class ChatThread(BaseModel):
+    ai_enabled: bool  # follow-up questions need an AI model
+    messages: list[ChatMessageOut]

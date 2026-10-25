@@ -7,7 +7,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from kubeiq.agent.diagnosis import DiagnosisReport
-from kubeiq.db.models import DEFAULT_ORG, Investigation, InvestigationEvent, InvestigationStatus
+from kubeiq.db.models import (
+    DEFAULT_ORG,
+    IncidentMessage,
+    Investigation,
+    InvestigationEvent,
+    InvestigationStatus,
+)
 from kubeiq.detectors.models import Severity
 
 _SEVERITY_ORDER = [Severity.CRITICAL, Severity.WARNING, Severity.INFO]
@@ -118,3 +124,44 @@ async def fail_interrupted(session: AsyncSession) -> int:
     )
     await session.commit()
     return int(getattr(result, "rowcount", 0) or 0)
+
+
+async def list_messages(
+    session: AsyncSession, investigation_id: str, incident_id: str, org_id: str = DEFAULT_ORG
+) -> list[IncidentMessage]:
+    query = (
+        select(IncidentMessage)
+        .where(
+            IncidentMessage.org_id == org_id,
+            IncidentMessage.investigation_id == investigation_id,
+            IncidentMessage.incident_id == incident_id,
+        )
+        .order_by(IncidentMessage.id)
+    )
+    return list((await session.execute(query)).scalars())
+
+
+async def add_exchange(
+    session: AsyncSession,
+    investigation_id: str,
+    incident_id: str,
+    author: str,
+    question: str,
+    reply: str,
+    org_id: str = DEFAULT_ORG,
+) -> list[IncidentMessage]:
+    """Store a question with its answer together, so a thread never holds an unanswered one."""
+    rows = [
+        IncidentMessage(
+            org_id=org_id,
+            investigation_id=investigation_id,
+            incident_id=incident_id,
+            role=role,
+            author=who,
+            content=content,
+        )
+        for role, who, content in (("user", author, question), ("assistant", None, reply))
+    ]
+    session.add_all(rows)
+    await session.commit()
+    return rows
