@@ -103,6 +103,7 @@ Update this file in the same commit that completes a task.
 - [ ] License key validation & feature flags
 - [ ] Lift the 3-user limit with a license (`auth/plan.py`)
 - [ ] Custom roles and fine-grained access beyond viewer/editor
+- [x] Sign in with Google (core, ADR 0013): invited emails or allowed domains
 - [ ] OIDC / LDAP SSO, group → role mapping
 - [ ] Audit log export and retention
 - [ ] Managed multi-tenant hosting

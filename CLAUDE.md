@@ -15,7 +15,8 @@ licensing. Never ship a product as a separate download. Paid tiers gate organiza
 features (teams, SSO, RBAC, audit, more clusters), never core usefulness.
 
 - **Core (OSS, Apache-2.0):** everything outside `ee/`.
-- **Pro / Enterprise (commercial, `ee/`):** RBAC, SSO (OIDC/LDAP), audit logs, managed hosting.
+- **Pro / Enterprise (commercial, `ee/`):** RBAC, SSO (generic OIDC/LDAP/SAML), audit logs,
+  managed hosting. Sign in with Google is core (ADR 0013).
   Enabled at runtime by a license key. Core must never import from `ee/`; `ee/` plugs into core
   through explicit extension points.
 
@@ -35,6 +36,7 @@ features (teams, SSO, RBAC, audit, more clusters), never core usefulness.
 | 0010 | Production: Caddy serves app + API on one origin (HTTPS with a domain), Postgres in Compose, images on GHCR |
 | 0011 | Connecting clusters: `deploy/connect.sh` read-only service account (any cluster); GKE through the machine's Google identity, nothing stored |
 | 0012 | Projects hold the clusters (lists show projects' clusters, admins too); first sign-in opens /welcome; free plan 3 users, 1 project, 3 clusters |
+| 0013 | Sign in with Google is free core (OIDC + PKCE on the server, invited emails or allowed domains); generic OIDC/LDAP/SAML stay `ee/` |
 
 Do not reverse an ADR silently — write a new ADR that supersedes it.
 
