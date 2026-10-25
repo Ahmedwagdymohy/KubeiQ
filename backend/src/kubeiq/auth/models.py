@@ -47,6 +47,17 @@ class UserIn(BaseModel):
     password: str | None = Field(default=None, min_length=8, max_length=256)
 
 
+EMAIL = r"^[^@\s]+@[^@\s]+\.[^@\s]+$"
+
+
+class InviteIn(BaseModel):
+    """Allow someone to sign in, by email, with a role (ADR 0013)."""
+
+    email: str = Field(max_length=254, pattern=EMAIL)
+    role: Literal["admin", "editor", "viewer"] = "viewer"
+    project_id: str | None = None  # editors and viewers; defaults to the only project
+
+
 class UserUpdate(BaseModel):
     role: Literal["admin", "user"] | None = None
     reset_password: bool = False

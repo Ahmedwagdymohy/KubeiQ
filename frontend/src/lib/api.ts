@@ -185,20 +185,19 @@ export type GoogleSettings = {
   client_id: string;
   client_secret_set: boolean;
   client_secret_hint: string | null;
-  allowed_domains: string[];
   redirect_uri: string;
 };
 export type GoogleSettingsInput = {
   enabled: boolean;
   client_id: string;
   client_secret: string | null; // null keeps the saved secret
-  allowed_domains: string[];
 };
 
 export type Usage = { used: number; max: number };
 export type Plan = { plan: string; users: Usage; projects: Usage; clusters: Usage };
 
 export type Role = "admin" | "user";
+export type InviteRole = "admin" | "editor" | "viewer";
 export type ProjectRole = "viewer" | "editor";
 export type ProjectAccess = { project_id: string; project: string; role: ProjectRole };
 
@@ -376,6 +375,8 @@ export const api = {
   changePassword: (current: string, next: string) =>
     request<void>("/api/v1/auth/password", json("POST", { current, new: next })),
   users: () => request<Users>("/api/v1/users"),
+  inviteUser: (body: { email: string; role: InviteRole; project_id?: string }) =>
+    request<User>("/api/v1/users/invite", json("POST", body)),
   createUser: (body: { username: string; role: Role; password?: string }) =>
     request<User>("/api/v1/users", json("POST", body)),
   updateUser: (id: string, body: { role?: Role; reset_password?: boolean }) =>

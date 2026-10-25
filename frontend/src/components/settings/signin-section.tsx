@@ -28,7 +28,6 @@ function GoogleForm({ data }: { data: GoogleSettings }) {
   const [enabled, setEnabled] = useState(data.enabled);
   const [clientId, setClientId] = useState(data.client_id);
   const [secret, setSecret] = useState("");
-  const [domains, setDomains] = useState(data.allowed_domains.join(", "));
 
   const save = useMutation({
     mutationFn: () =>
@@ -36,7 +35,6 @@ function GoogleForm({ data }: { data: GoogleSettings }) {
         enabled,
         client_id: clientId.trim(),
         client_secret: secret.trim() ? secret.trim() : null,
-        allowed_domains: domains.split(/[\s,]+/).filter(Boolean),
       }),
     onSuccess: (data) => {
       queryClient.setQueryData(["settings", "google"], data);
@@ -89,18 +87,9 @@ function GoogleForm({ data }: { data: GoogleSettings }) {
             autoComplete="off"
           />
         </Field>
-        <Field
-          label="Allowed Domains"
-          hint="Anyone with a verified email on these domains gets an account on first sign-in, as a user with no project. Leave empty to let in only people you add under Users, by their email"
-        >
-          <input
-            className={input}
-            value={domains}
-            onChange={(e) => setDomains(e.target.value)}
-            placeholder="acme.com, acme.io"
-            spellCheck={false}
-          />
-        </Field>
+        <p className="text-[13px] text-muted">
+          Only people you allow under Users can sign in, with the Google account of that email.
+        </p>
 
         <div className="flex flex-wrap items-center gap-3">
           <button type="submit" className={`${primaryButton} self-start`} disabled={save.isPending}>

@@ -17,11 +17,14 @@ sign-in for free and sell enterprise identity (generic OIDC, SAML, LDAP, group m
   HttpOnly cookie; `/api/v1/auth/google/callback` checks the state, trades the code for an ID
   token and verifies it with `google-auth` (signature, audience, issuer, expiry), then the nonce
   and `email_verified`. Only `openid email profile` are requested.
-- **Who gets in:** a user whose username is that email (admins invite by email), or, when the
-  email's domain is in Allowed Domains, a new account with role `user`, no project and
-  `auth_provider = "google"`, within the plan's user limit (ADR 0012). Anyone else is refused.
-- **Configuration in Settings › Sign-In**: client ID, client secret (encrypted, write-only),
-  allowed domains, and the redirect URI to register in Google Cloud. It is computed from the
+- **Invite only.** Admins allow people under Users with an email and a role: Admin, or Editor or
+  Viewer of a project, which they join at once (`POST /api/v1/users/invite`). With Google
+  sign-in on, they sign in with Google and get no password (`auth_provider = "google"`); with it
+  off, KubeiQ generates a password shown once. Google sign-in only signs in a user whose username
+  is that email; anyone else is refused, and no account is ever created on sign-in. Invites count
+  toward the plan's user limit (ADR 0012).
+- **Configuration in Settings › Sign-In**: client ID, client secret (encrypted, write-only), and
+  the redirect URI to register in Google Cloud. It is computed from the
   address the admin uses, so it is right behind the proxy and on a domain (ADR 0010).
   `KUBEIQ_APP_URL` sends the browser back to the app when it runs on another origin (local
   development). Passwords and the master key keep working.

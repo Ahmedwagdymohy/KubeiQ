@@ -6,10 +6,11 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from kubeiq.auth import plan, repository
+from kubeiq.auth import google, plan, repository
 from kubeiq.auth.deps import AdminUser
 from kubeiq.auth.models import (
     AuditOut,
+    InviteIn,
     PlanOut,
     ProjectAccess,
     Usage,
@@ -76,17 +77,64 @@ async def list_users(admin: AdminUser, session: SessionDep, base: SettingsDep) -
     return UsersOut(users=users, max_users=plan.max_users(), plan=plan.plan_name())
 
 
-@router.post("/users", response_model=UserCreated, status_code=status.HTTP_201_CREATED)
-async def create_user(
-    body: UserIn, admin: AdminUser, session: SessionDep, base: SettingsDep
-) -> UserCreated:
-    await repository.ensure_admin(session, base.admin_username)
+async def _check_room(session: AsyncSession) -> None:
     if await repository.count_users(session) >= plan.max_users():
         raise HTTPException(
             status.HTTP_402_PAYMENT_REQUIRED,
             f"The {plan.plan_name()} plan allows up to {plan.max_users()} users. "
             "Upgrade to add more.",
         )
+
+
+@router.post("/users/invite", response_model=UserCreated, status_code=status.HTTP_201_CREATED)
+async def invite_user(
+    body: InviteIn, admin: AdminUser, session: SessionDep, base: SettingsDep
+) -> UserCreated:
+    """Allow an email to sign in. With Google sign-in on they use Google; otherwise they get a
+    password, shown once. Editors and viewers join the project at once."""
+    await repository.ensure_admin(session, base.admin_username)
+    await _check_room(session)
+    email = body.email.strip().lower()
+    if await repository.get_user_by_name(session, email):
+        raise HTTPException(status.HTTP_409_CONFLICT, f"{email} is already allowed")
+    project = None
+    if body.role != "admin":
+        projects = await repository.list_projects(session)
+        if body.project_id:
+            project = next((p for p in projects if p.id == body.project_id), None)
+        elif len(projects) == 1:
+            project = projects[0]
+        if project is None:
+            raise HTTPException(
+                status.HTTP_422_UNPROCESSABLE_CONTENT,
+                "Choose the project they will work in" if projects else "Create a project first",
+            )
+    with_google = await google.load_config(session) is not None
+    password = None if with_google else generate_password()
+    user = User(
+        username=email,
+        role="admin" if body.role == "admin" else "user",
+        password_hash=hash_password(password) if password else None,
+        auth_provider="google" if with_google else "password",
+    )
+    session.add(user)
+    await session.commit()
+    if project is not None:
+        members = [
+            (m.user_id, m.role) for m, _ in await repository.project_members(session, project.id)
+        ]
+        await repository.set_members(session, project.id, [*members, (user.id, body.role)])
+    await repository.record(session, admin.username, "user.invite", target=email, detail=body.role)
+    out = await _out(session, user, base)
+    return UserCreated(**out.model_dump(), password=password)
+
+
+@router.post("/users", response_model=UserCreated, status_code=status.HTTP_201_CREATED)
+async def create_user(
+    body: UserIn, admin: AdminUser, session: SessionDep, base: SettingsDep
+) -> UserCreated:
+    await repository.ensure_admin(session, base.admin_username)
+    await _check_room(session)
     if await repository.get_user_by_name(session, body.username):
         raise HTTPException(status.HTTP_409_CONFLICT, f"User {body.username} already exists")
     password = body.password or generate_password()

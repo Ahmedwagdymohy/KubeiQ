@@ -39,11 +39,10 @@ def test_settings_keep_the_secret_write_only(client: TestClient) -> None:
     off = client.put("/api/v1/settings/google", json={"enabled": True, "client_id": "client-123"})
     assert off.status_code == 422
 
-    body = enable(client, allowed_domains=["@Acme.io", " "])
+    body = enable(client)
     assert body["client_secret_set"] is True
     assert body["client_secret_hint"] == "abcd"  # noqa: S105 - last 4 of a test value
     assert "secret-abcd" not in str(body)
-    assert body["allowed_domains"] == ["acme.io"]
     assert body["redirect_uri"].endswith("/api/v1/auth/google/callback")
     assert client.get("/api/v1/auth/providers").json() == {"google": True}
 
@@ -68,49 +67,27 @@ def test_invited_user_signs_in_and_returns_to_the_page(
     client: TestClient, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     enable(client)
-    client.post("/api/v1/users", json={"username": "alice@acme.io"})
+    client.post("/api/v1/projects", json={"name": "Platform"})
+    invite = client.post("/api/v1/users/invite", json={"email": "Alice@Acme.io", "role": "viewer"})
+    assert invite.json()["password"] is None  # Google is on: no password
     browser, callback = sign_in(client, monkeypatch, "alice@acme.io", "/doctor")
     assert callback.status_code == 303
     assert callback.headers["location"] == "/doctor"
-    assert browser.get("/api/v1/auth/me").json()["username"] == "alice@acme.io"
-
-
-def test_allowed_domain_joins_as_a_user(
-    client: TestClient, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    enable(client, allowed_domains=["acme.io"])
-    browser, callback = sign_in(client, monkeypatch, "bob@acme.io")
-    assert callback.headers["location"] == "/"
     me = browser.get("/api/v1/auth/me").json()
-    assert (me["username"], me["role"], me["auth_provider"], me["builtin"]) == (
-        "bob@acme.io",
-        "user",
+    assert (me["username"], me["auth_provider"], me["builtin"]) == (
+        "alice@acme.io",
         "google",
         False,
     )
+    assert [p["role"] for p in me["projects"]] == ["viewer"]
 
 
-@pytest.mark.parametrize(
-    ("email", "domains", "error"),
-    [("carol@other.io", ["acme.io"], "not_invited"), ("dave@acme.io", [], "not_invited")],
-)
-def test_others_are_refused(
-    client: TestClient, monkeypatch: pytest.MonkeyPatch, email: str, domains: list[str], error: str
-) -> None:
-    enable(client, allowed_domains=domains)
-    browser, callback = sign_in(client, monkeypatch, email)
-    assert callback.headers["location"] == f"/login?error={error}"
+def test_only_allowed_emails_get_in(client: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
+    enable(client)
+    browser, callback = sign_in(client, monkeypatch, "carol@acme.io")
+    assert callback.headers["location"] == "/login?error=not_invited"
     assert browser.get("/api/v1/auth/me").status_code == 401
-
-
-def test_new_users_count_toward_the_plan(
-    client: TestClient, monkeypatch: pytest.MonkeyPatch
-) -> None:
-    enable(client, allowed_domains=["acme.io"])
-    for name in ("one", "two"):
-        client.post("/api/v1/users", json={"username": name})
-    _, callback = sign_in(client, monkeypatch, "eve@acme.io")
-    assert callback.headers["location"] == "/login?error=user_limit"
+    assert len(client.get("/api/v1/users").json()["users"]) == 1  # nobody was created
 
 
 def test_a_forged_state_or_unsafe_next_is_refused(
@@ -133,7 +110,7 @@ def test_a_forged_state_or_unsafe_next_is_refused(
 
 
 def test_id_token_must_match_the_flow(monkeypatch: pytest.MonkeyPatch) -> None:
-    config = google.GoogleConfig("client-123", "secret", ())
+    config = google.GoogleConfig("client-123", "secret")
     flow = {"verifier": "v", "nonce": "n", "state": "s", "next": "/"}
 
     class Response:
