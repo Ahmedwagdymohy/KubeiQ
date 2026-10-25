@@ -153,8 +153,26 @@ kind create cluster --name kubeiq-dev # adds context kind-kubeiq-dev
 
 ## Git workflow
 
-- Default branch: `main`. Conventional commits: `feat:`, `fix:`, `docs:`, `chore:`, `refactor:`,
-  `test:`, `ci:` with optional scope, e.g. `feat(backend): add pod collector`.
+Branches (full guide in `CONTRIBUTING.md`):
+
+| Branch | Purpose | Branches from | Merges into |
+|--------|---------|---------------|-------------|
+| `main` | Released code only. Every commit is a release or a hotfix; tags `vX.Y.Z` live here | — | — |
+| `staging` | Integration: finished features collect and get tested together before a release | `main` | `main` (release) |
+| `feat/<name>` | One feature | `staging` | `staging` |
+| `fix/<name>` | One bug fix | `staging` | `staging` |
+| `hotfix/<name>` | Urgent fix for a released version | `main` | `main`, then `main` into `staging` |
+| `docs/`, `chore/`, `refactor/`, `ci/` | Non-feature work | `staging` | `staging` |
+
+- Never commit directly to `main` or `staging`; work on a branch, in a git worktree
+  (e.g. `/tmp/kq-<name>`) so the main checkout stays untouched.
+- A branch merges into `staging` only after it is tested and approved (`make check` green).
+  Merge with `--no-ff` so each feature stays one visible unit; delete the branch afterwards.
+- A release merges `staging` into `main` (`--no-ff`), bumps the version, updates `CHANGELOG.md`
+  and tags `vX.Y.Z`. Features land under `## Unreleased` in `CHANGELOG.md` as they reach `staging`.
+- Keep feature branches current by merging `staging` into them, not by rebasing shared branches.
+- Conventional commits: `feat:`, `fix:`, `docs:`, `chore:`, `refactor:`, `test:`, `ci:` with
+  optional scope, e.g. `feat(backend): add pod collector`.
 - Short, professional messages. **No AI/Claude attribution or co-author lines** in commits or PRs.
 - Commit in logical units and push after each completed unit.
 
@@ -163,4 +181,4 @@ kind create cluster --name kubeiq-dev # adds context kind-kubeiq-dev
 1. `make check` passes (same checks as CI). Never commit unformatted code.
 2. `docs/ROADMAP.md` checkbox ticked; new decisions captured as an ADR.
 3. This file updated if layout, commands, or rules changed.
-4. Committed and pushed.
+4. Committed and pushed on its branch, then merged into `staging` once approved.
