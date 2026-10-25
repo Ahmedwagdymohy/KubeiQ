@@ -12,8 +12,7 @@ import { api, API_BASE_URL } from "@/lib/api";
 
 /** Why a Google sign-in came back to this page (?error= from the callback). */
 const GOOGLE_ERRORS: Record<string, string> = {
-  not_invited: "This Google account has no access. Ask an admin to add your email.",
-  user_limit: "KubeiQ has reached its user limit. Ask an admin to make room.",
+  not_invited: "This Google account is not allowed yet. Ask an admin to allow your email under Users.",
   expired: "The sign-in took too long or was opened in another tab. Try again.",
   cancelled: "Google sign-in was cancelled.",
   google_off: "Sign in with Google is turned off.",

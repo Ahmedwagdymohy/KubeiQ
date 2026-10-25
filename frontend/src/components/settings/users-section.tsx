@@ -4,15 +4,16 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
 
 import { PlanUsage } from "@/components/settings/plan-usage";
-import { Field, input, primaryButton, secondaryButton, Section } from "@/components/settings/fields";
+import { Field, input, primaryButton, Section } from "@/components/settings/fields";
 import { SecretOnce } from "@/components/settings/secret-once";
 import { useMe } from "@/hooks/use-me";
-import { api, type Role, type User } from "@/lib/api";
+import { api, type InviteRole, type Role, type User } from "@/lib/api";
 
 export function UsersSection() {
   const queryClient = useQueryClient();
   const users = useQuery({ queryKey: ["users"], queryFn: api.users });
   const [secret, setSecret] = useState<{ username: string; password: string } | null>(null);
+  const [allowed, setAllowed] = useState<string | null>(null);
 
   const refresh = () => {
     queryClient.invalidateQueries({ queryKey: ["users"] });
@@ -30,7 +31,7 @@ export function UsersSection() {
     <Section
       id="users"
       title="Users"
-      description="People who can sign in. Admins manage everything; other users see the clusters and namespaces of their projects"
+      description="People allowed to sign in. Allow someone by email and give them a role; nobody else can sign in"
       aside={
         data && (
           <PlanUsage used={data.users.length} max={data.max_users} plan={data.plan} noun={["user", "users"]} />
@@ -41,6 +42,7 @@ export function UsersSection() {
         {secret && (
           <SecretOnce label={`Password for ${secret.username}`} value={secret.password} />
         )}
+        {allowed && <p className="text-sm text-fg">{allowed} can now sign in with Google.</p>}
         <div className="flex flex-col divide-y divide-border rounded-lg border border-border bg-bg">
           {data?.users.map((user) => (
             <UserRow key={user.id} user={user} onChanged={showPassword} />
@@ -53,7 +55,12 @@ export function UsersSection() {
             more.
           </p>
         ) : (
-          <AddUser onAdded={showPassword} />
+          <AllowUser
+            onAdded={(user) => {
+              setAllowed(user.password ? null : user.username);
+              showPassword(user);
+            }}
+          />
         )}
       </div>
     </Section>
@@ -135,81 +142,88 @@ function UserRow({ user, onChanged }: { user: User; onChanged: (user: User) => v
   );
 }
 
-function AddUser({ onAdded }: { onAdded: (user: User) => void }) {
-  const [open, setOpen] = useState(false);
-  const [username, setUsername] = useState("");
-  const [role, setRole] = useState<Role>("user");
-  const [password, setPassword] = useState("");
-  const add = useMutation({
+const ROLES: { id: InviteRole; label: string; text: (project: string) => string }[] = [
+  { id: "viewer", label: "Viewer", text: (p) => `Sees the clusters of ${p} and investigates` },
+  { id: "editor", label: "Editor", text: (p) => `Like a viewer, and makes changes in ${p} when cluster changes are on` },
+  { id: "admin", label: "Admin", text: () => "Full access, including Settings and users" },
+];
+
+/** Allow someone to sign in: their email and a role. Nobody else can sign in (ADR 0013). */
+function AllowUser({ onAdded }: { onAdded: (user: User) => void }) {
+  const projects = useQuery({ queryKey: ["projects"], queryFn: api.projects });
+  const methods = useQuery({ queryKey: ["auth", "providers"], queryFn: api.signInMethods });
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState<InviteRole>("viewer");
+  const [projectId, setProjectId] = useState("");
+  const list = projects.data ?? [];
+  const project = list.find((p) => p.id === projectId) ?? list[0];
+  const google = Boolean(methods.data?.google);
+
+  const allow = useMutation({
     mutationFn: () =>
-      api.createUser({ username: username.trim().toLowerCase(), role, password: password || undefined }),
+      api.inviteUser({
+        email: email.trim().toLowerCase(),
+        role,
+        ...(role !== "admin" && project ? { project_id: project.id } : {}),
+      }),
     onSuccess: (user) => {
-      setOpen(false);
-      setUsername("");
-      setPassword("");
-      setRole("user");
+      setEmail("");
       onAdded(user);
     },
   });
-
-  if (!open) {
-    return (
-      <div>
-        <button type="button" className={secondaryButton} onClick={() => setOpen(true)}>
-          Add user
-        </button>
-      </div>
-    );
-  }
-
   const submit = (event: FormEvent) => {
     event.preventDefault();
-    add.mutate();
+    allow.mutate();
   };
+  const chosen = ROLES.find((r) => r.id === role) ?? ROLES[0];
 
   return (
     <form onSubmit={submit} className="flex flex-col gap-4 rounded-lg border border-border bg-bg p-4">
-      <div className="grid gap-4 sm:grid-cols-2">
-        <Field
-          label="Username"
-          hint="Lowercase letters, numbers, dots and dashes. Use their email address to let them sign in with Google"
-        >
+      <span className="text-sm font-medium">Allow Someone</span>
+      <div className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_160px_auto] sm:items-end">
+        <Field label="Email">
           <input
             className={input}
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="name@company.com"
             autoCapitalize="none"
             spellCheck={false}
             required
-            autoFocus
           />
         </Field>
         <Field label="Role">
-          <select className={input} value={role} onChange={(e) => setRole(e.target.value as Role)}>
-            <option value="user">User (access through projects)</option>
-            <option value="admin">Admin (full access)</option>
+          <select className={input} value={role} onChange={(e) => setRole(e.target.value as InviteRole)}>
+            {ROLES.map((r) => (
+              <option key={r.id} value={r.id}>
+                {r.label}
+              </option>
+            ))}
           </select>
         </Field>
-      </div>
-      <Field label="Password" hint="Leave empty to generate one">
-        <input
-          className={input}
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          autoComplete="new-password"
-          minLength={8}
-        />
-      </Field>
-      {add.error && <p className="text-sm text-danger">{add.error.message}</p>}
-      <div className="flex gap-2">
-        <button type="submit" className={primaryButton} disabled={add.isPending || !username.trim()}>
-          {add.isPending ? "Adding" : "Add user"}
-        </button>
-        <button type="button" className={secondaryButton} onClick={() => setOpen(false)}>
-          Cancel
+        <button type="submit" className={`${primaryButton} h-10`} disabled={allow.isPending || !email.trim()}>
+          {allow.isPending ? "Allowing" : "Allow"}
         </button>
       </div>
+      {role !== "admin" && list.length > 1 && (
+        <Field label="Project">
+          <select className={input} value={project?.id ?? ""} onChange={(e) => setProjectId(e.target.value)}>
+            {list.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.name}
+              </option>
+            ))}
+          </select>
+        </Field>
+      )}
+      <p className="text-[13px] text-muted">{chosen.text(project?.name ?? "the project")}</p>
+      {allow.error && <p className="text-sm text-danger">{allow.error.message}</p>}
+      <p className="text-[13px] text-subtle">
+        {google
+          ? "They sign in with Google using this email. Nobody else can sign in."
+          : "Sign in with Google is off, so KubeiQ creates a password to share with them once. Turn on Google under Sign-In to skip passwords."}
+      </p>
     </form>
   );
 }
