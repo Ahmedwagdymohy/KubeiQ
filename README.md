@@ -258,8 +258,10 @@ app (for example `http://localhost:3000/api/v1/clusters`).
 - **Redaction before any model call.** Logs and evidence are masked before they leave KubeiQ.
 - **Changes are opt-in.** An admin switch, project editors only, a confirmation in the UI and an
   audit record for every attempt.
+- **Invite only.** Admins allow people by email under **Settings › Users**, with a role (Admin,
+  Editor or Viewer). Nobody else can sign in.
 - **Sign in with Google** (optional). Set it up under **Settings › Sign-In** with your own OAuth
-  client; admins invite people by email, or allow whole domains.
+  client; allowed people then sign in with their Google account, without a password.
 - **Access by project.** Users see only the clusters and namespaces of their projects, as viewers
   or editors. Every API route checks it.
 
