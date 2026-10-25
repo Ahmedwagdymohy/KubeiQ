@@ -1,5 +1,6 @@
 """Settings API: AI model and kubeconfig files. Secrets are write-only."""
 
+import asyncio
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -9,7 +10,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from kubeiq import __version__
 from kubeiq.auth import repository as audit
 from kubeiq.auth.deps import AdminUser, require_admin
-from kubeiq.clusters.registry import get_local_source
+from kubeiq.clusters.gke import GkeSource
+from kubeiq.clusters.registry import get_gke_source, get_local_source
 from kubeiq.core.config import Settings, get_settings
 from kubeiq.db.session import get_session
 from kubeiq.settings import kubeconfigs, repository, service
@@ -19,6 +21,8 @@ from kubeiq.settings.models import (
     AISettingsIn,
     AISettingsOut,
     ChangesSettings,
+    GkeSettingsIn,
+    GkeSettingsOut,
     KubeconfigIn,
     KubeconfigOut,
     LocalKubeconfig,
@@ -30,6 +34,7 @@ router = APIRouter(prefix="/settings", tags=["settings"], dependencies=[Depends(
 
 SessionDep = Annotated[AsyncSession, Depends(get_session)]
 SettingsDep = Annotated[Settings, Depends(get_settings)]
+GkeDep = Annotated[GkeSource, Depends(get_gke_source)]
 
 
 @router.get("/providers", response_model=list[Provider])
@@ -116,6 +121,36 @@ async def put_changes(
         session, admin.username, "settings.changes", detail="on" if body.enabled else "off"
     )
     return body
+
+
+async def _gke_view(gke: GkeSource) -> GkeSettingsOut:
+    identity = await asyncio.to_thread(gke.identity)
+    return GkeSettingsOut(identity=identity, projects=gke.status())
+
+
+@router.get("/gke", response_model=GkeSettingsOut)
+async def get_gke(gke: GkeDep) -> GkeSettingsOut:
+    return await _gke_view(gke)
+
+
+@router.put("/gke", response_model=GkeSettingsOut)
+async def put_gke(
+    body: GkeSettingsIn, session: SessionDep, gke: GkeDep, admin: AdminUser
+) -> GkeSettingsOut:
+    """Save the Google Cloud projects to read GKE clusters from, and list their clusters now."""
+    unique = list({p.project_id: p for p in body.projects}.values())
+    await repository.put_value(
+        session, repository.GKE_KEY, {"projects": [p.model_dump() for p in unique]}
+    )
+    gke.set_projects(unique)
+    await asyncio.to_thread(gke.discover)
+    await audit.record(
+        session,
+        admin.username,
+        "settings.gke",
+        detail=", ".join(p.project_id for p in unique) or None,
+    )
+    return await _gke_view(gke)
 
 
 @router.get("/about", response_model=AboutOut)

@@ -33,6 +33,7 @@ features (teams, SSO, RBAC, audit, more clusters), never core usefulness.
 | 0008 | Sign-in: master key admin (LiteLLM-style), users, sessions; projects scope clusters/namespaces (viewer/editor); free plan 3 users |
 | 0009 | Cluster changes are off by default; admin switch, editors only, confirmed in UI, every attempt audited |
 | 0010 | Production: Caddy serves app + API on one origin (HTTPS with a domain), Postgres in Compose, images on GHCR |
+| 0011 | Connecting clusters: `deploy/connect.sh` read-only service account (any cluster); GKE through the machine's Google identity, nothing stored |
 
 Do not reverse an ADR silently — write a new ADR that supersedes it.
 
@@ -43,7 +44,7 @@ backend/            FastAPI service (Python 3.12, uv). Package: backend/src/kube
   src/kubeiq/
     api/            HTTP routes (versioned under /api/v1)
     core/           config, logging, shared utilities
-    clusters/       ClusterSource abstraction + kubeconfig implementation
+    clusters/       ClusterSource abstraction: kubeconfig, uploaded kubeconfigs, GKE (cloud identity)
     collectors/     read-only evidence collectors (pods, events, logs, deployments, network)
     detectors/      deterministic rule engine (CrashLoopBackOff, ImagePull, OOM, ...)
     agent/          LLM agent: tools, prompts, structured output
@@ -67,7 +68,7 @@ frontend/           The self-hosted app: Next.js (TypeScript, Tailwind, App Rout
   src/lib/api.ts      typed API client and SSE helper; lib/scope.ts = cluster in scope (top bar), lib/fleet.ts = workload health
 website/            Marketing site (live at kubeiq.pages.dev): landing, product pages, pricing, install. Static export
 ee/                 Commercial features (separate license)
-deploy/             install.sh (the one-line installer), Caddyfile (the proxy in docker-compose.yml), rbac/
+deploy/             install.sh (the one-line installer), connect.sh (read-only cluster access), Caddyfile, rbac/
 examples/           Intentionally broken workloads for testing diagnoses
 docs/               Architecture, roadmap, ADRs
 ```

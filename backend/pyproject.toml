@@ -19,6 +19,7 @@ dependencies = [
     "alembic>=1.14",
     "sse-starlette>=2.1",
     "cryptography>=46",
+    "google-auth[requests]>=2.30",
 ]
 
 [dependency-groups]

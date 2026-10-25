@@ -8,6 +8,7 @@ from loguru import logger
 
 from kubeiq.clusters.base import ClusterInfo, ClusterNotFoundError, ClusterSource, ClusterStatus
 from kubeiq.clusters.errors import describe_error
+from kubeiq.clusters.gke import GkeSource
 from kubeiq.clusters.kubeconfig import KubeconfigSource
 from kubeiq.clusters.uploaded import UploadedKubeconfigSource
 from kubeiq.core.config import get_settings
@@ -68,5 +69,10 @@ def get_uploaded_source() -> UploadedKubeconfigSource:
 
 
 @lru_cache
+def get_gke_source() -> GkeSource:
+    return GkeSource()
+
+
+@lru_cache
 def get_registry() -> ClusterRegistry:
-    return ClusterRegistry([get_local_source(), get_uploaded_source()])
+    return ClusterRegistry([get_local_source(), get_uploaded_source(), get_gke_source()])

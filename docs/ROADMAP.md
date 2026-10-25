@@ -34,7 +34,10 @@ Update this file in the same commit that completes a task.
 
 ## Phase 4 — Product experience
 - [x] Persistence (SQLAlchemy + Alembic; Postgres / SQLite) with `org_id`, migrations on startup
-- [ ] Bearer-token cluster connection (`token` ClusterSource, token encrypted at rest)
+- [x] Read-only cluster connection for any provider: `deploy/connect.sh` creates a ServiceAccount and prints its kubeconfig (ADR 0011)
+- [x] GKE through the machine's Google identity: projects in Settings, clusters discovered, short-lived tokens, nothing stored
+- [ ] EKS through the instance role (EKS access entry with the view policy)
+- [ ] AKS through the managed identity (Azure RBAC reader)
 - [x] Async investigations: `POST /api/v1/investigations`, SSE progress stream with replay, history API
 - [x] `GET /api/v1/clusters/{id}/namespaces`
 - [x] Cluster Doctor UI: cluster picker, live progress, incident list, history, shareable links
