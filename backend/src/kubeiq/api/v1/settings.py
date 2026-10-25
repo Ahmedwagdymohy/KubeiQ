@@ -1,13 +1,14 @@
 """Settings API: AI model and kubeconfig files. Secrets are write-only."""
 
 import asyncio
-from typing import Annotated
+from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from kubeiq import __version__
+from kubeiq.auth import google
 from kubeiq.auth import repository as audit
 from kubeiq.auth.deps import AdminUser, require_admin
 from kubeiq.clusters.gke import GkeSource
@@ -23,6 +24,8 @@ from kubeiq.settings.models import (
     ChangesSettings,
     GkeSettingsIn,
     GkeSettingsOut,
+    GoogleSettingsIn,
+    GoogleSettingsOut,
     KubeconfigIn,
     KubeconfigOut,
     LocalKubeconfig,
@@ -151,6 +154,50 @@ async def put_gke(
         detail=", ".join(p.project_id for p in unique) or None,
     )
     return await _gke_view(gke)
+
+
+def _google_view(saved: dict[str, Any], request: Request) -> GoogleSettingsOut:
+    secret = saved["client_secret"]
+    return GoogleSettingsOut(
+        enabled=saved["enabled"],
+        client_id=saved["client_id"],
+        client_secret_set=bool(secret),
+        client_secret_hint=decrypt(secret)[-4:] if secret else None,
+        allowed_domains=saved["allowed_domains"],
+        redirect_uri=str(request.url_for("google_callback")),
+    )
+
+
+@router.get("/google", response_model=GoogleSettingsOut)
+async def get_google(request: Request, session: SessionDep) -> GoogleSettingsOut:
+    return _google_view(await google.load_settings(session), request)
+
+
+@router.put("/google", response_model=GoogleSettingsOut)
+async def put_google(
+    body: GoogleSettingsIn, request: Request, session: SessionDep, admin: AdminUser
+) -> GoogleSettingsOut:
+    """Sign in with Google: the OAuth client and which domains may join on their own."""
+    current = await google.load_settings(session)
+    saved = {
+        "enabled": body.enabled,
+        "client_id": body.client_id.strip(),
+        "client_secret": current["client_secret"]
+        if body.client_secret is None
+        else (encrypt(body.client_secret.strip()) if body.client_secret.strip() else None),
+        "allowed_domains": sorted(
+            {d.strip().lower().lstrip("@") for d in body.allowed_domains if d.strip()}
+        ),
+    }
+    if saved["enabled"] and not (saved["client_id"] and saved["client_secret"]):
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT, "Add the client ID and secret to turn it on"
+        )
+    await repository.put_value(session, repository.GOOGLE_KEY, saved)
+    await audit.record(
+        session, admin.username, "settings.google", detail="on" if saved["enabled"] else "off"
+    )
+    return _google_view(saved, request)
 
 
 @router.get("/about", response_model=AboutOut)

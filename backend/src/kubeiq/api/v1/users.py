@@ -44,6 +44,7 @@ async def _out(session: AsyncSession, user: User, base: Settings) -> UserOut:
         username=user.username,
         role=user.role,
         builtin=_builtin(user, base),
+        auth_provider="google" if user.auth_provider == "google" else "password",
         created_at=user.created_at,
         projects=projects,
     )

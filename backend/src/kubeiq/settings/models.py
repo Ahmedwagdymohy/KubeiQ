@@ -64,6 +64,22 @@ class GkeSettingsOut(BaseModel):
     projects: list[GkeProjectStatus]
 
 
+class GoogleSettingsIn(BaseModel):
+    enabled: bool = False
+    client_id: str = Field(default="", max_length=255)
+    client_secret: str | None = None  # None keeps the saved secret, "" removes it
+    allowed_domains: list[str] = Field(default_factory=list, max_length=20)
+
+
+class GoogleSettingsOut(BaseModel):
+    enabled: bool
+    client_id: str
+    client_secret_set: bool
+    client_secret_hint: str | None  # last 4 characters
+    allowed_domains: list[str]
+    redirect_uri: str  # add this in the Google Cloud console
+
+
 class LocalKubeconfig(BaseModel):
     path: str
     contexts: int
