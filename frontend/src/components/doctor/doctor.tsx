@@ -298,7 +298,12 @@ function Results({ investigation, focus }: { investigation: Investigation; focus
           Checked {checked.slice(0, 3).join(", ")} in {scope}
         </span>
       </div>
-      <IncidentList key={investigation.id} diagnoses={report.diagnoses} focus={focus} />
+      <IncidentList
+        key={investigation.id}
+        investigationId={investigation.id}
+        diagnoses={report.diagnoses}
+        focus={focus}
+      />
     </>
   );
 }

@@ -79,6 +79,11 @@ Never hard-code colors; use the Tailwind tokens (`bg-frame`, `bg-surface`, `text
 - **Incident list**: one row per issue — severity dot, workload name, "Kind in namespace",
   short root cause, confidence number, chevron. Click to expand: How to fix → commands →
   Check that it worked → Why it happens → Prevent it next time → Impact → Affected resources.
+- **Ask About This Issue** (last block of an expanded incident): a thread of questions (author
+  initial, name, time) with answers below them, a one-line input that grows, an outlined Ask button
+  and three suggested questions while the thread is empty. While answering, one live line names
+  the check in progress ("Reading logs of pod web-1"). Commands in answers use the terminal block,
+  other code the code block. Without an AI model it shows a notice instead (Add a Model for admins).
 - **Terminal block**: dark box, `$` prompt, one command per line, copy icon per line.
   `<placeholders>` are highlighted (`text-terminal-warn`) with a "Replace the highlighted values" note.
 - **Progress**: live step list while running, paced so fast scans still read as a scan; collapses

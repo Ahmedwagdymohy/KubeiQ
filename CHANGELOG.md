@@ -4,6 +4,12 @@ All notable changes to KubeiQ. Versions follow [Semantic Versioning](https://sem
 
 ## Unreleased
 
+### Added
+- **Ask about an issue.** Every diagnosed issue in Cluster Doctor has a follow-up chat: ask why
+  it started, what else it affects or how to check the fix. Answers use the diagnosis and look
+  at the live cluster (logs, events, pods) with read-only access, showing each check as it runs.
+  Questions and answers stay on the investigation, so the team sees the same thread.
+
 ## 0.2.0 — 2026-10-25
 
 ### Added

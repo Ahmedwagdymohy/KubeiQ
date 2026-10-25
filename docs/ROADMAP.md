@@ -87,7 +87,7 @@ Update this file in the same commit that completes a task.
 - [x] Changelog (CHANGELOG.md) and tagged releases
 
 ## Later — Cluster Doctor features
-- [ ] "Explain" chat on each incident: ask follow-up questions with the incident's evidence as context
+- [x] "Explain" chat on each incident: ask follow-up questions with the incident's evidence as context
 - [ ] PDF reports: download a professional investigation report in the KubeiQ theme
 - [ ] Registry tag lookup: when no running image of the same repository exists, suggest the nearest existing tag from the registry (optional, off in air-gapped installs)
 - [ ] One-command Job re-run (re-create a failed Job from its own spec) once tested across Kubernetes versions

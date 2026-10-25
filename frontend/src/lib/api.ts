@@ -84,6 +84,16 @@ export type Investigation = InvestigationSummary & {
   events: ProgressEvent[];
 };
 
+export type ChatMessage = {
+  id: number;
+  role: "user" | "assistant";
+  author: string | null;
+  content: string;
+  created_at: string;
+};
+
+export type ChatThread = { ai_enabled: boolean; messages: ChatMessage[] };
+
 export type MapStatus = "healthy" | "warning" | "error";
 
 export type MapNode = {
@@ -409,6 +419,10 @@ export const api = {
     request<InvestigationSummary[]>(
       `/api/v1/investigations?limit=${limit}${before ? `&before=${encodeURIComponent(before)}` : ""}`,
     ),
+  chat: (investigationId: string, incidentId: string) =>
+    request<ChatThread>(
+      `/api/v1/investigations/${investigationId}/chat?${query({ incident_id: incidentId })}`,
+    ),
   providers: () => request<Provider[]>("/api/v1/settings/providers"),
   aiSettings: () => request<AISettings>("/api/v1/settings/ai"),
   saveAISettings: (body: AISettingsInput) =>
@@ -491,3 +505,65 @@ export function streamInvestigation(
   return () => source.close();
 }
 
+
+/**
+ * Ask a follow-up question about an incident. `onStep` gets each live check the AI runs
+ * ("Reading logs of pod web-1"); resolves with the stored question and answer.
+ */
+export async function askIncident(
+  investigationId: string,
+  incidentId: string,
+  message: string,
+  onStep: (detail: string) => void,
+  signal?: AbortSignal,
+): Promise<ChatMessage[]> {
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}/api/v1/investigations/${investigationId}/chat`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "content-type": "application/json", accept: "text/event-stream" },
+      body: JSON.stringify({ incident_id: incidentId, message }),
+      signal,
+    });
+  } catch (error) {
+    if (signal?.aborted) throw error;
+    throw new ApiError("Cannot reach the KubeiQ backend. Is it running?", 0);
+  }
+  if (!response.ok || !response.body) {
+    let detail = `Request failed (${response.status})`;
+    try {
+      const body = await response.json();
+      if (typeof body.detail === "string") detail = body.detail;
+    } catch {
+      // keep the generic message
+    }
+    if (response.status === 401) window.dispatchEvent(new Event(UNAUTHORIZED_EVENT));
+    throw new ApiError(detail, response.status);
+  }
+
+  const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
+  let buffer = "";
+  for (;;) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buffer += value.replace(/\r\n/g, "\n");
+    let end: number;
+    while ((end = buffer.indexOf("\n\n")) !== -1) {
+      const block = buffer.slice(0, end);
+      buffer = buffer.slice(end + 2);
+      let event = "message";
+      const data: string[] = [];
+      for (const line of block.split("\n")) {
+        if (line.startsWith("event:")) event = line.slice(6).trim();
+        else if (line.startsWith("data:")) data.push(line.slice(5).replace(/^ /, ""));
+      }
+      if (!data.length) continue; // pings
+      const payload = JSON.parse(data.join("\n"));
+      if (event === "step") onStep(payload.detail);
+      else if (event === "messages") return payload as ChatMessage[];
+      else if (event === "error") throw new ApiError(payload.detail, 502);
+    }
+  }
+  throw new ApiError("The answer was interrupted. Try again", 0);
+}

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
+import { IncidentChat } from "@/components/doctor/incident-chat";
 import { ChevronIcon } from "@/components/icons";
 import { Dot, hasPlaceholder, RichText, Terminal } from "@/components/ui";
 import type { Diagnosis } from "@/lib/api";
@@ -19,9 +20,11 @@ function matches(diagnosis: Diagnosis, ref: string): boolean {
 }
 
 export function IncidentList({
+  investigationId,
   diagnoses,
   focus = null,
 }: {
+  investigationId: string;
   diagnoses: Diagnosis[];
   focus?: string | null;
 }) {
@@ -34,6 +37,7 @@ export function IncidentList({
       {diagnoses.map((diagnosis) => (
         <IncidentRow
           key={diagnosis.incident_id}
+          investigationId={investigationId}
           diagnosis={diagnosis}
           focused={diagnosis === focused}
           expanded={open === diagnosis.incident_id}
@@ -47,11 +51,13 @@ export function IncidentList({
 }
 
 function IncidentRow({
+  investigationId,
   diagnosis,
   focused,
   expanded,
   onToggle,
 }: {
+  investigationId: string;
   diagnosis: Diagnosis;
   focused: boolean;
   expanded: boolean;
@@ -165,6 +171,8 @@ function IncidentRow({
           </Block>
 
           {diagnosis.note && <p className="text-sm text-warning">{diagnosis.note}</p>}
+
+          <IncidentChat investigationId={investigationId} incidentId={diagnosis.incident_id} />
         </div>
       )}
     </li>
