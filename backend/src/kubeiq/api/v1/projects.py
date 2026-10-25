@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from kubeiq.auth import repository
+from kubeiq.auth import plan, repository
 from kubeiq.auth.deps import AdminUser
 from kubeiq.auth.models import MemberOut, ProjectIn, ProjectOut, Scope
 from kubeiq.db.models import Project, User
@@ -32,7 +32,26 @@ async def _out(session: AsyncSession, project: Project) -> ProjectOut:
     )
 
 
+def _limit(message: str) -> HTTPException:
+    # 402 like the user limit: the fix is a license, not a permission.
+    return HTTPException(
+        status.HTTP_402_PAYMENT_REQUIRED,
+        f"The {plan.plan_name()} plan allows {message}. A license raises it",
+    )
+
+
+async def _check_clusters(session: AsyncSession, project: Project, body: ProjectIn) -> None:
+    """Over the limit, existing clusters keep working; only adding more is refused."""
+    others = [p for p in await repository.list_projects(session) if p.id != project.id]
+    before = repository.clusters_of([*others, project])
+    after = repository.clusters_of(others) | {s.cluster_id for s in body.scopes}
+    if len(after) > plan.max_clusters() and len(after) > len(before):
+        raise _limit(f"up to {plan.max_clusters()} clusters across projects")
+
+
 async def _save(session: AsyncSession, project: Project, body: ProjectIn) -> None:
+    await _check_clusters(session, project, body)
+    session.add(project)
     project.name = body.name.strip()
     project.description = body.description
     project.scopes = [
@@ -62,8 +81,9 @@ async def list_projects(admin: AdminUser, session: SessionDep) -> list[ProjectOu
 
 @router.post("", response_model=ProjectOut, status_code=status.HTTP_201_CREATED)
 async def create_project(body: ProjectIn, admin: AdminUser, session: SessionDep) -> ProjectOut:
+    if len(await repository.list_projects(session)) >= plan.max_projects():
+        raise _limit(f"{plan.max_projects()} project" + ("s" if plan.max_projects() > 1 else ""))
     project = Project()
-    session.add(project)
     await _save(session, project, body)
     await repository.record(session, admin.username, "project.create", target=project.name)
     return await _out(session, project)

@@ -3,6 +3,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type FormEvent } from "react";
 
+import { PlanUsage } from "@/components/settings/plan-usage";
 import { Field, input, primaryButton, secondaryButton, Section } from "@/components/settings/fields";
 import { SecretOnce } from "@/components/settings/secret-once";
 import { useMe } from "@/hooks/use-me";
@@ -30,7 +31,11 @@ export function UsersSection() {
       id="users"
       title="Users"
       description="People who can sign in. Admins manage everything; other users see the clusters and namespaces of their projects"
-      aside={data && <PlanUsage used={data.users.length} max={data.max_users} plan={data.plan} />}
+      aside={
+        data && (
+          <PlanUsage used={data.users.length} max={data.max_users} plan={data.plan} noun={["user", "users"]} />
+        )
+      }
     >
       <div className="flex flex-col gap-4">
         {secret && (
@@ -202,26 +207,5 @@ function AddUser({ onAdded }: { onAdded: (user: User) => void }) {
         </button>
       </div>
     </form>
-  );
-}
-
-/** Seats used on the plan, as a bar at the true ratio with both ends labelled. */
-function PlanUsage({ used, max, plan }: { used: number; max: number; plan: string }) {
-  return (
-    <div className="flex flex-col gap-2">
-      <span className="text-fg">
-        {used} of {max} users on the {plan} plan
-      </span>
-      <span className="block h-1.5 w-full overflow-hidden rounded-full bg-surface-2">
-        <span
-          className="block h-full rounded-full bg-fg"
-          style={{ width: `${Math.min(100, (used / Math.max(1, max)) * 100)}%` }}
-        />
-      </span>
-      <span className="flex justify-between text-xs tabular-nums text-subtle">
-        <span>0</span>
-        <span>{max}</span>
-      </span>
-    </div>
   );
 }

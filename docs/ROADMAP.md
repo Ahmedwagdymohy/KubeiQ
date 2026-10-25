@@ -46,6 +46,7 @@ Update this file in the same commit that completes a task.
 - [x] Sign-in: master key admin (generated at install), users, sessions, sign-in throttling (ADR 0008)
 - [x] Projects: access to clusters and namespaces with viewer and editor roles, enforced on every API route
 - [x] Free plan limit of 3 users; activity log of sign-ins, access and settings changes
+- [x] Projects hold the clusters; first sign-in sets up a project and its clusters; free plan of 1 project and 3 clusters (ADR 0012)
 - [ ] Broken-workload scenarios in `examples/` + kind-based e2e test
 
 ## Phase 4.5 — Platform shape (ADR 0006)

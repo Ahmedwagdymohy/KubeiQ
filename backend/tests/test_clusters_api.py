@@ -42,7 +42,7 @@ client = TestClient(app, headers=AUTH)
 
 
 def test_list_clusters_with_status() -> None:
-    body = client.get("/api/v1/clusters").json()
+    body = client.get("/api/v1/clusters", params={"all": True}).json()
 
     assert [c["name"] for c in body] == ["up", "down"]
     assert body[0]["status"] == {"reachable": True, "version": "v1.31.0", "error": None}
@@ -50,7 +50,7 @@ def test_list_clusters_with_status() -> None:
 
 
 def test_list_clusters_without_check() -> None:
-    body = client.get("/api/v1/clusters", params={"check": False}).json()
+    body = client.get("/api/v1/clusters", params={"check": False, "all": True}).json()
     assert all(c["status"] is None for c in body)
 
 

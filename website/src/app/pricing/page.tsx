@@ -39,7 +39,7 @@ export default function PricingPage() {
       <FieldHero
         lines={["Free to", "Steer"]}
         shape="screen"
-        sentence="Every KubeiQ product is free and open source for up to 3 users. Pro and Enterprise are coming soon"
+        sentence="Every KubeiQ product is free and open source for up to 3 users and 3 clusters. Pro and Enterprise are coming soon"
         figure={
           <Screen
             dark="/screens/plan-seats.jpg"

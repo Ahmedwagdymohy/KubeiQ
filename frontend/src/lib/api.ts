@@ -180,6 +180,9 @@ export type GkeSettings = {
   projects: (GkeProject & { clusters: number; error: string | null })[];
 };
 
+export type Usage = { used: number; max: number };
+export type Plan = { plan: string; users: Usage; projects: Usage; clusters: Usage };
+
 export type Role = "admin" | "user";
 export type ProjectRole = "viewer" | "editor";
 export type ProjectAccess = { project_id: string; project: string; role: ProjectRole };
@@ -191,6 +194,7 @@ export type Me = {
   projects: ProjectAccess[];
   access: { cluster_id: string; namespaces: string[] | null; role: ProjectRole }[];
   changes_enabled: boolean;
+  setup_needed: boolean;
 };
 
 export type User = {
@@ -363,7 +367,11 @@ export const api = {
   deleteProject: (id: string) => request<void>(`/api/v1/projects/${id}`, json("DELETE")),
   audit: (limit = 100) => request<AuditEvent[]>(`/api/v1/audit?limit=${limit}`),
   health: (signal?: AbortSignal) => request<Health>("/healthz", { signal }),
+  /** Clusters in the signed-in user's projects (ADR 0012). */
   clusters: () => request<Cluster[]>("/api/v1/clusters"),
+  /** Admins: every connected cluster, also those not in a project yet. */
+  allClusters: () => request<Cluster[]>("/api/v1/clusters?all=true"),
+  plan: () => request<Plan>("/api/v1/plan"),
   namespaces: (clusterId: string) =>
     request<string[]>(`/api/v1/clusters/${encodeCluster(clusterId)}/namespaces`),
   startInvestigation: (clusterId: string, namespace: string | null) =>

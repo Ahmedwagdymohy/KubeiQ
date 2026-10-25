@@ -3,7 +3,7 @@ import { GITHUB_URL } from "@/lib/site";
 
 export const FREE_FEATURES = [
   "Cluster Doctor, Cluster Map and Cluster Manager",
-  "Up to 3 users, with access by project",
+  "Up to 3 users, 1 project and 3 clusters",
   "Read-only by default, opt-in changes with an activity log",
   "Any AI model, or rules only",
   "Community support on GitHub",

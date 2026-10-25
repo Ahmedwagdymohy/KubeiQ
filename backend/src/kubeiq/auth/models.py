@@ -32,6 +32,7 @@ class Me(BaseModel):
     projects: list[ProjectAccess] = Field(default_factory=list)
     access: list[ScopeAccess] = Field(default_factory=list)  # empty for admins (they see all)
     changes_enabled: bool = False  # whether cluster changes are turned on for this install
+    setup_needed: bool = False  # an admin, and no project yet: show the welcome setup
 
 
 class PasswordChangeIn(BaseModel):
@@ -61,6 +62,18 @@ class UserOut(BaseModel):
 
 class UserCreated(UserOut):
     password: str | None = None  # shown once when generated or reset
+
+
+class Usage(BaseModel):
+    used: int
+    max: int
+
+
+class PlanOut(BaseModel):
+    plan: str
+    users: Usage
+    projects: Usage
+    clusters: Usage
 
 
 class UsersOut(BaseModel):

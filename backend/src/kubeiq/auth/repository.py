@@ -154,3 +154,12 @@ async def list_audit(session: AsyncSession, limit: int = 100) -> list[AuditEvent
 
 def scopes_of(project: Project) -> list[dict[str, Any]]:
     return list(project.scopes or [])
+
+
+def clusters_of(projects: list[Project]) -> set[str]:
+    """Distinct clusters across projects: the clusters KubeiQ works with (ADR 0012)."""
+    return {scope["cluster_id"] for p in projects for scope in scopes_of(p)}
+
+
+async def project_clusters(session: AsyncSession) -> set[str]:
+    return clusters_of(await list_projects(session))
