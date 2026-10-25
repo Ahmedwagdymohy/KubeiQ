@@ -5,11 +5,11 @@ from typing import Literal
 
 from pydantic import BaseModel, Field
 
-USERNAME = r"^[a-z0-9]([a-z0-9._-]*[a-z0-9])?$"
+USERNAME = r"^[a-z0-9]([a-z0-9._@+-]*[a-z0-9])?$"  # an email address works too
 
 
 class LoginIn(BaseModel):
-    username: str = Field(min_length=1, max_length=64)
+    username: str = Field(min_length=1, max_length=254)
     password: str = Field(min_length=1, max_length=256)
 
 
@@ -33,6 +33,7 @@ class Me(BaseModel):
     access: list[ScopeAccess] = Field(default_factory=list)  # empty for admins (they see all)
     changes_enabled: bool = False  # whether cluster changes are turned on for this install
     setup_needed: bool = False  # an admin, and no project yet: show the welcome setup
+    auth_provider: Literal["password", "google"] = "password"
 
 
 class PasswordChangeIn(BaseModel):
@@ -41,7 +42,7 @@ class PasswordChangeIn(BaseModel):
 
 
 class UserIn(BaseModel):
-    username: str = Field(min_length=2, max_length=64, pattern=USERNAME)
+    username: str = Field(min_length=2, max_length=254, pattern=USERNAME)
     role: Literal["admin", "user"] = "user"
     password: str | None = Field(default=None, min_length=8, max_length=256)
 
@@ -56,6 +57,7 @@ class UserOut(BaseModel):
     username: str
     role: Literal["admin", "user"]
     builtin: bool  # the master-key admin
+    auth_provider: Literal["password", "google"] = "password"
     created_at: datetime
     projects: list[ProjectAccess] = Field(default_factory=list)
 

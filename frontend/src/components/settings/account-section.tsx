@@ -32,6 +32,10 @@ export function AccountSection() {
           This account signs in with the master key created at install. To change it, set{" "}
           <code className="font-mono text-xs">KUBEIQ_MASTER_KEY</code> and restart KubeiQ.
         </p>
+      ) : me.data.auth_provider === "google" ? (
+        <p className="max-w-2xl text-sm text-muted">
+          You sign in with your Google account. Its password and security are managed by Google.
+        </p>
       ) : (
         <form onSubmit={submit} className="flex max-w-md flex-col gap-4">
           <Field label="Current password">

@@ -9,6 +9,7 @@ import { AISection } from "@/components/settings/ai-section";
 import { ChangesSection } from "@/components/settings/changes-section";
 import { ClustersSection } from "@/components/settings/clusters-section";
 import { ProjectsSection } from "@/components/settings/projects-section";
+import { SignInSection } from "@/components/settings/signin-section";
 import { UsersSection } from "@/components/settings/users-section";
 import { useHash } from "@/hooks/use-hash";
 import { useMe } from "@/hooks/use-me";
@@ -19,6 +20,7 @@ const VIEWS: Record<SettingsArea, () => ReactNode> = {
   clusters: () => <ClustersSection />,
   changes: () => <ChangesSection />,
   users: () => <UsersSection />,
+  signin: () => <SignInSection />,
   projects: () => <ProjectsSection />,
   activity: () => <ActivitySection />,
   account: () => <AccountSection />,

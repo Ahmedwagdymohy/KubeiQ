@@ -258,6 +258,8 @@ app (for example `http://localhost:3000/api/v1/clusters`).
 - **Redaction before any model call.** Logs and evidence are masked before they leave KubeiQ.
 - **Changes are opt-in.** An admin switch, project editors only, a confirmation in the UI and an
   audit record for every attempt.
+- **Sign in with Google** (optional). Set it up under **Settings › Sign-In** with your own OAuth
+  client; admins invite people by email, or allow whole domains.
 - **Access by project.** Users see only the clusters and namespaces of their projects, as viewers
   or editors. Every API route checks it.
 
@@ -300,6 +302,7 @@ Highlights from [docs/ROADMAP.md](docs/ROADMAP.md):
 - [x] Opt-in, audited cluster changes
 - [ ] Exec, port-forward, YAML edit with a diff, and Helm in Cluster Manager
 - [ ] Helm chart and an in-cluster agent for private clusters
+- [x] Sign in with Google
 - [ ] SSO (OIDC, LDAP), custom roles and audit export
 - [ ] Scheduled scans, alerts and PDF reports
 

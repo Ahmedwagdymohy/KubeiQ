@@ -4,6 +4,7 @@ export const SETTINGS_AREAS = [
   { id: "clusters", label: "Clusters", admin: true },
   { id: "changes", label: "Cluster Changes", admin: true },
   { id: "users", label: "Users", admin: true },
+  { id: "signin", label: "Sign-In", admin: true },
   { id: "projects", label: "Projects", admin: true },
   { id: "activity", label: "Activity", admin: true },
   { id: "account", label: "Account", admin: false },

@@ -108,9 +108,13 @@ class User(Base):
 
     id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     org_id: Mapped[str] = mapped_column(String(64), default=DEFAULT_ORG, index=True)
-    username: Mapped[str] = mapped_column(String(64))
+    username: Mapped[str] = mapped_column(String(254))  # may be an email address
     password_hash: Mapped[str | None] = mapped_column(String(255))
     role: Mapped[str] = mapped_column(String(16), default="user")  # "admin" or "user"
+    # "password", or "google" for accounts created by Google sign-in (ADR 0013)
+    auth_provider: Mapped[str] = mapped_column(
+        String(16), default="password", server_default="password"
+    )
     created_at: Mapped[datetime] = mapped_column(default=_now)
 
 

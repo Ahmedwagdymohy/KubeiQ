@@ -31,6 +31,9 @@ class Settings(BaseSettings):
     master_key: SecretStr | None = None
     admin_username: str = "admin"
     session_days: int = 7
+    # Where the browser app lives when it is not on the API's origin (local development:
+    # http://localhost:3000). Sign-in with Google returns there. Empty: the API's own origin.
+    app_url: str | None = None
 
     kubeconfig: str | None = None
     # Set to host.docker.internal when running in Docker against kind/minikube/k3d clusters.
