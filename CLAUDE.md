@@ -34,6 +34,7 @@ features (teams, SSO, RBAC, audit, more clusters), never core usefulness.
 | 0009 | Cluster changes are off by default; admin switch, editors only, confirmed in UI, every attempt audited |
 | 0010 | Production: Caddy serves app + API on one origin (HTTPS with a domain), Postgres in Compose, images on GHCR |
 | 0011 | Connecting clusters: `deploy/connect.sh` read-only service account (any cluster); GKE through the machine's Google identity, nothing stored |
+| 0012 | Projects hold the clusters (lists show projects' clusters, admins too); first sign-in opens /welcome; free plan 3 users, 1 project, 3 clusters |
 
 Do not reverse an ADR silently — write a new ADR that supersedes it.
 
@@ -62,6 +63,7 @@ frontend/           The self-hosted app: Next.js (TypeScript, Tailwind, App Rout
   src/app/map/        Cluster Map (React Flow + ELK); graph logic in src/lib/map (adapted from Headlamp)
   src/app/manager/    Cluster Manager (?cluster&namespace&kind&name&in are shareable)
   src/app/login/      Sign-in page; AuthGate (components/auth) sends signed-out users here
+  src/app/welcome/    First sign-in: create the project, then add clusters (AuthGate sends new admins)
   src/app/settings/   Settings: AI model, clusters, cluster changes, users, projects, activity, account
   src/components/     UI building blocks (ui.tsx, icons.tsx), shell/ (sidebar + top bar frame), overview/, doctor/ ...
   src/hooks/          use-investigation (SSE progress), use-me (signed-in user, access), use-can-edit, use-hash

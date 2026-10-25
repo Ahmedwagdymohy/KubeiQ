@@ -69,7 +69,8 @@ pulls the images and starts everything with Docker Compose. When it finishes:
 
 1. Open **http://localhost:3000** (or this server's address) and sign in as `admin` with the
    master key the installer prints (it is also saved as `KUBEIQ_MASTER_KEY` in
-   `~/kubeiq/backend/.env`).
+   `~/kubeiq/backend/.env`). The first sign-in walks you through creating a project and adding
+   its clusters. The free plan includes 3 users, 1 project and 3 clusters.
 2. Open **Cluster Doctor**, pick a cluster and a namespace, and run an investigation.
 3. Optional: open **Settings** to add an AI model, upload more kubeconfigs and invite your team.
 
