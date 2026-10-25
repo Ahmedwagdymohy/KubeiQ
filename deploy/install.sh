@@ -99,6 +99,14 @@ main() {
     set_var .env KUBEIQ_HTTPS_PORT 443
   fi
   port=$(get_var .env KUBEIQ_PORT)
+  # Run the API as this user so it can read ~/.kube/config, which is private to its owner.
+  uid=$(id -u)
+  gid=$(id -g)
+  set_var .env KUBEIQ_UID "$uid"
+  set_var .env KUBEIQ_GID "$gid"
+  # Created here so Docker does not create it owned by root, which would stop kubectl, kind and
+  # minikube from writing their kubeconfig later.
+  mkdir -p "$HOME/.kube"
 
   say "Getting the KubeiQ images"
   docker compose pull --quiet proxy postgres </dev/null
@@ -106,6 +114,9 @@ main() {
     say "No published images for $REF, building them here (the first build takes a few minutes)"
     docker compose build </dev/null
   fi
+
+  # KubeiQ's own state (generated keys) must belong to the user the API runs as.
+  docker compose run --rm --no-deps --user 0 --entrypoint chown backend -R "$uid:$gid" /data </dev/null
 
   say "Starting KubeiQ"
   docker compose up --detach --remove-orphans </dev/null

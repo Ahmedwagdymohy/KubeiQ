@@ -23,6 +23,9 @@ services:
   backend:
     image: ghcr.io/ahmedwagdymohy/kubeiq-backend:${KUBEIQ_VERSION:-main}
     build: ./backend
+    # Runs as the user who installed KubeiQ, so it can read that user's ~/.kube/config (kind,
+    # minikube and kubectl write it readable by its owner only). The installer sets both.
+    user: "${KUBEIQ_UID:-10001}:${KUBEIQ_GID:-10001}"
     env_file:
       - path: ./backend/.env
         required: false
@@ -31,6 +34,7 @@ services:
       KUBEIQ_DATABASE_URL: ${KUBEIQ_DATABASE_URL:-postgresql+asyncpg://kubeiq:${POSTGRES_PASSWORD:-kubeiq}@postgres:5432/kubeiq}
       KUBEIQ_KUBECONFIG: /home/kubeiq/.kube/config
       KUBEIQ_KUBECONFIG_LOCALHOST_ALIAS: host.docker.internal
+      HOME: /home/kubeiq
     extra_hosts:
       # Lets the backend reach kind/minikube/k3d API servers on the host, on Linux too.
       - "host.docker.internal:host-gateway"

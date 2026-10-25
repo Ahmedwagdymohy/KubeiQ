@@ -80,3 +80,19 @@ def test_reloads_when_file_changes(kubeconfig: Path) -> None:
     os.utime(kubeconfig, (stat.st_atime, stat.st_mtime + 5))
 
     assert [c.name for c in source.list_clusters()] == ["staging"]
+
+
+@pytest.mark.skipif(os.geteuid() == 0, reason="root reads any file")
+def test_unreadable_kubeconfig_reports_error_instead_of_failing(tmp_path: Path) -> None:
+    folder = tmp_path / ".kube"
+    folder.mkdir()
+    path = write_kubeconfig(folder / "config", {"dev": "https://10.0.0.1:6443"}, "dev")
+    source = KubeconfigSource(str(path))
+    folder.chmod(0o000)  # like a ~/.kube that belongs to another user
+    try:
+        assert source.list_clusters() == []
+        assert source.error is not None and "Permission denied" in source.error
+    finally:
+        folder.chmod(0o700)
+    assert [c.name for c in source.list_clusters()] == ["dev"]
+    assert source.error is None
