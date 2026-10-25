@@ -13,11 +13,18 @@ import {
 
 import { ClusterPanel } from "@/components/doctor/cluster-panel";
 import { HistoryList } from "@/components/doctor/history-list";
-import { IncidentList } from "@/components/doctor/incident-list";
+import { AskKubeiQ } from "@/components/doctor/incident-chat";
+import { IncidentList, initialIncident } from "@/components/doctor/incident-list";
 import { ProgressTimeline } from "@/components/doctor/progress-timeline";
 import { Dot } from "@/components/ui";
 import { useInvestigation } from "@/hooks/use-investigation";
-import { api, type Investigation, type InvestigationStatus, type ProgressEvent } from "@/lib/api";
+import {
+  api,
+  type Investigation,
+  type InvestigationStatus,
+  type ProgressEvent,
+  type Report,
+} from "@/lib/api";
 import { resolveCluster, setClusterScope, useClusterPicked, useClusterScope } from "@/lib/scope";
 
 const SIDEBAR_KEY = "kubeiq-sidebar-width";
@@ -298,12 +305,49 @@ function Results({ investigation, focus }: { investigation: Investigation; focus
           Checked {checked.slice(0, 3).join(", ")} in {scope}
         </span>
       </div>
-      <IncidentList
+      <Issues
         key={investigation.id}
         investigationId={investigation.id}
-        diagnoses={report.diagnoses}
+        report={report}
         focus={focus}
       />
+    </>
+  );
+}
+
+/** The issue list with the Ask KubeiQ popup; the popup follows the issue opened last. */
+function Issues({
+  investigationId,
+  report,
+  focus,
+}: {
+  investigationId: string;
+  report: Report;
+  focus: string | null;
+}) {
+  const [asking, setAsking] = useState(() => initialIncident(report.diagnoses, focus));
+  const [chatOpen, setChatOpen] = useState(false);
+  return (
+    <>
+      <IncidentList
+        diagnoses={report.diagnoses}
+        focus={focus}
+        onOpen={setAsking}
+        onAsk={(incidentId) => {
+          setAsking(incidentId);
+          setChatOpen(true);
+        }}
+      />
+      {asking && (
+        <AskKubeiQ
+          investigationId={investigationId}
+          diagnoses={report.diagnoses}
+          incidentId={asking}
+          onPick={setAsking}
+          open={chatOpen}
+          onOpenChange={setChatOpen}
+        />
+      )}
     </>
   );
 }
