@@ -9,11 +9,23 @@ All notable changes to KubeiQ. Versions follow [Semantic Versioning](https://sem
   it started, what else it affects or how to check the fix. Answers use the diagnosis and look
   at the live cluster (logs, events, pods) with read-only access, showing each check as it runs.
   Questions and answers stay on the investigation, so the team sees the same thread.
+- **Connect a cluster with one command** (ADR 0014). Settings › Clusters shows a command with a
+  one-time code; run it where kubectl works and the cluster appears in KubeiQ, in your project,
+  by itself. KubeiQ tests the cluster before saving it and says why when it cannot reach it.
+- **minikube and kind on the same machine just work.** The connect command and the installer link
+  KubeiQ to the cluster's Docker network.
+- **GKE: Check Access** lists a project's clusters before you add it and shows, per cluster, the
+  exact commands for any missing access.
+
+### Changed
+- Cluster health also checks that KubeiQ may read the cluster, and unreachable clusters say why
+  (no answer, refused, unknown host, certificate) with the address.
+- KubeiQ serves `connect.sh` itself, so the script always matches the server.
 
 ### Fixed
-- Settings › Clusters explains the connect command: the context is an optional field (empty uses
-  kubectl's current one), the name fills in from step 1, and each cloud says what to put in its
-  login command.
+- "No contexts in this file" no longer shows while KubeiQ is still checking the clusters.
+- A Google Cloud VM without a service account gets one plain sentence instead of Google's error
+  page, and the project ID is filled into every command.
 - The installer stopped with "the input device is not a TTY" on some Docker Compose versions
   when run as `curl ... | sh`, before starting KubeiQ.
 

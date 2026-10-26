@@ -111,9 +111,13 @@ cp .env backend/.env /path/to/backups/
 KubeiQ reads the clusters in your kubeconfig (`~/.kube`). For anything else, open
 **Settings › Clusters**:
 
-- **Any cluster (GKE, EKS, AKS, on-prem).** Run one command where `kubectl` already reaches the
-  cluster. It creates a read-only service account for KubeiQ (no access to Secrets) and prints a
-  kubeconfig to add in Settings. KubeiQ never gets your own credentials.
+- **Any cluster (GKE, EKS, AKS, minikube, kind, on-prem).** Settings shows one command with a
+  one-time code. Run it where `kubectl` already reaches the cluster: it creates a read-only service
+  account for KubeiQ (no access to Secrets), hands it to KubeiQ, and the cluster appears in your
+  project. KubeiQ never gets your own credentials. When KubeiQ and minikube or kind run in Docker on
+  the same machine, the command links their networks.
+
+  Without network access to KubeiQ, the published script prints a kubeconfig to add in Settings:
 
   ```bash
   curl -fsSL https://raw.githubusercontent.com/Ahmedwagdymohy/KubeiQ/main/deploy/connect.sh \
@@ -124,7 +128,8 @@ KubeiQ reads the clusters in your kubeconfig (`~/.kube`). For anything else, ope
 - **GKE, with KubeiQ on a Google Cloud VM.** Add your project IDs under Google Cloud. KubeiQ uses
   the VM's service account, so no key is stored and tokens expire within the hour. Grant that
   service account `roles/container.clusterViewer` on the project, and read-only access in each
-  cluster with `connect.sh --google-identity <service-account-email>`.
+  cluster with `connect.sh --google-identity <service-account-email>`. **Check Access** shows
+  each cluster's state and the exact commands for anything missing.
 
 ### Try It on Broken Workloads
 

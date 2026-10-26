@@ -35,6 +35,7 @@ Update this file in the same commit that completes a task.
 ## Phase 4 — Product experience
 - [x] Persistence (SQLAlchemy + Alembic; Postgres / SQLite) with `org_id`, migrations on startup
 - [x] Read-only cluster connection for any provider: `deploy/connect.sh` creates a ServiceAccount and prints its kubeconfig (ADR 0011)
+- [x] One command connects a cluster: one-time code, tested before saving, local Docker networks linked, GKE Check Access (ADR 0014)
 - [x] GKE through the machine's Google identity: projects in Settings, clusters discovered, short-lived tokens, nothing stored
 - [ ] EKS through the instance role (EKS access entry with the view policy)
 - [ ] AKS through the managed identity (Azure RBAC reader)

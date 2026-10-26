@@ -188,8 +188,9 @@ link_networks() {
   [ -n "$backend" ] || return 1
   ids=$(docker ps -q)
   # shellcheck disable=SC2086 # one argument per container id
-  network=$(docker inspect -f '{{range $n, $e := .NetworkSettings.Networks}}{{$n}} {{$e.IPAddress}}{{"\n"}}{{end}}' $ids 2>/dev/null |
-    awk -v ip="$host" '$2 == ip { print $1; exit }')
+  # The container that answers at the server's address (its IP or its name) and its network.
+  network=$(docker inspect -f '{{range $n, $e := .NetworkSettings.Networks}}{{$n}} {{$e.IPAddress}} {{$.Name}}{{"\n"}}{{end}}' $ids 2>/dev/null |
+    awk -v host="$host" '$2 == host || $3 == "/" host { print $1; exit }')
   if [ -z "$network" ]; then
     printf '%s\n' "KubeiQ cannot reach $server. Run this where KubeiQ can reach the cluster, or pass --server with an address it can reach" >>"$tmp/reply"
     return 1
