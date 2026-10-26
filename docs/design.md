@@ -79,6 +79,13 @@ Never hard-code colors; use the Tailwind tokens (`bg-frame`, `bg-surface`, `text
 - **Incident list**: one row per issue — severity dot, workload name, "Kind in namespace",
   short root cause, confidence number, chevron. Click to expand: How to fix → commands →
   Check that it worked → Why it happens → Prevent it next time → Impact → Affected resources.
+- **Ask KubeiQ** (Cluster Doctor results): a round cyan button with a flat sparkle at the bottom
+  right opens a 460px chat card above it (full screen on a phone). The card has a header, an issue
+  picker (severity dot, name; follows the issue opened last) and one thread per issue: question,
+  author and time, then the answer. Empty threads offer three suggested questions. While answering,
+  one live line names the check in progress ("Reading logs of pod web-1"); answers keep running
+  when the card is closed, and the button pulses until they land. Commands in answers use the
+  terminal block, other code the code block. Each expanded issue ends with "Ask about this issue".
 - **Terminal block**: dark box, `$` prompt, one command per line, copy icon per line.
   `<placeholders>` are highlighted (`text-terminal-warn`) with a "Replace the highlighted values" note.
 - **Progress**: live step list while running, paced so fast scans still read as a scan; collapses

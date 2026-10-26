@@ -128,3 +128,10 @@ export const RefreshIcon = (props: IconProps) => (
     <path d="M20 11a8 8 0 0 0-14.6-4.5L4 8M4 4v4h4M4 13a8 8 0 0 0 14.6 4.5L20 16M20 20v-4h-4" />
   </Icon>
 );
+
+export const SparkleIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M12 3c.4 4.6 2.4 6.6 7 7-4.6.4-6.6 2.4-7 7-.4-4.6-2.4-6.6-7-7 4.6-.4 6.6-2.4 7-7Z" />
+    <path d="M19 15.5c.15 1.6.9 2.35 2.5 2.5-1.6.15-2.35.9-2.5 2.5-.15-1.6-.9-2.35-2.5-2.5 1.6-.15 2.35-.9 2.5-2.5Z" />
+  </Icon>
+);

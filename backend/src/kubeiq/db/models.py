@@ -76,6 +76,24 @@ class InvestigationEvent(Base):
     investigation: Mapped[Investigation] = relationship(back_populates="events")
 
 
+class IncidentMessage(Base):
+    """One message in the follow-up chat on an incident of an investigation."""
+
+    __tablename__ = "incident_messages"
+    __table_args__ = (Index("ix_incident_messages_thread", "investigation_id", "incident_id"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    org_id: Mapped[str] = mapped_column(String(64), default=DEFAULT_ORG)
+    investigation_id: Mapped[str] = mapped_column(
+        ForeignKey("investigations.id", ondelete="CASCADE")
+    )
+    incident_id: Mapped[str] = mapped_column(String(512))
+    role: Mapped[str] = mapped_column(String(16))  # "user" or "assistant"
+    author: Mapped[str | None] = mapped_column(String(254))  # who asked; None for answers
+    content: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(default=_now)
+
+
 class AppSetting(Base):
     """A settings document per org, e.g. key "ai". Secret fields inside are encrypted."""
 

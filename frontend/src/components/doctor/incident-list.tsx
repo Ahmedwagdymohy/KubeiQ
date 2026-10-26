@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
-import { ChevronIcon } from "@/components/icons";
+import { ChevronIcon, SparkleIcon } from "@/components/icons";
 import { Dot, hasPlaceholder, RichText, Terminal } from "@/components/ui";
 import type { Diagnosis } from "@/lib/api";
 
@@ -18,17 +18,25 @@ function matches(diagnosis: Diagnosis, ref: string): boolean {
   return diagnosis.workload === ref || diagnosis.affected.includes(ref);
 }
 
+/** The incident shown first: the focused resource's, else the first (most severe). */
+export function initialIncident(diagnoses: Diagnosis[], focus: string | null): string | null {
+  const focused = focus ? diagnoses.find((d) => matches(d, focus)) : undefined;
+  return (focused ?? diagnoses[0])?.incident_id ?? null;
+}
+
 export function IncidentList({
   diagnoses,
   focus = null,
+  onOpen,
+  onAsk,
 }: {
   diagnoses: Diagnosis[];
   focus?: string | null;
+  onOpen?: (incidentId: string) => void;
+  onAsk?: (incidentId: string) => void;
 }) {
   const focused = focus ? diagnoses.find((d) => matches(d, focus)) : undefined;
-  const [open, setOpen] = useState<string | null>(
-    (focused ?? diagnoses[0])?.incident_id ?? null,
-  );
+  const [open, setOpen] = useState<string | null>(initialIncident(diagnoses, focus));
   return (
     <ul className="flex flex-col gap-px">
       {diagnoses.map((diagnosis) => (
@@ -37,9 +45,12 @@ export function IncidentList({
           diagnosis={diagnosis}
           focused={diagnosis === focused}
           expanded={open === diagnosis.incident_id}
-          onToggle={() =>
-            setOpen((current) => (current === diagnosis.incident_id ? null : diagnosis.incident_id))
-          }
+          onToggle={() => {
+            const opening = open !== diagnosis.incident_id;
+            setOpen(opening ? diagnosis.incident_id : null);
+            if (opening) onOpen?.(diagnosis.incident_id);
+          }}
+          onAsk={onAsk && (() => onAsk(diagnosis.incident_id))}
         />
       ))}
     </ul>
@@ -51,11 +62,13 @@ function IncidentRow({
   focused,
   expanded,
   onToggle,
+  onAsk,
 }: {
   diagnosis: Diagnosis;
   focused: boolean;
   expanded: boolean;
   onToggle: () => void;
+  onAsk?: () => void;
 }) {
   const { kind, namespace, name } = parseWorkload(diagnosis.workload);
   const row = useRef<HTMLLIElement>(null);
@@ -165,6 +178,17 @@ function IncidentRow({
           </Block>
 
           {diagnosis.note && <p className="text-sm text-warning">{diagnosis.note}</p>}
+
+          {onAsk && (
+            <button
+              type="button"
+              onClick={onAsk}
+              className="inline-flex items-center gap-2 self-start text-sm font-medium text-accent hover:underline"
+            >
+              <SparkleIcon />
+              Ask about this issue
+            </button>
+          )}
         </div>
       )}
     </li>
