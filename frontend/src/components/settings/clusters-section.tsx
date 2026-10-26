@@ -9,14 +9,31 @@ import { GkePanel, GkeProjectCard } from "@/components/settings/gke-connect";
 import { Terminal } from "@/components/ui";
 import { api } from "@/lib/api";
 
-const FLATTEN = "kubectl config view --minify --flatten --context=<context> > cluster.yaml";
 /** First give kubectl access to the cluster the usual way, then create KubeiQ's own access. */
 const PROVIDERS = [
-  { id: "gke", label: "GKE", login: "gcloud container clusters get-credentials <cluster> --region <region> --project <project>" },
-  { id: "eks", label: "EKS", login: "aws eks update-kubeconfig --name <cluster> --region <region>" },
-  { id: "aks", label: "AKS", login: "az aks get-credentials --resource-group <resource-group> --name <cluster>" },
-  { id: "other", label: "Other", login: null },
+  {
+    id: "gke",
+    label: "GKE",
+    login: "gcloud container clusters get-credentials <cluster> --region <region> --project <project>",
+    values: "your GKE cluster's name, its region (or zone, with --zone) and the Google Cloud project ID",
+  },
+  {
+    id: "eks",
+    label: "EKS",
+    login: "aws eks update-kubeconfig --name <cluster> --region <region>",
+    values: "your EKS cluster's name and its AWS region",
+  },
+  {
+    id: "aks",
+    label: "AKS",
+    login: "az aks get-credentials --resource-group <resource-group> --name <cluster>",
+    values: "the Azure resource group and your AKS cluster's name",
+  },
+  { id: "other", label: "Other", login: null, values: null },
 ] as const;
+
+/** A kubectl context name, as typed: no spaces or shell characters. */
+const cleanContext = (value: string) => value.trim().replace(/[^A-Za-z0-9_.:@/-]/g, "");
 
 /**
  * Settings › Clusters: what KubeiQ is connected to, then the two ways to add a cluster
@@ -180,10 +197,36 @@ function KubeconfigPanel({
   const [source, setSource] = useState<"create" | "existing">("create");
   const [provider, setProvider] = useState<(typeof PROVIDERS)[number]["id"]>("gke");
   const [name, setName] = useState("");
+  const [context, setContext] = useState("");
   const [content, setContent] = useState("");
   const chosen = PROVIDERS.find((p) => p.id === provider) ?? PROVIDERS[0];
   const n = name.trim() || "<name>";
-  const connect = `curl -fsSL ${CONNECT_URL} | sh -s -- --name ${n}${chosen.login ? "" : " --context <context>"} > kubeiq-${n}.yaml`;
+  // The cloud login commands switch kubectl to the new cluster, so the current context is right.
+  const ctx = chosen.login ? "" : cleanContext(context);
+  const connect = `curl -fsSL ${CONNECT_URL} | sh -s -- --name ${n}${ctx ? ` --context ${ctx}` : ""} > kubeiq-${n}.yaml`;
+  const flatten = `kubectl config view --minify --flatten${cleanContext(context) ? ` --context=${cleanContext(context)}` : ""} > ${name.trim() || "cluster"}.yaml`;
+  const contextField = (
+    <Field
+      label="kubectl context (optional)"
+      hint={
+        <>
+          The cluster&apos;s entry in your kubeconfig, such as <Code>minikube</Code> or{" "}
+          <Code>kind-dev</Code>. List them with <Code>kubectl config get-contexts</Code>. Leave it
+          empty to use the current one, marked with *
+        </>
+      }
+    >
+      <input
+        className={`${input} font-mono placeholder:font-sans`}
+        value={context}
+        onChange={(e) => setContext(e.target.value)}
+        placeholder="current context"
+        spellCheck={false}
+        autoCapitalize="off"
+        maxLength={120}
+      />
+    </Field>
+  );
 
   const add = useMutation({
     mutationFn: () => api.addKubeconfig(name.trim(), content),
@@ -233,13 +276,35 @@ function KubeconfigPanel({
                 </button>
               ))}
             </div>
+            {!chosen.login && contextField}
             <Terminal commands={[...(chosen.login ? [chosen.login] : []), connect]} />
-            <p className="text-[13px] text-subtle">
-              Run {chosen.login ? "both" : "it"} where kubectl can reach the cluster.
-              {chosen.login ? " The first gives kubectl access, the second creates KubeiQ's access." : ""}{" "}
-              Add <code className="font-mono text-xs">--changes</code> to allow Cluster Manager&apos;s
-              changes, or run it later with <code className="font-mono text-xs">--remove</code> to revoke
-            </p>
+            <ul className="flex list-disc flex-col gap-1 pl-4 text-[13px] text-subtle">
+              <li>
+                Run {chosen.login ? "both commands" : "it"} on a machine where kubectl can reach
+                the cluster.
+                {chosen.login
+                  ? " The first gives kubectl access, the second creates KubeiQ's access."
+                  : ""}
+              </li>
+              {chosen.values && (
+                <li>
+                  In the first command, replace the <span className="text-warning">highlighted</span>{" "}
+                  values with {chosen.values}
+                </li>
+              )}
+              {!name.trim() && (
+                <li>
+                  <Code>{"<name>"}</Code> fills in once you name the cluster in step 1
+                </li>
+              )}
+              <li>
+                It saves the access to <Code>kubeiq-{n}.yaml</Code>. Add that file in step 3
+              </li>
+              <li>
+                Add <Code>--changes</Code> to allow Cluster Manager&apos;s changes, or run it later
+                with <Code>--remove</Code> to revoke the access
+              </li>
+            </ul>
           </Option>
           <Option
             selected={source === "existing"}
@@ -247,7 +312,8 @@ function KubeconfigPanel({
             title="Use a kubeconfig you have"
             text="KubeiQ gets that user's access. Kubeconfigs that log in through gcloud, aws or az cannot be used"
           >
-            <Terminal commands={[FLATTEN]} />
+            {contextField}
+            <Terminal commands={[flatten]} />
             <p className="text-[13px] text-subtle">Exports one context with its certificates inside the file</p>
           </Option>
         </div>
@@ -285,6 +351,14 @@ function KubeconfigPanel({
         </div>
       </Step>
     </div>
+  );
+}
+
+function Code({ children }: { children: ReactNode }) {
+  return (
+    <code className="whitespace-nowrap font-mono text-xs text-muted [font-variant-ligatures:none]">
+      {children}
+    </code>
   );
 }
 

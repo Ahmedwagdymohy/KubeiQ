@@ -11,6 +11,9 @@ All notable changes to KubeiQ. Versions follow [Semantic Versioning](https://sem
   Questions and answers stay on the investigation, so the team sees the same thread.
 
 ### Fixed
+- Settings › Clusters explains the connect command: the context is an optional field (empty uses
+  kubectl's current one), the name fills in from step 1, and each cloud says what to put in its
+  login command.
 - The installer stopped with "the input device is not a TTY" on some Docker Compose versions
   when run as `curl ... | sh`, before starting KubeiQ.
 
