@@ -50,13 +50,20 @@ export function SourceCard({
 export function ClusterRows({
   clusters,
   failed,
+  loading = false,
   empty,
 }: {
   clusters: Cluster[];
   failed: boolean;
+  loading?: boolean;
   empty: string;
 }) {
-  if (clusters.length === 0) return <p className="text-[13px] text-subtle">{failed ? "Could not load clusters" : empty}</p>;
+  if (clusters.length === 0)
+    return (
+      <p className="text-[13px] text-subtle">
+        {loading ? "Checking the clusters" : failed ? "Could not load clusters" : empty}
+      </p>
+    );
   return (
     <ul className="flex flex-col gap-1.5">
       {clusters.map(({ id, name, status }) => (

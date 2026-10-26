@@ -47,6 +47,8 @@ export function ClustersSection() {
   const clusters = useQuery({ queryKey: ["clusters", "all"], queryFn: api.allClusters });
   const all = clusters.data ?? [];
   const failed = clusters.isError;
+  // Checking clusters can take seconds (unreachable ones time out); never show "no contexts" then.
+  const loading = clusters.isPending;
 
   const refresh = () => {
     queryClient.invalidateQueries({ queryKey: ["settings", "kubeconfigs"] });
@@ -75,6 +77,7 @@ export function ClustersSection() {
                 <ClusterRows
                   clusters={all.filter((c) => c.method === "kubeconfig")}
                   failed={failed}
+                  loading={loading}
                   empty="No contexts in this file"
                 />
               )}
@@ -94,6 +97,7 @@ export function ClustersSection() {
               <ClusterRows
                 clusters={all.filter((c) => c.id.startsWith(`upload:${file.name}/`))}
                 failed={failed}
+                loading={loading}
                 empty="No contexts in this file"
               />
               {file.warnings.map((w) => (
@@ -110,6 +114,7 @@ export function ClustersSection() {
               settings={gke.data}
               clusters={all.filter((c) => c.id.startsWith(`gke:${project.project_id}/`))}
               failed={failed}
+              loading={loading}
             />
           ))}
         </div>

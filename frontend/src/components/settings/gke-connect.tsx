@@ -28,11 +28,13 @@ export function GkeProjectCard({
   settings,
   clusters,
   failed,
+  loading = false,
 }: {
   project: GkeSettings["projects"][number];
   settings: GkeSettings;
   clusters: Cluster[];
   failed: boolean;
+  loading?: boolean;
 }) {
   const save = useSaveProjects();
   return (
@@ -48,7 +50,12 @@ export function GkeProjectCard({
       {project.error ? (
         <p className="text-[13px] text-warning">{project.error}</p>
       ) : (
-        <ClusterRows clusters={clusters} failed={failed} empty="No GKE clusters in this project" />
+        <ClusterRows
+          clusters={clusters}
+          failed={failed}
+          loading={loading}
+          empty="No GKE clusters in this project"
+        />
       )}
     </SourceCard>
   );
