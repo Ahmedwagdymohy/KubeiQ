@@ -116,7 +116,7 @@ main() {
   fi
 
   # KubeiQ's own state (generated keys) must belong to the user the API runs as.
-  docker compose run --rm --no-deps --user 0 --entrypoint chown backend -R "$uid:$gid" /data </dev/null
+  docker compose run --rm -T --no-deps --user 0 --entrypoint chown backend -R "$uid:$gid" /data </dev/null
 
   say "Starting KubeiQ"
   docker compose up --detach --remove-orphans </dev/null

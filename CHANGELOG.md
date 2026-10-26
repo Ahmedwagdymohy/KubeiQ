@@ -10,6 +10,10 @@ All notable changes to KubeiQ. Versions follow [Semantic Versioning](https://sem
   at the live cluster (logs, events, pods) with read-only access, showing each check as it runs.
   Questions and answers stay on the investigation, so the team sees the same thread.
 
+### Fixed
+- The installer stopped with "the input device is not a TTY" on some Docker Compose versions
+  when run as `curl ... | sh`, before starting KubeiQ.
+
 ## 0.2.0 — 2026-10-25
 
 ### Added
