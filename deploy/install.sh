@@ -44,6 +44,19 @@ ready() {
   fi
 }
 
+# link_networks: local clusters in Docker (minikube) live on their own Docker network, which
+# KubeiQ cannot reach from its own. Join minikube's and those connect.sh recorded in .env.
+link_networks() {
+  backend=$(docker compose ps -q backend)
+  [ -n "$backend" ] || return 0
+  for network in minikube $(get_var .env KUBEIQ_NETWORKS); do
+    docker network inspect "$network" >/dev/null 2>&1 || continue
+    if docker network connect "$network" "$backend" >/dev/null 2>&1; then
+      say "Linked KubeiQ to the $network network, so it can reach that cluster"
+    fi
+  done
+}
+
 # Everything runs inside main, called on the last line: with `curl | sh` the shell reads the
 # script from stdin, so it must be fully parsed before any command that could read stdin runs.
 main() {
@@ -120,6 +133,8 @@ main() {
 
   say "Starting KubeiQ"
   docker compose up --detach --remove-orphans </dev/null
+
+  link_networks
 
   say "Waiting for KubeiQ to start"
   tries=0

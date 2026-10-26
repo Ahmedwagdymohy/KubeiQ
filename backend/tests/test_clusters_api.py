@@ -45,7 +45,12 @@ def test_list_clusters_with_status() -> None:
     body = client.get("/api/v1/clusters", params={"all": True}).json()
 
     assert [c["name"] for c in body] == ["up", "down"]
-    assert body[0]["status"] == {"reachable": True, "version": "v1.31.0", "error": None}
+    assert body[0]["status"] == {
+        "reachable": True,
+        "version": "v1.31.0",
+        "error": None,
+        "can_read": None,
+    }
     assert body[1]["status"]["reachable"] is False
 
 

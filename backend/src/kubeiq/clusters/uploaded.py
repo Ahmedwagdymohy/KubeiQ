@@ -54,14 +54,15 @@ class UploadedKubeconfigSource(ClusterSource):
             raise ClusterNotFoundError(cluster_id)
         with self._lock:
             if cluster_id not in self._clients:
-                configuration = Configuration()
-                k8s_config.load_kube_config_from_dict(
-                    config,
-                    context=context,
-                    client_configuration=configuration,
-                    persist_config=False,
-                )
-                if self._localhost_alias:
-                    KubeconfigSource._apply_localhost_alias(configuration, self._localhost_alias)
-                self._clients[cluster_id] = ApiClient(configuration)
+                self._clients[cluster_id] = self.client_for(config, context)
             return self._clients[cluster_id]
+
+    def client_for(self, config: dict[str, Any], context: str) -> ApiClient:
+        """A client for one context of a kubeconfig, also before it is saved (to test it)."""
+        configuration = Configuration()
+        k8s_config.load_kube_config_from_dict(
+            config, context=context, client_configuration=configuration, persist_config=False
+        )
+        if self._localhost_alias:
+            KubeconfigSource._apply_localhost_alias(configuration, self._localhost_alias)
+        return ApiClient(configuration)

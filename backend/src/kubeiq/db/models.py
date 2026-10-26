@@ -94,6 +94,29 @@ class IncidentMessage(Base):
     created_at: Mapped[datetime] = mapped_column(default=_now)
 
 
+class ConnectCode(Base):
+    """A one-time code that lets connect.sh hand a cluster's access to KubeiQ (ADR 0014).
+
+    Only a hash of the code is stored. It expires, works once, and records how it went so the
+    page that created it can show the result live.
+    """
+
+    __tablename__ = "connect_codes"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    org_id: Mapped[str] = mapped_column(String(64), default=DEFAULT_ORG)
+    code_hash: Mapped[str] = mapped_column(String(64), unique=True)
+    created_by: Mapped[str] = mapped_column(String(254))
+    project_id: Mapped[str | None] = mapped_column(String(36))  # where the cluster goes
+    created_at: Mapped[datetime] = mapped_column(default=_now)
+    expires_at: Mapped[datetime]
+    used_at: Mapped[datetime | None]
+    state: Mapped[str] = mapped_column(String(16), default="waiting")  # waiting, connected, failed
+    cluster_id: Mapped[str | None] = mapped_column(String(512))
+    detail: Mapped[str | None] = mapped_column(Text)  # the last error, or the cluster's version
+    note: Mapped[str | None] = mapped_column(Text)  # e.g. why it was not added to the project
+
+
 class AppSetting(Base):
     """A settings document per org, e.g. key "ai". Secret fields inside are encrypted."""
 

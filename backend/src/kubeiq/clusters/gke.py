@@ -7,6 +7,7 @@ the configured projects, and every request to a cluster carries a short-lived ac
 
 import base64
 import hashlib
+import re
 import tempfile
 import threading
 from collections.abc import Callable
@@ -32,6 +33,10 @@ GKE_API = "https://container.googleapis.com/v1"
 NO_IDENTITY = (
     "No Google Cloud identity found. Run KubeiQ on a Google Cloud VM with a service account, "
     "or connect the clusters with a kubeconfig instead"
+)
+NO_ACCOUNT = (
+    "This VM has no service account, so KubeiQ has no Google identity. Attach one with the "
+    "commands below"
 )
 NO_SCOPE = (
     "This VM's Cloud API access does not include the GKE API. Stop the VM, set Cloud API access "
@@ -64,8 +69,34 @@ class GkeProjectStatus(GkeProject):
     error: str | None = None
 
 
+class GkeClusterCheck(BaseModel):
+    """One cluster of a project, as KubeiQ sees it before the project is saved."""
+
+    name: str
+    location: str
+    reachable: bool = False
+    version: str | None = None
+    can_read: bool | None = None
+    error: str | None = None
+
+
+class GkeProjectCheck(BaseModel):
+    project_id: str
+    error: str | None = None  # the project itself: role missing, API disabled, wrong ID
+    clusters: list[GkeClusterCheck] = Field(default_factory=list)
+
+
 class GkeError(Exception):
     """A problem a user can fix (permissions, scopes, a wrong project), with what to do."""
+
+
+def _token_error(exc: GoogleAuthError) -> str:
+    """Google's errors can hold a whole HTML page; keep one short line users can act on."""
+    text = str(exc)
+    if "service-accounts/default" in text and "404" in text:
+        return NO_ACCOUNT
+    first = re.sub(r"<[^>]+>|\\n|\s+", " ", text.split("Response:")[0]).strip(" (',")
+    return f"Could not get a Google access token: {first[:160]}"
 
 
 class HttpSession(Protocol):
@@ -202,6 +233,11 @@ class GkeSource(ClusterSource):
             self._clusters, self._errors = clusters, errors
             self._clients.clear()
 
+    def preview(self, project: GkeProject) -> list[tuple[_Cluster, ApiClient]]:
+        """The project's clusters with a client each, without saving anything. Raises GkeError."""
+        found = [c for item in self._list(project.project_id) if (c := self._parse(project, item))]
+        return [(c, self._build_client(c)) for c in found]
+
     def status(self) -> list[GkeProjectStatus]:
         return [
             GkeProjectStatus(
@@ -227,7 +263,7 @@ class GkeSource(ClusterSource):
             try:
                 credentials.refresh(Request())  # type: ignore[no-untyped-call]
             except GoogleAuthError as exc:
-                raise GkeError(f"Could not get a Google access token: {exc}") from exc
+                raise GkeError(_token_error(exc)) from exc
 
     def _list(self, project_id: str) -> list[dict[str, Any]]:
         session = self._session_factory(self._get_credentials())
@@ -235,7 +271,7 @@ class GkeSource(ClusterSource):
         try:
             response = session.get(url, timeout=15)
         except GoogleAuthError as exc:
-            raise GkeError(f"Could not get a Google access token: {exc}") from exc
+            raise GkeError(_token_error(exc)) from exc
         except RequestException as exc:
             raise GkeError(f"Could not reach the GKE API: {exc}") from exc
         if response.status_code != 200:

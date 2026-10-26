@@ -1,0 +1,48 @@
+# Read-only access for KubeiQ running inside a cluster (or for a ServiceAccount token connection).
+# Grants list/get/watch on troubleshooting resources and pod logs. Secrets are intentionally excluded.
+# ConfigMap values are read only by the AI agent and redacted before reaching any model.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kubeiq
+  namespace: kubeiq
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kubeiq-readonly
+rules:
+  - apiGroups: [""]
+    resources: [pods, pods/log, events, services, endpoints, nodes, namespaces, persistentvolumeclaims, configmaps]
+    verbs: [get, list, watch]
+  - apiGroups: [apps]
+    resources: [deployments, replicasets, statefulsets, daemonsets]
+    verbs: [get, list, watch]
+  - apiGroups: [batch]
+    resources: [jobs, cronjobs]
+    verbs: [get, list, watch]
+  - apiGroups: [networking.k8s.io]
+    resources: [ingresses]
+    verbs: [get, list, watch]
+  - apiGroups: [autoscaling]
+    resources: [horizontalpodautoscalers]
+    verbs: [get, list, watch]
+  - apiGroups: [discovery.k8s.io]
+    resources: [endpointslices]
+    verbs: [get, list, watch]
+  - apiGroups: [events.k8s.io]
+    resources: [events]
+    verbs: [get, list, watch]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kubeiq-readonly
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kubeiq-readonly
+subjects:
+  - kind: ServiceAccount
+    name: kubeiq
+    namespace: kubeiq

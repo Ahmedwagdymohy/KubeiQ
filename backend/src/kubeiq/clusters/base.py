@@ -32,6 +32,8 @@ class ClusterStatus(BaseModel):
     reachable: bool
     version: str | None = None
     error: str | None = None
+    # Reachable, but KubeiQ's identity may not read it (no RBAC binding): investigations would fail.
+    can_read: bool | None = None
 
 
 class ClusterNotFoundError(LookupError):

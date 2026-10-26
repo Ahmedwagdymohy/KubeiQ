@@ -4,6 +4,7 @@ import asyncio
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from kubernetes.client import VersionApi
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -11,8 +12,21 @@ from kubeiq import __version__
 from kubeiq.auth import google
 from kubeiq.auth import repository as audit
 from kubeiq.auth.deps import AdminUser, require_admin
-from kubeiq.clusters.gke import GkeSource
-from kubeiq.clusters.registry import get_gke_source, get_local_source
+from kubeiq.clusters.base import ClusterStatus
+from kubeiq.clusters.errors import describe_error
+from kubeiq.clusters.gke import (
+    GkeClusterCheck,
+    GkeError,
+    GkeProject,
+    GkeProjectCheck,
+    GkeSource,
+)
+from kubeiq.clusters.registry import (
+    PROBE_TIMEOUT_SECONDS,
+    get_gke_source,
+    get_local_source,
+    probe_read,
+)
 from kubeiq.core.config import Settings, get_settings
 from kubeiq.db.session import get_session
 from kubeiq.settings import kubeconfigs, repository, service
@@ -154,6 +168,32 @@ async def put_gke(
         detail=", ".join(p.project_id for p in unique) or None,
     )
     return await _gke_view(gke)
+
+
+@router.post("/gke/check", response_model=GkeProjectCheck)
+async def check_gke(body: GkeProject, gke: GkeDep) -> GkeProjectCheck:
+    """Before a project is added: can KubeiQ list its clusters, reach them and read them?"""
+    try:
+        found = await asyncio.to_thread(gke.preview, body)
+    except GkeError as exc:
+        return GkeProjectCheck(project_id=body.project_id, error=str(exc))
+
+    async def check(cluster: Any, client: Any) -> GkeClusterCheck:
+        result = GkeClusterCheck(name=cluster.name, location=cluster.location)
+        try:
+            info = await asyncio.to_thread(
+                VersionApi(client).get_code, _request_timeout=PROBE_TIMEOUT_SECONDS
+            )
+        except Exception as exc:
+            result.error = describe_error(exc, f"https://{cluster.server}")
+            return result
+        status_ = await probe_read(client, ClusterStatus(reachable=True, version=info.git_version))
+        return result.model_copy(
+            update=status_.model_dump(include={"reachable", "version", "can_read"})
+        )
+
+    clusters = await asyncio.gather(*(check(c, client) for c, client in found))
+    return GkeProjectCheck(project_id=body.project_id, clusters=list(clusters))
 
 
 def _google_view(saved: dict[str, Any], request: Request) -> GoogleSettingsOut:
