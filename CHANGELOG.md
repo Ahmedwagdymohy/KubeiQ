@@ -2,6 +2,12 @@
 
 All notable changes to KubeiQ. Versions follow [Semantic Versioning](https://semver.org/).
 
+## Unreleased
+
+### Fixed
+- The installer stopped with "the input device is not a TTY" on some Docker Compose versions
+  when run as `curl ... | sh`, before starting KubeiQ.
+
 ## 0.2.0 — 2026-10-25
 
 ### Added
