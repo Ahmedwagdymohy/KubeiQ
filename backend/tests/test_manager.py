@@ -190,3 +190,18 @@ def test_pods_endpoint_checks_access(client: TestClient) -> None:
         },
     )
     assert response.status_code == 404
+
+
+def test_pods_of_a_service_need_no_group(client: TestClient) -> None:
+    """Services are in the core group (""), which the frontend leaves out of the query."""
+    response = client.get(
+        "/api/v1/manager/pods",
+        params={
+            "cluster_id": "kubeconfig:missing",
+            "version": "v1",
+            "resource": "services",
+            "namespace": "shop",
+            "name": "payment",
+        },
+    )
+    assert response.status_code == 404  # the cluster, not a 422 for the missing group
