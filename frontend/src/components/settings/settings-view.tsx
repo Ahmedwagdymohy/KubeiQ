@@ -50,8 +50,8 @@ export function SettingsView() {
                 aria-current={id === active ? "page" : undefined}
                 className={`flex h-11 items-center whitespace-nowrap border-b-2 text-sm transition-colors lg:h-8 lg:rounded-lg lg:border-b-0 lg:px-2.5 ${
                   id === active
-                    ? "border-accent font-medium text-fg lg:bg-surface-2"
-                    : "border-transparent text-muted hover:text-fg lg:hover:bg-surface"
+                    ? "border-accent font-semibold text-fg lg:bg-surface-2"
+                    : "border-transparent font-medium text-muted hover:text-fg lg:hover:bg-surface"
                 }`}
               >
                 {label}

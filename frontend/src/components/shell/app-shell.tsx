@@ -135,7 +135,7 @@ function Sidebar({
         />
         <a
           href={`${GITHUB_URL}#readme`}
-          className="flex h-9 items-center gap-2.5 rounded-lg px-2.5 text-sm text-muted transition-colors hover:bg-frame-hover hover:text-fg lg:h-8"
+          className="flex h-9 items-center gap-2.5 rounded-lg px-2.5 text-sm font-medium text-muted transition-colors hover:bg-frame-hover hover:text-fg lg:h-8"
         >
           <DocsIcon />
           Docs
@@ -165,8 +165,8 @@ function NavLink({
       aria-current={active ? "page" : undefined}
       className={`flex h-11 items-center gap-2.5 rounded-lg px-2.5 text-sm transition-colors lg:h-8 ${
         active
-          ? "bg-frame-hover font-medium text-fg"
-          : "text-muted hover:bg-frame-hover hover:text-fg"
+          ? "bg-frame-hover font-semibold text-fg"
+          : "font-medium text-muted hover:bg-frame-hover hover:text-fg"
       }`}
     >
       <span className={active ? "text-fg" : "text-subtle"}>
