@@ -350,6 +350,9 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     try {
       const body = await response.json();
       if (typeof body.detail === "string") detail = body.detail;
+      // FastAPI validation errors are a list; show the first message, not a bare status code.
+      else if (Array.isArray(body.detail) && body.detail[0]?.msg)
+        detail = `${body.detail[0].msg}: ${(body.detail[0].loc ?? []).slice(1).join(".")}`;
     } catch {
       // keep the generic message
     }

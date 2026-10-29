@@ -11,6 +11,8 @@ All notable changes to KubeiQ. Versions follow [Semantic Versioning](https://sem
   Questions and answers stay on the investigation, so the team sees the same thread.
 
 ### Fixed
+- Logs of a Service in Cluster Manager failed with "Request failed (422)". Validation errors now
+  show their message instead of the status code.
 - The installer stopped with "the input device is not a TTY" on some Docker Compose versions
   when run as `curl ... | sh`, before starting KubeiQ.
 
