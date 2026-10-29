@@ -14,7 +14,16 @@ export type Cluster = {
   server: string | null;
   namespace: string | null;
   is_default: boolean;
-  status: { reachable: boolean; version: string | null; error: string | null } | null;
+  /** the CLI a context logs in with (gke-gcloud-auth-plugin, aws, az), which KubeiQ cannot run */
+  login?: string | null;
+  hidden?: boolean;
+  status: {
+    reachable: boolean;
+    version: string | null;
+    error: string | null;
+    /** false: reachable, but KubeiQ's identity may not read it */
+    can_read?: boolean | null;
+  } | null;
 };
 
 export type Severity = "critical" | "warning" | "info";
@@ -188,6 +197,32 @@ export type GkeSettings = {
     vm: { name: string; zone: string; project_id: string } | null;
   };
   projects: (GkeProject & { clusters: number; error: string | null })[];
+};
+
+export type GkeProjectCheck = {
+  project_id: string;
+  error: string | null;
+  clusters: {
+    name: string;
+    location: string;
+    reachable: boolean;
+    version: string | null;
+    can_read: boolean | null;
+    error: string | null;
+  }[];
+};
+
+/** A one-time code for connect.sh (ADR 0014). `code` is only returned when it is created. */
+export type ConnectCode = { id: string; code: string; expires_at: string; project: string | null };
+
+export type ConnectStatus = {
+  state: "waiting" | "connected" | "failed" | "expired";
+  expires_at: string;
+  cluster_id: string | null;
+  cluster: string | null;
+  version: string | null;
+  error: string | null;
+  note: string | null;
 };
 
 export type GoogleSettings = {
@@ -444,6 +479,19 @@ export const api = {
   gke: () => request<GkeSettings>("/api/v1/settings/gke"),
   putGke: (projects: GkeProject[]) =>
     request<GkeSettings>("/api/v1/settings/gke", { method: "PUT", body: JSON.stringify({ projects }) }),
+  checkGke: (project: GkeProject) =>
+    request<GkeProjectCheck>("/api/v1/settings/gke/check", json("POST", project)),
+  /** `replaces`: Fix a cluster KubeiQ cannot use; the new one takes its place in its projects. */
+  createConnectCode: (projectId: string | null, replaces?: string) =>
+    request<ConnectCode>(
+      "/api/v1/connect/codes",
+      json("POST", { project_id: projectId, replaces: replaces ?? null }),
+    ),
+  hideCluster: (clusterId: string, hidden: boolean) =>
+    request<void>("/api/v1/settings/clusters/hidden", json("PUT", { cluster_id: clusterId, hidden })),
+  /** Admins: every connected cluster, without probing them (fast). */
+  connectedClusters: () => request<Cluster[]>("/api/v1/clusters?all=true&check=false"),
+  connectStatus: (id: string) => request<ConnectStatus>(`/api/v1/connect/codes/${id}`),
   kinds: (clusterId: string) =>
     request<KindCategory[]>(`/api/v1/manager/resources?${query({ cluster_id: clusterId })}`),
   resources: (clusterId: string, kind: KindInfo, namespace: string | null) =>
@@ -484,6 +532,11 @@ export const api = {
         (namespace ? `&namespace=${encodeURIComponent(namespace)}` : ""),
     ),
 };
+
+/** The address of KubeiQ's API as seen from outside: the page's own origin behind the proxy. */
+export function apiOrigin(): string {
+  return API_BASE_URL || (typeof window === "undefined" ? "" : window.location.origin);
+}
 
 /** Subscribe to live progress. Returns a function that closes the stream. */
 export function streamInvestigation(

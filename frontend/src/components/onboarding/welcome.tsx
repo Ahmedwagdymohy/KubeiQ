@@ -143,12 +143,19 @@ function AddClusters({ project }: { project: Project }) {
   const toggle = (id: string) =>
     save.mutate(inProject.has(id) ? [...inProject].filter((x) => x !== id) : [...inProject, id]);
 
-  // A kubeconfig added here goes straight into the project, as far as the plan allows.
+  // A pasted kubeconfig goes straight into the project, as far as the plan allows. (The connect
+  // command already adds its cluster on the server, so read the project again first.)
   const addKubeconfig = async (name?: string) => {
-    const fresh = await queryClient.fetchQuery({ queryKey: ["clusters", "all"], queryFn: api.allClusters });
-    const added = fresh.map((c) => c.id).filter((id) => id.startsWith(`upload:${name}/`) && !inProject.has(id));
-    const room = Math.max(0, max - used);
-    if (added.length && room) save.mutate([...inProject, ...added.slice(0, room)]);
+    const [fresh, projects] = await Promise.all([
+      queryClient.fetchQuery({ queryKey: ["clusters", "all"], queryFn: api.allClusters }),
+      queryClient.fetchQuery({ queryKey: ["projects"], queryFn: api.projects }),
+    ]);
+    const current = new Set(
+      (projects.find((p) => p.id === project.id) ?? project).scopes.map((s) => s.cluster_id),
+    );
+    const added = fresh.map((c) => c.id).filter((id) => id.startsWith(`upload:${name}/`) && !current.has(id));
+    const room = Math.max(0, max - current.size);
+    if (added.length && room) save.mutate([...current, ...added.slice(0, room)]);
   };
 
   return (

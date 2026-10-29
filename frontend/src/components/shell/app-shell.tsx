@@ -18,7 +18,7 @@ import {
 import { ThemeToggle } from "@/components/theme-toggle";
 import { useHash } from "@/hooks/use-hash";
 import { useMe } from "@/hooks/use-me";
-import { api } from "@/lib/api";
+import { api, type Cluster } from "@/lib/api";
 import { GITHUB_URL, PRODUCTS } from "@/lib/products";
 import { resolveCluster, setClusterScope, useClusterScope } from "@/lib/scope";
 import { SETTINGS_AREAS } from "@/lib/settings-nav";
@@ -226,6 +226,28 @@ function TopBar({ pathname, onMenu }: { pathname: string; onMenu: () => void }) 
   );
 }
 
+type Tone = "ok" | "checking" | "no-access" | "offline";
+
+function clusterTone(c: Cluster): Tone {
+  if (!c.status) return "checking";
+  if (!c.status.reachable && !c.login) return "offline";
+  return c.status.can_read === false || c.login ? "no-access" : "ok";
+}
+
+const rank = (tone: Tone) => ["ok", "checking", "no-access", "offline"].indexOf(tone);
+const DOT: Record<Tone, string> = {
+  ok: "bg-healthy",
+  checking: "bg-subtle",
+  "no-access": "bg-warning",
+  offline: "bg-danger",
+};
+const LABEL: Record<Tone, string> = {
+  ok: "",
+  checking: "",
+  "no-access": " (no access, fix in Settings)",
+  offline: " (offline)",
+};
+
 /** The cluster every product opens on. Picking one switches the page you are on. */
 function ClusterScope({ wide = false }: { wide?: boolean }) {
   const clusters = useQuery({ queryKey: ["clusters"], queryFn: api.clusters });
@@ -233,7 +255,9 @@ function ClusterScope({ wide = false }: { wide?: boolean }) {
   const current = resolveCluster(clusters.data, scoped);
   const cluster = clusters.data?.find((c) => c.id === current);
   if (!clusters.data?.length || !cluster) return null;
-  const reachable = cluster.status?.reachable;
+  const tone = clusterTone(cluster);
+  // Working clusters first; the ones KubeiQ cannot use go last, with why.
+  const ordered = [...clusters.data].sort((a, b) => rank(clusterTone(a)) - rank(clusterTone(b)));
 
   return (
     <label
@@ -244,7 +268,7 @@ function ClusterScope({ wide = false }: { wide?: boolean }) {
       <span className="sr-only">Cluster</span>
       <span
         aria-hidden="true"
-        className={`h-1.5 w-1.5 shrink-0 rounded-full ${reachable ? "bg-healthy" : "bg-danger"}`}
+        className={`h-1.5 w-1.5 shrink-0 rounded-full ${DOT[tone]}`}
       />
       <span className="truncate font-mono text-[13px] text-fg">{cluster.name}</span>
       {cluster.status?.version && (
@@ -260,10 +284,10 @@ function ClusterScope({ wide = false }: { wide?: boolean }) {
         onChange={(e) => setClusterScope(e.target.value)}
         className="absolute inset-0 cursor-pointer opacity-0"
       >
-        {clusters.data.map((c) => (
+        {ordered.map((c) => (
           <option key={c.id} value={c.id}>
             {c.name}
-            {c.status?.reachable ? "" : " (offline)"}
+            {LABEL[clusterTone(c)]}
           </option>
         ))}
       </select>

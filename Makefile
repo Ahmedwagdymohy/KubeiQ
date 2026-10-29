@@ -1,4 +1,4 @@
-.PHONY: check check-backend check-frontend check-website fmt up down
+.PHONY: check check-backend check-frontend check-website fmt sync-connect up down
 
 check: check-backend check-frontend check-website ## Run every check CI runs
 
@@ -10,6 +10,10 @@ check-frontend:
 
 check-website:
 	cd website && pnpm lint && pnpm build
+
+sync-connect: ## Copy deploy/connect.sh and deploy/rbac into the backend, which serves them
+	cp deploy/connect.sh backend/src/kubeiq/connect/assets/connect.sh
+	cp deploy/rbac/*.yaml backend/src/kubeiq/connect/assets/rbac/
 
 fmt: ## Auto-format backend code
 	cd backend && uv run ruff format . && uv run ruff check --fix .

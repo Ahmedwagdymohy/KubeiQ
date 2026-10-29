@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -9,6 +9,7 @@ import { RefreshIcon } from "@/components/icons";
 import { type ClusterHealth, useFleet } from "@/components/overview/use-fleet";
 import { primaryButton, secondaryButton } from "@/components/settings/fields";
 import { Dot } from "@/components/ui";
+import { useMe } from "@/hooks/use-me";
 import { api, type MapStatus } from "@/lib/api";
 import { investigateHref, managerHref, type Workload } from "@/lib/fleet";
 
@@ -81,6 +82,7 @@ export function Overview() {
       </div>
 
       <AINotice />
+      <OutsideProjectNotice />
 
       <Ledger health={fleet.health} loading={fleet.clusters.isPending} />
 
@@ -98,6 +100,62 @@ function capitalise(text: string) {
 
 function clock(ms: number) {
   return new Date(ms).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+}
+
+/**
+ * Admins: connected clusters that no project holds are invisible everywhere (ADR 0012), so say
+ * so and offer to add them (with one project, in one click).
+ */
+function OutsideProjectNotice() {
+  const me = useMe();
+  const admin = me.data?.role === "admin";
+  const queryClient = useQueryClient();
+  const connected = useQuery({ queryKey: ["clusters", "connected"], queryFn: api.connectedClusters, enabled: admin });
+  const projects = useQuery({ queryKey: ["projects"], queryFn: api.projects, enabled: admin });
+  const add = useMutation({
+    mutationFn: (ids: string[]) => {
+      const project = projects.data![0];
+      return api.updateProject(project.id, {
+        name: project.name,
+        description: project.description,
+        members: project.members,
+        scopes: [...project.scopes, ...ids.map((id) => ({ cluster_id: id, namespaces: [] }))],
+      });
+    },
+    onSuccess: () => {
+      for (const key of [["projects"], ["plan"], ["clusters"]]) queryClient.invalidateQueries({ queryKey: key });
+    },
+  });
+  if (!admin || !connected.data || !projects.data?.length) return null;
+  const held = new Set(projects.data.flatMap((p) => p.scopes.map((s) => s.cluster_id)));
+  // Contexts that log in through a CLI cannot be used anyway; Settings offers to fix them.
+  const outside = connected.data.filter((c) => !c.hidden && !c.login && !held.has(c.id));
+  if (!outside.length) return null;
+  const names = outside.map((c) => c.name);
+  const label = names.length === 1 ? names[0] : `${names.length} clusters (${names.slice(0, 3).join(", ")})`;
+  return (
+    <div className="flex flex-wrap items-center justify-between gap-x-6 gap-y-2 rounded-lg bg-surface px-4 py-3 text-sm">
+      <p className="text-muted">
+        <span className="font-medium text-fg">{label}</span> {names.length === 1 ? "is" : "are"} connected
+        but not in a project, so KubeiQ does not show {names.length === 1 ? "it" : "them"}
+      </p>
+      {add.error && <span className="text-sm text-danger">{(add.error as Error).message}</span>}
+      {projects.data.length === 1 ? (
+        <button
+          type="button"
+          onClick={() => add.mutate(outside.map((c) => c.id))}
+          disabled={add.isPending}
+          className="font-medium text-accent hover:underline disabled:opacity-60"
+        >
+          {add.isPending ? "Adding" : `Add to ${projects.data[0].name}`}
+        </button>
+      ) : (
+        <Link href="/settings#projects" className="font-medium text-accent hover:underline">
+          Open Projects
+        </Link>
+      )}
+    </div>
+  );
 }
 
 /** Shown until an AI model is configured, so users know what they are missing. */
@@ -216,6 +274,7 @@ function ClusterRows({ health }: { health: ClusterHealth }) {
   const shown = all ? namespaces : namespaces.slice(0, NAMESPACE_ROWS);
   const hidden = namespaces.length - shown.length;
   const mapHref = `/map?cluster=${encodeURIComponent(cluster.id)}`;
+  const admin = useMe().data?.role === "admin";
 
   return (
     <div role="rowgroup" className="border-t border-border first:border-t-0 lg:first:border-t">
@@ -235,9 +294,15 @@ function ClusterRows({ health }: { health: ClusterHealth }) {
         state={state}
         error={health.error}
         action={
-          <Link href={mapHref} className="text-sm font-medium text-muted transition-colors hover:text-fg">
-            Open Map
-          </Link>
+          state === "offline" ? (
+            admin && <Link href="/settings#clusters" className="text-sm font-medium text-accent hover:underline">
+              Fix in Settings
+            </Link>
+          ) : (
+            <Link href={mapHref} className="text-sm font-medium text-muted transition-colors hover:text-fg">
+              Open Map
+            </Link>
+          )
         }
       />
       {state === "ready" &&

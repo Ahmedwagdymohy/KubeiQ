@@ -23,6 +23,9 @@ services:
   backend:
     image: ghcr.io/ahmedwagdymohy/kubeiq-backend:${KUBEIQ_VERSION:-main}
     build: ./backend
+    labels:
+      # connect.sh finds KubeiQ by this label to link it to a local cluster's Docker network.
+      io.kubeiq.service: backend
     # Runs as the user who installed KubeiQ, so it can read that user's ~/.kube/config (kind,
     # minikube and kubectl write it readable by its owner only). The installer sets both.
     user: "${KUBEIQ_UID:-10001}:${KUBEIQ_GID:-10001}"

@@ -9,6 +9,10 @@ export const DOCS_URL = `${GITHUB_URL}#readme`;
 export const INSTALL_COMMAND =
   "curl -fsSL https://raw.githubusercontent.com/Ahmedwagdymohy/KubeiQ/main/deploy/install.sh | sh";
 
+/** Removes everything the installer set up, and nothing else (it asks first). */
+export const UNINSTALL_COMMAND =
+  "curl -fsSL https://raw.githubusercontent.com/Ahmedwagdymohy/KubeiQ/main/deploy/uninstall.sh | sh";
+
 export type Product = {
   slug: string;
   name: string;

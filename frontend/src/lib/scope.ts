@@ -47,11 +47,22 @@ export function useClusterScope(): string | null {
   return useSyncExternalStore(subscribe, read, () => null);
 }
 
-/** The cluster to show: the scoped one if it exists, else the default, else the first. */
+const usable = (c: Cluster) => c.status?.reachable && c.status.can_read !== false;
+
+/**
+ * The cluster to show: the scoped one if it exists, else one that works (the default first), so
+ * a broken default never holds every page on an error.
+ */
 export function resolveCluster(clusters: Cluster[] | undefined, scoped: string | null) {
   if (!clusters?.length) return null;
   if (scoped && clusters.some((c) => c.id === scoped)) return scoped;
-  return clusters.find((c) => c.is_default)?.id ?? clusters[0].id;
+  const working = clusters.filter(usable);
+  return (
+    working.find((c) => c.is_default)?.id ??
+    working[0]?.id ??
+    clusters.find((c) => c.is_default)?.id ??
+    clusters[0].id
+  );
 }
 
 /** Runs `onPick` when someone picks a cluster (in the top bar or on the page). */

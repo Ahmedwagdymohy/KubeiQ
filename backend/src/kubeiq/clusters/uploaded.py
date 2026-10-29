@@ -9,7 +9,13 @@ from typing import Any
 from kubernetes import config as k8s_config
 from kubernetes.client import ApiClient, Configuration
 
-from kubeiq.clusters.base import ClusterInfo, ClusterNotFoundError, ClusterSource, ConnectionMethod
+from kubeiq.clusters.base import (
+    ClusterInfo,
+    ClusterNotFoundError,
+    ClusterSource,
+    ConnectionMethod,
+    exec_login,
+)
 from kubeiq.clusters.kubeconfig import KubeconfigSource
 
 
@@ -43,6 +49,7 @@ class UploadedKubeconfigSource(ClusterSource):
                         method=self.method,
                         server=servers.get(spec.get("cluster")),
                         namespace=spec.get("namespace"),
+                        login=exec_login(config, ctx["name"]),
                     )
                 )
         return clusters
@@ -54,14 +61,15 @@ class UploadedKubeconfigSource(ClusterSource):
             raise ClusterNotFoundError(cluster_id)
         with self._lock:
             if cluster_id not in self._clients:
-                configuration = Configuration()
-                k8s_config.load_kube_config_from_dict(
-                    config,
-                    context=context,
-                    client_configuration=configuration,
-                    persist_config=False,
-                )
-                if self._localhost_alias:
-                    KubeconfigSource._apply_localhost_alias(configuration, self._localhost_alias)
-                self._clients[cluster_id] = ApiClient(configuration)
+                self._clients[cluster_id] = self.client_for(config, context)
             return self._clients[cluster_id]
+
+    def client_for(self, config: dict[str, Any], context: str) -> ApiClient:
+        """A client for one context of a kubeconfig, also before it is saved (to test it)."""
+        configuration = Configuration()
+        k8s_config.load_kube_config_from_dict(
+            config, context=context, client_configuration=configuration, persist_config=False
+        )
+        if self._localhost_alias:
+            KubeconfigSource._apply_localhost_alias(configuration, self._localhost_alias)
+        return ApiClient(configuration)

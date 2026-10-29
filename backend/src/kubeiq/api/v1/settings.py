@@ -4,15 +4,31 @@ import asyncio
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
+from kubernetes.client import VersionApi
+from pydantic import BaseModel, Field
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from kubeiq import __version__
-from kubeiq.auth import google
+from kubeiq.auth import google, membership
 from kubeiq.auth import repository as audit
 from kubeiq.auth.deps import AdminUser, require_admin
-from kubeiq.clusters.gke import GkeSource
-from kubeiq.clusters.registry import get_gke_source, get_local_source
+from kubeiq.clusters.base import ClusterStatus
+from kubeiq.clusters.errors import describe_error
+from kubeiq.clusters.gke import (
+    GkeClusterCheck,
+    GkeError,
+    GkeProject,
+    GkeProjectCheck,
+    GkeSource,
+)
+from kubeiq.clusters.registry import (
+    PROBE_TIMEOUT_SECONDS,
+    get_gke_source,
+    get_local_source,
+    get_uploaded_source,
+    probe_read,
+)
 from kubeiq.core.config import Settings, get_settings
 from kubeiq.db.session import get_session
 from kubeiq.settings import kubeconfigs, repository, service
@@ -99,6 +115,9 @@ async def add_kubeconfig(
         raise HTTPException(status.HTTP_409_CONFLICT, f"'{body.name}' already exists") from exc
     await service.sync_uploaded_clusters(session)
     await audit.record(session, admin.username, "settings.kubeconfig.add", target=body.name)
+    contexts = kubeconfigs.inspect(body.content)[1]
+    ids = [get_uploaded_source().make_id(f"{body.name}/{c}") for c in contexts]
+    await membership.add_to_project(session, body.project_id, ids)
     return _kubeconfig_out(row)
 
 
@@ -108,6 +127,23 @@ async def delete_kubeconfig(kubeconfig_id: str, session: SessionDep, admin: Admi
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Kubeconfig not found")
     await service.sync_uploaded_clusters(session)
     await audit.record(session, admin.username, "settings.kubeconfig.delete", target=kubeconfig_id)
+
+
+class Visibility(BaseModel):
+    cluster_id: str = Field(max_length=512)
+    hidden: bool
+
+
+@router.put("/clusters/hidden", status_code=status.HTTP_204_NO_CONTENT)
+async def hide_cluster(body: Visibility, session: SessionDep, admin: AdminUser) -> None:
+    """Hide a cluster KubeiQ should not use (server kubeconfig contexts cannot be removed)."""
+    await membership.set_hidden(session, body.cluster_id, body.hidden)
+    await audit.record(
+        session,
+        admin.username,
+        "settings.cluster.hide" if body.hidden else "settings.cluster.show",
+        cluster_id=body.cluster_id,
+    )
 
 
 @router.get("/changes", response_model=ChangesSettings)
@@ -145,8 +181,11 @@ async def put_gke(
     await repository.put_value(
         session, repository.GKE_KEY, {"projects": [p.model_dump() for p in unique]}
     )
+    known = {c.id for c in gke.list_clusters()}
     gke.set_projects(unique)
     await asyncio.to_thread(gke.discover)
+    found = [c.id for c in gke.list_clusters() if c.id not in known]
+    await membership.add_to_project(session, None, found)
     await audit.record(
         session,
         admin.username,
@@ -154,6 +193,32 @@ async def put_gke(
         detail=", ".join(p.project_id for p in unique) or None,
     )
     return await _gke_view(gke)
+
+
+@router.post("/gke/check", response_model=GkeProjectCheck)
+async def check_gke(body: GkeProject, gke: GkeDep) -> GkeProjectCheck:
+    """Before a project is added: can KubeiQ list its clusters, reach them and read them?"""
+    try:
+        found = await asyncio.to_thread(gke.preview, body)
+    except GkeError as exc:
+        return GkeProjectCheck(project_id=body.project_id, error=str(exc))
+
+    async def check(cluster: Any, client: Any) -> GkeClusterCheck:
+        result = GkeClusterCheck(name=cluster.name, location=cluster.location)
+        try:
+            info = await asyncio.to_thread(
+                VersionApi(client).get_code, _request_timeout=PROBE_TIMEOUT_SECONDS
+            )
+        except Exception as exc:
+            result.error = describe_error(exc, f"https://{cluster.server}")
+            return result
+        status_ = await probe_read(client, ClusterStatus(reachable=True, version=info.git_version))
+        return result.model_copy(
+            update=status_.model_dump(include={"reachable", "version", "can_read"})
+        )
+
+    clusters = await asyncio.gather(*(check(c, client) for c, client in found))
+    return GkeProjectCheck(project_id=body.project_id, clusters=list(clusters))
 
 
 def _google_view(saved: dict[str, Any], request: Request) -> GoogleSettingsOut:

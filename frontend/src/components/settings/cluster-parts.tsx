@@ -2,11 +2,11 @@
 
 import type { ReactNode } from "react";
 
-import { Dot } from "@/components/ui";
-import type { Cluster } from "@/lib/api";
+import { Dot, Terminal } from "@/components/ui";
+import { apiOrigin, type Cluster } from "@/lib/api";
 
-export const CONNECT_URL =
-  "https://raw.githubusercontent.com/Ahmedwagdymohy/KubeiQ/main/deploy/connect.sh";
+/** connect.sh as KubeiQ serves it: always the version that matches this server (ADR 0014). */
+export const connectUrl = () => `${apiOrigin()}/api/v1/connect.sh`;
 
 /** One source of clusters: a kubeconfig file or a Google Cloud project. */
 export function SourceCard({
@@ -47,33 +47,68 @@ export function SourceCard({
   );
 }
 
+/** Connected clusters with their health. `fix` gives the commands that repair a broken one. */
 export function ClusterRows({
   clusters,
   failed,
+  loading = false,
   empty,
+  fix,
+  actions,
+  below,
 }: {
   clusters: Cluster[];
   failed: boolean;
+  loading?: boolean;
   empty: string;
+  fix?: (cluster: Cluster) => string[] | null;
+  /** Controls at the end of a row, such as the project switch. */
+  actions?: (cluster: Cluster) => ReactNode;
+  /** Under a row, such as the Fix panel. */
+  below?: (cluster: Cluster) => ReactNode;
 }) {
-  if (clusters.length === 0) return <p className="text-[13px] text-subtle">{failed ? "Could not load clusters" : empty}</p>;
+  if (clusters.length === 0)
+    return (
+      <p className="text-[13px] text-subtle">
+        {loading ? "Checking the clusters" : failed ? "Could not load clusters" : empty}
+      </p>
+    );
   return (
-    <ul className="flex flex-col gap-1.5">
-      {clusters.map(({ id, name, status }) => (
-        <li key={id} className="flex items-center gap-2 text-sm">
-          <Dot tone={!status ? (failed ? "critical" : "info") : status.reachable ? "healthy" : "critical"} />
-          <span>{name}</span>
-          <span className="min-w-0 truncate text-xs text-subtle">
-            {!status
-              ? failed
-                ? "Could not check this cluster"
-                : "Checking"
-              : status.reachable
-                ? `Kubernetes ${status.version}`
-                : (status.error ?? "Unreachable")}
-          </span>
-        </li>
-      ))}
+    <ul className="flex flex-col gap-2.5">
+      {clusters.map((cluster) => {
+        const { id, name, status } = cluster;
+        const broken = status && (!status.reachable || status.can_read === false);
+        const commands = broken ? fix?.(cluster) : null;
+        return (
+          <li key={id} className="flex min-w-0 flex-col gap-1.5">
+            <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-sm">
+              <Dot
+                tone={
+                  !status
+                    ? failed ? "critical" : "info"
+                    : !status.reachable ? "critical" : status.can_read === false ? "warning" : "healthy"
+                }
+              />
+              <span className="truncate">{name}</span>
+              {!broken && (
+                <span className="shrink-0 text-xs text-subtle">
+                  {!status ? (failed ? "Could not check this cluster" : "Checking") : `Kubernetes ${status.version}`}
+                </span>
+              )}
+              {actions && <span className="ml-auto flex shrink-0 items-center gap-3">{actions(cluster)}</span>}
+            </div>
+            {broken && (
+              <p className="break-words pl-4 text-xs text-muted">{status.error ?? "Unreachable"}</p>
+            )}
+            {commands && commands.length > 0 && (
+              <div className="pl-4">
+                <Terminal commands={commands} />
+              </div>
+            )}
+            {below?.(cluster)}
+          </li>
+        );
+      })}
     </ul>
   );
 }

@@ -77,6 +77,17 @@ Never hard-code colors; use the Tailwind tokens (`bg-frame`, `bg-surface`, `text
 - **Settings**: one view per area (`/settings#ai`, `#clusters`, ...), an area list beside it. Each
   area is a label column (title, description, a summary such as the model in use or seats used)
   beside a grey panel with the controls.
+- **Add a cluster** (Settings › Clusters, Welcome): two choices, Kubeconfig and Google Cloud.
+  Kubeconfig is three steps: where it runs (GKE, EKS, AKS, minikube, kind, Other; clouds show their
+  login command and what to replace), one command with the one-time code (Options: name, context,
+  project, allow changes), then a live line that waits, shows why it failed, or turns into
+  "<name> is connected" with Done. "Add a kubeconfig file instead" is the quiet fallback. Google
+  Cloud fills in the VM's project, then Check Access lists each cluster with its state and the exact
+  commands for what is missing. Connected clusters that KubeiQ reaches but cannot read are amber,
+  with their fix underneath; errors wrap, never overflow. Each row ends with "In <project>" (a
+  checkbox; with several projects, a link to Projects). Server kubeconfig rows add Hide, and Fix
+  for contexts that log in through gcloud, aws or az (the connect command for that context, with a
+  live result). Hidden clusters fold into one "2 hidden clusters · Show" line.
 - **Resizable sidebar** (Cluster Doctor): drag the divider; width remembered per browser.
 - **Incident list**: one row per issue — severity dot, workload name, "Kind in namespace",
   short root cause, confidence number, chevron. Click to expand: How to fix → commands →
