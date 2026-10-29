@@ -74,7 +74,8 @@ website/            Marketing site (live at kubeiq.pages.dev): landing, product 
 ee/                 Commercial features (separate license)
 deploy/             install.sh (the one-line installer), connect.sh (read-only cluster access), Caddyfile, rbac/
 examples/           Intentionally broken workloads for testing diagnoses
-docs/               Architecture, roadmap, ADRs, agent.md (planned in-cluster agent)
+docs/               Architecture, roadmap, ADRs, agent.md (planned in-cluster agent),
+                    requirements/ (planned product work, one file per area)
 ```
 
 ## Commands

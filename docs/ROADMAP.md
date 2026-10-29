@@ -90,6 +90,17 @@ Update this file in the same commit that completes a task.
 - [x] Versioned multi-arch images to GHCR (`main`, `x.y.z`, `latest`); the installer pulls them
 - [x] Changelog (CHANGELOG.md) and tagged releases
 
+## Product requirements (planned)
+Full requirements in [docs/requirements](requirements/README.md); items move here when scheduled.
+- [ ] App shell: grouped sidebar, pinning, cluster status bar, Ctrl+1..9, a command palette that finds resources (01)
+- [ ] Clusters screen: one row per cluster, labels and environments, add/edit dialog with tabs, thresholds (02)
+- [ ] Settings regrouped; two-factor sign-in; several AI providers; danger zone (03)
+- [ ] Multi-cluster dashboard cards with real usage history (04)
+- [ ] Resource tables with status and usage columns, live watches, YAML edit with diff, log viewer, terminal (05)
+- [ ] Pod Distribution and Timeline; health-first map (06)
+- [ ] AI log analysis and a cluster assistant (07)
+- [ ] Permissions as verbs, a filterable audit log, notifications to Slack, email and webhooks (08)
+
 ## Later — Cluster Doctor features
 - [x] "Explain" chat on each incident: ask follow-up questions with the incident's evidence as context
 - [ ] PDF reports: download a professional investigation report in the KubeiQ theme
