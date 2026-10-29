@@ -76,6 +76,48 @@ class InvestigationEvent(Base):
     investigation: Mapped[Investigation] = relationship(back_populates="events")
 
 
+class IncidentMessage(Base):
+    """One message in the follow-up chat on an incident of an investigation."""
+
+    __tablename__ = "incident_messages"
+    __table_args__ = (Index("ix_incident_messages_thread", "investigation_id", "incident_id"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    org_id: Mapped[str] = mapped_column(String(64), default=DEFAULT_ORG)
+    investigation_id: Mapped[str] = mapped_column(
+        ForeignKey("investigations.id", ondelete="CASCADE")
+    )
+    incident_id: Mapped[str] = mapped_column(String(512))
+    role: Mapped[str] = mapped_column(String(16))  # "user" or "assistant"
+    author: Mapped[str | None] = mapped_column(String(254))  # who asked; None for answers
+    content: Mapped[str] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(default=_now)
+
+
+class ConnectCode(Base):
+    """A one-time code that lets connect.sh hand a cluster's access to KubeiQ (ADR 0014).
+
+    Only a hash of the code is stored. It expires, works once, and records how it went so the
+    page that created it can show the result live.
+    """
+
+    __tablename__ = "connect_codes"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    org_id: Mapped[str] = mapped_column(String(64), default=DEFAULT_ORG)
+    code_hash: Mapped[str] = mapped_column(String(64), unique=True)
+    created_by: Mapped[str] = mapped_column(String(254))
+    project_id: Mapped[str | None] = mapped_column(String(36))  # where the cluster goes
+    replaces: Mapped[str | None] = mapped_column(String(512))  # a cluster it takes the place of
+    created_at: Mapped[datetime] = mapped_column(default=_now)
+    expires_at: Mapped[datetime]
+    used_at: Mapped[datetime | None]
+    state: Mapped[str] = mapped_column(String(16), default="waiting")  # waiting, connected, failed
+    cluster_id: Mapped[str | None] = mapped_column(String(512))
+    detail: Mapped[str | None] = mapped_column(Text)  # the last error, or the cluster's version
+    note: Mapped[str | None] = mapped_column(Text)  # e.g. why it was not added to the project
+
+
 class AppSetting(Base):
     """A settings document per org, e.g. key "ai". Secret fields inside are encrypted."""
 

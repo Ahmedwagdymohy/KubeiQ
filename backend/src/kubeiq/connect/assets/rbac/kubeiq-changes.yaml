@@ -1,0 +1,36 @@
+# Optional: lets KubeiQ make the changes it offers in Cluster Manager (scale, restart, delete,
+# cordon). Apply this only if an admin turns on cluster changes in Settings. Every change also
+# needs a KubeiQ admin or project editor, and is recorded in the activity log.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: kubeiq-changes
+rules:
+  - apiGroups: [apps]
+    resources: [deployments, statefulsets, daemonsets, replicasets]
+    verbs: [patch, delete]
+  - apiGroups: [apps]
+    resources: [deployments/scale, statefulsets/scale, replicasets/scale]
+    verbs: [patch]
+  - apiGroups: [""]
+    resources: [pods, services, configmaps, persistentvolumeclaims]
+    verbs: [delete]
+  - apiGroups: [""]
+    resources: [nodes]
+    verbs: [patch]
+  - apiGroups: [batch]
+    resources: [jobs, cronjobs]
+    verbs: [delete]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kubeiq-changes
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kubeiq-changes
+subjects:
+  - kind: ServiceAccount
+    name: kubeiq
+    namespace: kubeiq

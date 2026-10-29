@@ -141,11 +141,11 @@ async def pods_of(
     registry: Registry,
     user: CurrentUser,
     cluster_id: ClusterId,
-    group: str,
     version: str,
     resource: str,
     namespace: str,
     name: str,
+    group: str = "",  # empty for the core group (Services); clients omit empty parameters
 ) -> list[WorkloadPod]:
     """The pods of a workload or Service, to read their logs from its own panel."""
     check(user, "read", cluster_id, namespace)

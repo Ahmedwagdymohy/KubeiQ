@@ -13,3 +13,8 @@ Short records of significant decisions. To change a decision, add a new ADR that
 | [0007](0007-cluster-map-built-on-headlamp-logic.md) | Cluster Map built on Headlamp's map logic | Accepted |
 | [0008](0008-users-master-key-and-projects.md) | Users, master key sign-in and project-scoped access | Accepted |
 | [0009](0009-opt-in-cluster-changes.md) | Cluster changes are opt-in, confirmed and audited | Accepted |
+| [0010](0010-production-deployment.md) | Production deployment: one entry point, Postgres, published images | Accepted |
+| [0011](0011-connecting-clusters.md) | Connecting clusters: read-only service accounts and cloud identity | Accepted |
+| [0012](0012-projects-hold-clusters.md) | Projects hold the clusters; first sign-in sets one up | Accepted |
+| [0013](0013-sign-in-with-google.md) | Sign in with Google in the free core | Accepted |
+| [0014](0014-one-command-connect.md) | Connecting a cluster with one command | Accepted |

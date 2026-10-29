@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, staging]
   pull_request:
 
 concurrency:
@@ -68,8 +68,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - run: sh -n deploy/install.sh
-      - run: shellcheck deploy/install.sh
+      - run: for f in deploy/*.sh; do sh -n "$f"; done
+      - run: shellcheck deploy/*.sh
 
   docker:
     runs-on: ubuntu-latest

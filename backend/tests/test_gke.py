@@ -217,3 +217,19 @@ def test_identity_includes_the_vm_from_metadata() -> None:
 def test_identity_off_google_cloud_has_no_vm() -> None:
     source = GkeSource(credentials=FakeCredentials, metadata=lambda: None)  # type: ignore[arg-type]
     assert source.identity().vm is None
+
+
+def test_vm_without_service_account_gets_one_plain_line() -> None:
+    from google.auth.exceptions import RefreshError
+
+    from kubeiq.clusters.gke import NO_ACCOUNT, _token_error
+
+    page = (
+        "('Failed to retrieve http://metadata.google.internal/computeMetadata/v1/instance/"
+        "service-accounts/default/?recursive=true from the Google Compute Engine metadata "
+        "service. Status: 404 Response:\\nb\\'<!DOCTYPE html><html><title>Error 404</title>')"
+    )
+    assert _token_error(RefreshError(page)) == NO_ACCOUNT
+    other = _token_error(RefreshError("Status: 500 Response:\nb'<html><body>boom</body></html>'"))
+    assert "<" not in other
+    assert len(other) < 220

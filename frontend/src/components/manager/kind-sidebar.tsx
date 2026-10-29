@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { ChevronDownIcon, ChevronIcon } from "@/components/icons";
+import { KindIcon } from "@/components/manager/kind-icons";
 import { kindKey } from "@/components/manager/kinds";
 import type { KindCategory } from "@/lib/api";
 
@@ -63,14 +64,14 @@ export function KindSidebar({
               <button
                 type="button"
                 onClick={() => toggle(category.name)}
-                className="flex items-center gap-1.5 px-4 py-2 text-left text-sm font-medium text-muted transition-colors hover:text-fg"
+                className="flex items-center justify-between gap-1.5 px-4 pb-1.5 pt-3 text-left text-xs font-semibold text-subtle transition-colors hover:text-fg"
               >
+                {category.name}
                 {open ? (
                   <ChevronDownIcon width={14} height={14} />
                 ) : (
                   <ChevronIcon width={14} height={14} />
                 )}
-                {category.name}
               </button>
               {open &&
                 kinds.map((k) => {
@@ -82,13 +83,17 @@ export function KindSidebar({
                       type="button"
                       onClick={() => onSelect(key)}
                       title={k.group ? `${k.kind} (${k.group})` : k.kind}
-                      className={`mx-2 truncate rounded-lg py-1.5 pl-8 pr-3 text-left text-sm transition-colors ${
+                      className={`mx-2 flex items-center gap-2.5 rounded-lg py-1.5 pl-4 pr-3 text-left text-sm transition-colors ${
                         active
-                          ? "bg-surface-2 font-medium text-fg"
-                          : "text-muted hover:bg-surface hover:text-fg"
+                          ? "bg-surface-2 font-semibold text-fg"
+                          : "font-medium text-muted hover:bg-surface hover:text-fg"
                       }`}
                     >
-                      {k.label}
+                      <KindIcon
+                        resource={k.resource}
+                        className={`shrink-0 ${active ? "text-accent" : "text-subtle"}`}
+                      />
+                      <span className="truncate">{k.label}</span>
                     </button>
                   );
                 })}

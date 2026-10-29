@@ -14,7 +14,16 @@ export type Cluster = {
   server: string | null;
   namespace: string | null;
   is_default: boolean;
-  status: { reachable: boolean; version: string | null; error: string | null } | null;
+  /** the CLI a context logs in with (gke-gcloud-auth-plugin, aws, az), which KubeiQ cannot run */
+  login?: string | null;
+  hidden?: boolean;
+  status: {
+    reachable: boolean;
+    version: string | null;
+    error: string | null;
+    /** false: reachable, but KubeiQ's identity may not read it */
+    can_read?: boolean | null;
+  } | null;
 };
 
 export type Severity = "critical" | "warning" | "info";
@@ -83,6 +92,16 @@ export type Investigation = InvestigationSummary & {
   report: Report | null;
   events: ProgressEvent[];
 };
+
+export type ChatMessage = {
+  id: number;
+  role: "user" | "assistant";
+  author: string | null;
+  content: string;
+  created_at: string;
+};
+
+export type ChatThread = { ai_enabled: boolean; messages: ChatMessage[] };
 
 export type MapStatus = "healthy" | "warning" | "error";
 
@@ -178,6 +197,32 @@ export type GkeSettings = {
     vm: { name: string; zone: string; project_id: string } | null;
   };
   projects: (GkeProject & { clusters: number; error: string | null })[];
+};
+
+export type GkeProjectCheck = {
+  project_id: string;
+  error: string | null;
+  clusters: {
+    name: string;
+    location: string;
+    reachable: boolean;
+    version: string | null;
+    can_read: boolean | null;
+    error: string | null;
+  }[];
+};
+
+/** A one-time code for connect.sh (ADR 0014). `code` is only returned when it is created. */
+export type ConnectCode = { id: string; code: string; expires_at: string; project: string | null };
+
+export type ConnectStatus = {
+  state: "waiting" | "connected" | "failed" | "expired";
+  expires_at: string;
+  cluster_id: string | null;
+  cluster: string | null;
+  version: string | null;
+  error: string | null;
+  note: string | null;
 };
 
 export type GoogleSettings = {
@@ -340,6 +385,9 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     try {
       const body = await response.json();
       if (typeof body.detail === "string") detail = body.detail;
+      // FastAPI validation errors are a list; show the first message, not a bare status code.
+      else if (Array.isArray(body.detail) && body.detail[0]?.msg)
+        detail = `${body.detail[0].msg}: ${(body.detail[0].loc ?? []).slice(1).join(".")}`;
     } catch {
       // keep the generic message
     }
@@ -409,6 +457,10 @@ export const api = {
     request<InvestigationSummary[]>(
       `/api/v1/investigations?limit=${limit}${before ? `&before=${encodeURIComponent(before)}` : ""}`,
     ),
+  chat: (investigationId: string, incidentId: string) =>
+    request<ChatThread>(
+      `/api/v1/investigations/${investigationId}/chat?${query({ incident_id: incidentId })}`,
+    ),
   providers: () => request<Provider[]>("/api/v1/settings/providers"),
   aiSettings: () => request<AISettings>("/api/v1/settings/ai"),
   saveAISettings: (body: AISettingsInput) =>
@@ -427,6 +479,19 @@ export const api = {
   gke: () => request<GkeSettings>("/api/v1/settings/gke"),
   putGke: (projects: GkeProject[]) =>
     request<GkeSettings>("/api/v1/settings/gke", { method: "PUT", body: JSON.stringify({ projects }) }),
+  checkGke: (project: GkeProject) =>
+    request<GkeProjectCheck>("/api/v1/settings/gke/check", json("POST", project)),
+  /** `replaces`: Fix a cluster KubeiQ cannot use; the new one takes its place in its projects. */
+  createConnectCode: (projectId: string | null, replaces?: string) =>
+    request<ConnectCode>(
+      "/api/v1/connect/codes",
+      json("POST", { project_id: projectId, replaces: replaces ?? null }),
+    ),
+  hideCluster: (clusterId: string, hidden: boolean) =>
+    request<void>("/api/v1/settings/clusters/hidden", json("PUT", { cluster_id: clusterId, hidden })),
+  /** Admins: every connected cluster, without probing them (fast). */
+  connectedClusters: () => request<Cluster[]>("/api/v1/clusters?all=true&check=false"),
+  connectStatus: (id: string) => request<ConnectStatus>(`/api/v1/connect/codes/${id}`),
   kinds: (clusterId: string) =>
     request<KindCategory[]>(`/api/v1/manager/resources?${query({ cluster_id: clusterId })}`),
   resources: (clusterId: string, kind: KindInfo, namespace: string | null) =>
@@ -468,6 +533,11 @@ export const api = {
     ),
 };
 
+/** The address of KubeiQ's API as seen from outside: the page's own origin behind the proxy. */
+export function apiOrigin(): string {
+  return API_BASE_URL || (typeof window === "undefined" ? "" : window.location.origin);
+}
+
 /** Subscribe to live progress. Returns a function that closes the stream. */
 export function streamInvestigation(
   id: string,
@@ -491,3 +561,65 @@ export function streamInvestigation(
   return () => source.close();
 }
 
+
+/**
+ * Ask a follow-up question about an incident. `onStep` gets each live check the AI runs
+ * ("Reading logs of pod web-1"); resolves with the stored question and answer.
+ */
+export async function askIncident(
+  investigationId: string,
+  incidentId: string,
+  message: string,
+  onStep: (detail: string) => void,
+  signal?: AbortSignal,
+): Promise<ChatMessage[]> {
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}/api/v1/investigations/${investigationId}/chat`, {
+      method: "POST",
+      credentials: "include",
+      headers: { "content-type": "application/json", accept: "text/event-stream" },
+      body: JSON.stringify({ incident_id: incidentId, message }),
+      signal,
+    });
+  } catch (error) {
+    if (signal?.aborted) throw error;
+    throw new ApiError("Cannot reach the KubeiQ backend. Is it running?", 0);
+  }
+  if (!response.ok || !response.body) {
+    let detail = `Request failed (${response.status})`;
+    try {
+      const body = await response.json();
+      if (typeof body.detail === "string") detail = body.detail;
+    } catch {
+      // keep the generic message
+    }
+    if (response.status === 401) window.dispatchEvent(new Event(UNAUTHORIZED_EVENT));
+    throw new ApiError(detail, response.status);
+  }
+
+  const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
+  let buffer = "";
+  for (;;) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    buffer += value.replace(/\r\n/g, "\n");
+    let end: number;
+    while ((end = buffer.indexOf("\n\n")) !== -1) {
+      const block = buffer.slice(0, end);
+      buffer = buffer.slice(end + 2);
+      let event = "message";
+      const data: string[] = [];
+      for (const line of block.split("\n")) {
+        if (line.startsWith("event:")) event = line.slice(6).trim();
+        else if (line.startsWith("data:")) data.push(line.slice(5).replace(/^ /, ""));
+      }
+      if (!data.length) continue; // pings
+      const payload = JSON.parse(data.join("\n"));
+      if (event === "step") onStep(payload.detail);
+      else if (event === "messages") return payload as ChatMessage[];
+      else if (event === "error") throw new ApiError(payload.detail, 502);
+    }
+  }
+  throw new ApiError("The answer was interrupted. Try again", 0);
+}

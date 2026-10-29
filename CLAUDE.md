@@ -37,6 +37,7 @@ features (teams, SSO, RBAC, audit, more clusters), never core usefulness.
 | 0011 | Connecting clusters: `deploy/connect.sh` read-only service account (any cluster); GKE through the machine's Google identity, nothing stored |
 | 0012 | Projects hold the clusters (lists show projects' clusters, admins too); first sign-in opens /welcome; free plan 3 users, 1 project, 3 clusters |
 | 0013 | Sign in with Google is free core (OIDC + PKCE on the server, invite only: admins allow emails with a role); generic OIDC/LDAP/SAML stay `ee/` |
+| 0014 | One command connects a cluster: a one-time code, KubeiQ serves `connect.sh`, tests the cluster before saving, links local Docker networks (minikube) |
 
 Do not reverse an ADR silently — write a new ADR that supersedes it.
 
@@ -48,6 +49,7 @@ backend/            FastAPI service (Python 3.12, uv). Package: backend/src/kube
     api/            HTTP routes (versioned under /api/v1)
     core/           config, logging, shared utilities
     clusters/       ClusterSource abstraction: kubeconfig, uploaded kubeconfigs, GKE (cloud identity)
+    connect/        one-command connect: one-time codes, served copy of deploy/connect.sh + rbac (make sync-connect)
     collectors/     read-only evidence collectors (pods, events, logs, deployments, network)
     detectors/      deterministic rule engine (CrashLoopBackOff, ImagePull, OOM, ...)
     agent/          LLM agent: tools, prompts, structured output
@@ -72,9 +74,11 @@ frontend/           The self-hosted app: Next.js (TypeScript, Tailwind, App Rout
   src/lib/api.ts      typed API client and SSE helper; lib/scope.ts = cluster in scope (top bar), lib/fleet.ts = workload health
 website/            Marketing site (live at kubeiq.pages.dev): landing, product pages, pricing, install. Static export
 ee/                 Commercial features (separate license)
-deploy/             install.sh (the one-line installer), connect.sh (read-only cluster access), Caddyfile, rbac/
+deploy/             install.sh (the one-line installer), uninstall.sh (removes only what it set up), connect.sh (read-only cluster access; edit here, then
+                    `make sync-connect`), Caddyfile, rbac/
 examples/           Intentionally broken workloads for testing diagnoses
-docs/               Architecture, roadmap, ADRs
+docs/               Architecture, roadmap, ADRs, agent.md (planned in-cluster agent),
+                    requirements/ (planned product work, one file per area)
 ```
 
 ## Commands
@@ -101,6 +105,7 @@ pnpm lint && pnpm build                 # static export to website/out
 docker compose up --build             # proxy, app, API and Postgres; everything on :3000
 make check                            # everything CI runs; run before every commit
 make fmt                              # auto-format backend
+make sync-connect                     # after editing deploy/connect.sh or deploy/rbac (KubeiQ serves copies)
 cd backend && uv run alembic revision --autogenerate -m "..."   # new DB migration
 
 # Local test cluster
@@ -153,8 +158,26 @@ kind create cluster --name kubeiq-dev # adds context kind-kubeiq-dev
 
 ## Git workflow
 
-- Default branch: `main`. Conventional commits: `feat:`, `fix:`, `docs:`, `chore:`, `refactor:`,
-  `test:`, `ci:` with optional scope, e.g. `feat(backend): add pod collector`.
+Branches (full guide in `CONTRIBUTING.md`):
+
+| Branch | Purpose | Branches from | Merges into |
+|--------|---------|---------------|-------------|
+| `main` | Released code only. Every commit is a release or a hotfix; tags `vX.Y.Z` live here | — | — |
+| `staging` | Integration: finished features collect and get tested together before a release | `main` | `main` (release) |
+| `feat/<name>` | One feature | `staging` | `staging` |
+| `fix/<name>` | One bug fix | `staging` | `staging` |
+| `hotfix/<name>` | Urgent fix for a released version | `main` | `main`, then `main` into `staging` |
+| `docs/`, `chore/`, `refactor/`, `ci/` | Non-feature work | `staging` | `staging` |
+
+- Never commit directly to `main` or `staging`; work on a branch, in a git worktree
+  (e.g. `/tmp/kq-<name>`) so the main checkout stays untouched.
+- A branch merges into `staging` only after it is tested and approved (`make check` green).
+  Merge with `--no-ff` so each feature stays one visible unit; delete the branch afterwards.
+- A release merges `staging` into `main` (`--no-ff`), bumps the version, updates `CHANGELOG.md`
+  and tags `vX.Y.Z`. Features land under `## Unreleased` in `CHANGELOG.md` as they reach `staging`.
+- Keep feature branches current by merging `staging` into them, not by rebasing shared branches.
+- Conventional commits: `feat:`, `fix:`, `docs:`, `chore:`, `refactor:`, `test:`, `ci:` with
+  optional scope, e.g. `feat(backend): add pod collector`.
 - Short, professional messages. **No AI/Claude attribution or co-author lines** in commits or PRs.
 - Commit in logical units and push after each completed unit.
 
@@ -163,4 +186,4 @@ kind create cluster --name kubeiq-dev # adds context kind-kubeiq-dev
 1. `make check` passes (same checks as CI). Never commit unformatted code.
 2. `docs/ROADMAP.md` checkbox ticked; new decisions captured as an ADR.
 3. This file updated if layout, commands, or rules changed.
-4. Committed and pushed.
+4. Committed and pushed on its branch, then merged into `staging` once approved.

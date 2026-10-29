@@ -3,7 +3,8 @@
 import asyncio
 from functools import lru_cache
 
-from kubernetes.client import ApiClient, VersionApi
+from kubernetes.client import ApiClient, CoreV1Api, VersionApi
+from kubernetes.client.exceptions import ApiException
 from loguru import logger
 
 from kubeiq.clusters.base import ClusterInfo, ClusterNotFoundError, ClusterSource, ClusterStatus
@@ -14,6 +15,10 @@ from kubeiq.clusters.uploaded import UploadedKubeconfigSource
 from kubeiq.core.config import get_settings
 
 PROBE_TIMEOUT_SECONDS = 3
+NO_READ_ACCESS = (
+    "KubeiQ reaches this cluster but cannot read it. Grant read access with the connect "
+    "command under Add Cluster"
+)
 
 
 class ClusterRegistry:
@@ -43,18 +48,48 @@ class ClusterRegistry:
         raise ClusterNotFoundError(cluster_id)
 
     async def check(self, cluster_id: str) -> ClusterStatus:
-        """Probe the API server version without blocking the event loop."""
+        """Probe the API server version, then whether KubeiQ may read the cluster."""
+        login = self.get_cluster(cluster_id).login
+        if login:
+            # Without the CLI the client sends no credentials at all; say so instead of probing.
+            return ClusterStatus(reachable=False, can_read=False, error=needs_login(login))
+        server = None
         try:
             client = self.api_client(cluster_id)
+            server = client.configuration.host
             info = await asyncio.to_thread(
                 VersionApi(client).get_code, _request_timeout=PROBE_TIMEOUT_SECONDS
             )
-            return ClusterStatus(reachable=True, version=info.git_version)
         except ClusterNotFoundError:
             raise
         except Exception as exc:
             logger.debug("Probe failed for {}: {}", cluster_id, exc)
-            return ClusterStatus(reachable=False, error=describe_error(exc))
+            return ClusterStatus(reachable=False, error=describe_error(exc, server))
+        return await probe_read(client, ClusterStatus(reachable=True, version=info.git_version))
+
+
+def needs_login(command: str) -> str:
+    tool = {"gke-gcloud-auth-plugin": "gcloud", "aws": "aws", "az": "az", "kubelogin": "az"}
+    name = tool.get(command, command)
+    return (
+        f"Logs in through {name}, which KubeiQ cannot use. Fix gives KubeiQ its own read-only "
+        "access instead"
+    )
+
+
+async def probe_read(client: ApiClient, status: ClusterStatus) -> ClusterStatus:
+    """Any signed-in identity may read the version; listing namespaces needs KubeiQ's role."""
+    try:
+        await asyncio.to_thread(
+            CoreV1Api(client).list_namespace, limit=1, _request_timeout=PROBE_TIMEOUT_SECONDS
+        )
+    except ApiException as exc:
+        if exc.status in (401, 403):
+            return status.model_copy(update={"can_read": False, "error": NO_READ_ACCESS})
+        return status
+    except Exception:
+        return status  # slow or flaky: the version answered, so do not call it broken
+    return status.model_copy(update={"can_read": True})
 
 
 @lru_cache

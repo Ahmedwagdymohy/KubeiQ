@@ -53,6 +53,8 @@ Never hard-code colors; use the Tailwind tokens (`bg-frame`, `bg-surface`, `text
 
 - **Manrope for everything users read**: headings, labels, lists, progress, history.
 - Labels are normal case (`text-sm font-medium text-muted`), never mono uppercase.
+- Side menus (the app sidebar, the Settings areas, Cluster Manager's kinds) use medium (500) for
+  items and semibold (600) for the active one, so they read clearly on the tinted frame.
 - **Mono (JetBrains Mono) only for things users copy or match exactly**: commands and resource refs.
 
 ## Layout patterns
@@ -75,10 +77,28 @@ Never hard-code colors; use the Tailwind tokens (`bg-frame`, `bg-surface`, `text
 - **Settings**: one view per area (`/settings#ai`, `#clusters`, ...), an area list beside it. Each
   area is a label column (title, description, a summary such as the model in use or seats used)
   beside a grey panel with the controls.
+- **Add a cluster** (Settings › Clusters, Welcome): two choices, Kubeconfig and Google Cloud.
+  Kubeconfig is three steps: where it runs (GKE, EKS, AKS, minikube, kind, Other; clouds show their
+  login command and what to replace), one command with the one-time code (Options: name, context,
+  project, allow changes), then a live line that waits, shows why it failed, or turns into
+  "<name> is connected" with Done. "Add a kubeconfig file instead" is the quiet fallback. Google
+  Cloud fills in the VM's project, then Check Access lists each cluster with its state and the exact
+  commands for what is missing. Connected clusters that KubeiQ reaches but cannot read are amber,
+  with their fix underneath; errors wrap, never overflow. Each row ends with "In <project>" (a
+  checkbox; with several projects, a link to Projects). Server kubeconfig rows add Hide, and Fix
+  for contexts that log in through gcloud, aws or az (the connect command for that context, with a
+  live result). Hidden clusters fold into one "2 hidden clusters · Show" line.
 - **Resizable sidebar** (Cluster Doctor): drag the divider; width remembered per browser.
 - **Incident list**: one row per issue — severity dot, workload name, "Kind in namespace",
   short root cause, confidence number, chevron. Click to expand: How to fix → commands →
   Check that it worked → Why it happens → Prevent it next time → Impact → Affected resources.
+- **Ask KubeiQ** (Cluster Doctor results): a round cyan button with a flat sparkle at the bottom
+  right opens a 460px chat card above it (full screen on a phone). The card has a header, an issue
+  picker (severity dot, name; follows the issue opened last) and one thread per issue: question,
+  author and time, then the answer. Empty threads offer three suggested questions. While answering,
+  one live line names the check in progress ("Reading logs of pod web-1"); answers keep running
+  when the card is closed, and the button pulses until they land. Commands in answers use the
+  terminal block, other code the code block. Each expanded issue ends with "Ask about this issue".
 - **Terminal block**: dark box, `$` prompt, one command per line, copy icon per line.
   `<placeholders>` are highlighted (`text-terminal-warn`) with a "Replace the highlighted values" note.
 - **Progress**: live step list while running, paced so fast scans still read as a scan; collapses
@@ -92,7 +112,8 @@ Never hard-code colors; use the Tailwind tokens (`bg-frame`, `bg-surface`, `text
   reason, **Investigate with Cluster Doctor**, facts, connected resources, labels.
 
 - **Cluster Manager**: toolbar (cluster, namespace), kind sidebar grouped by category with a
-  filter, a table from the server's own columns, and an object panel with Overview / YAML / Events /
+  filter and an icon per kind (`manager/kind-icons.tsx`, drawn in our stroke style; the active
+  kind's icon is cyan), a table from the server's own columns, and an object panel with Overview / YAML / Events /
   Logs tabs. Actions sit in the panel header next to Investigate and Show on map, only when the
   user may change things. Text that is not a command (YAML, logs) uses the code block, not the
   `$` terminal.
