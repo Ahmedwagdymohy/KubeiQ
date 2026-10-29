@@ -5,12 +5,15 @@ from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from kubernetes.client import CoreV1Api
+from sqlalchemy.ext.asyncio import AsyncSession
 
+from kubeiq.auth import membership
 from kubeiq.auth.deps import CurrentUser
 from kubeiq.clusters.base import ClusterInfo, ClusterNotFoundError, ClusterStatus
 from kubeiq.clusters.errors import describe_error
 from kubeiq.clusters.registry import ClusterRegistry, get_registry
 from kubeiq.core.k8s import REQUEST_TIMEOUT
+from kubeiq.db.session import get_session
 
 router = APIRouter(prefix="/clusters", tags=["clusters"])
 
@@ -25,6 +28,7 @@ class ClusterResponse(ClusterInfo):
 async def list_clusters(
     registry: Registry,
     user: CurrentUser,
+    session: Annotated[AsyncSession, Depends(get_session)],
     probe: Annotated[
         bool, Query(alias="check", description="Probe each cluster for reachability")
     ] = True,
@@ -35,7 +39,12 @@ async def list_clusters(
     if every and not user.is_admin:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Only admins can list every cluster")
     allowed = None if every else user.access.clusters()
-    clusters = [c for c in registry.list_clusters() if allowed is None or c.id in allowed]
+    hidden = await membership.hidden(session)
+    clusters = [
+        c.model_copy(update={"hidden": c.id in hidden})
+        for c in registry.list_clusters()
+        if (allowed is None or c.id in allowed) and (every or c.id not in hidden)
+    ]
     statuses: list[ClusterStatus | None] = (
         list(await asyncio.gather(*(registry.check(c.id) for c in clusters)))
         if probe

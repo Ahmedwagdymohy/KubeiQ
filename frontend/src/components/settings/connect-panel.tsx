@@ -59,33 +59,15 @@ const cleanName = (value: string) =>
   value.toLowerCase().replace(/[^a-z0-9-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 40);
 
 /**
- * Connect a cluster with one command: it carries a one-time code, creates KubeiQ's read-only
- * access and hands it to KubeiQ, and this panel shows the cluster the moment it is connected.
+ * A one-time code (it works once, for 15 minutes) and its live state, polled until the cluster
+ * is connected. Everything that shows clusters is refreshed when it is.
  */
-export function ConnectPanel({
-  onConnected,
-  onClose,
-}: {
-  onConnected: (kubeconfig?: string) => void;
-  onClose: () => void;
-}) {
+function useConnectCode(project: string | null, replaces?: string, enabled = true) {
   const queryClient = useQueryClient();
-  const [where, setWhere] = useState<(typeof WHERE)[number]["id"]>("gke");
-  const [options, setOptions] = useState(false);
-  const [name, setName] = useState("");
-  const [context, setContext] = useState("");
-  const [changes, setChanges] = useState(false);
-  const [paste, setPaste] = useState(false);
-  const projects = useQuery({ queryKey: ["projects"], queryFn: api.projects });
-  const [projectId, setProjectId] = useState<string | null>(null);
-  const project = projectId ?? projects.data?.[0]?.id ?? null;
-  const chosen = WHERE.find((w) => w.id === where) ?? WHERE[0];
-
-  // One code per panel (and project). It works once, for 15 minutes.
   const code = useQuery({
-    queryKey: ["connect-code", project],
-    queryFn: () => api.createConnectCode(project),
-    enabled: projects.isFetched,
+    queryKey: ["connect-code", project, replaces ?? null],
+    queryFn: () => api.createConnectCode(project, replaces),
+    enabled,
     staleTime: Infinity,
     gcTime: 0,
     retry: false,
@@ -101,12 +83,69 @@ export function ConnectPanel({
     },
   });
   const connected = status.data?.state === "connected" ? status.data : null;
-
   useEffect(() => {
     if (!connected) return;
     for (const key of [["clusters"], ["settings", "kubeconfigs"], ["projects"], ["plan"]])
       queryClient.invalidateQueries({ queryKey: key });
   }, [connected, queryClient]);
+  return { code, status, connected };
+}
+
+/** A short name for a context: gke_<project>_<location>_<name> and EKS ARNs end in the name. */
+export function shortName(context: string): string {
+  const name = context.startsWith("gke_") ? context.split("_").at(-1) : context.split("/").at(-1);
+  return cleanName(name || context) || "cluster";
+}
+
+/**
+ * Fix a cluster KubeiQ cannot use, such as a context that logs in through gcloud: one command
+ * gives KubeiQ its own read-only access, and the new cluster takes the old one's place.
+ */
+export function FixPanel({ clusterId, context, onDone }: { clusterId: string; context: string; onDone: () => void }) {
+  const { code, status } = useConnectCode(null, clusterId);
+  const command = `curl -fsSL ${apiOrigin()}/api/v1/connect.sh | sh -s -- --code ${
+    code.data?.code ?? "<code>"
+  } --context ${cleanContext(context)} --name ${shortName(context)}`;
+  return (
+    <div className="flex flex-col gap-3 rounded-lg bg-surface p-3">
+      {code.error ? (
+        <p className="text-sm text-danger">{(code.error as Error).message}</p>
+      ) : (
+        <Terminal commands={[command]} />
+      )}
+      <p className="text-[13px] text-subtle">
+        Run it where you are signed in and kubectl reaches this cluster (for this server&apos;s own
+        kubeconfig, that is this server). Your login is used once, to create KubeiQ&apos;s read-only
+        access (no Secrets). The new cluster then takes this one&apos;s place
+      </p>
+      <Progress status={status.data} onRenew={() => code.refetch()} onDone={onDone} />
+    </div>
+  );
+}
+
+/**
+ * Connect a cluster with one command: it carries a one-time code, creates KubeiQ's read-only
+ * access and hands it to KubeiQ, and this panel shows the cluster the moment it is connected.
+ */
+export function ConnectPanel({
+  onConnected,
+  onClose,
+}: {
+  onConnected: (kubeconfig?: string) => void;
+  onClose: () => void;
+}) {
+  const [where, setWhere] = useState<(typeof WHERE)[number]["id"]>("gke");
+  const [options, setOptions] = useState(false);
+  const [name, setName] = useState("");
+  const [context, setContext] = useState("");
+  const [changes, setChanges] = useState(false);
+  const [paste, setPaste] = useState(false);
+  const projects = useQuery({ queryKey: ["projects"], queryFn: api.projects });
+  const [projectId, setProjectId] = useState<string | null>(null);
+  const project = projectId ?? projects.data?.[0]?.id ?? null;
+  const chosen = WHERE.find((w) => w.id === where) ?? WHERE[0];
+
+  const { code, status, connected } = useConnectCode(project, undefined, projects.isFetched);
 
   const ctx = cleanContext(context) || chosen.context;
   const args = [

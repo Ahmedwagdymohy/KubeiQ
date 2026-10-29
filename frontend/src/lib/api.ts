@@ -14,6 +14,9 @@ export type Cluster = {
   server: string | null;
   namespace: string | null;
   is_default: boolean;
+  /** the CLI a context logs in with (gke-gcloud-auth-plugin, aws, az), which KubeiQ cannot run */
+  login?: string | null;
+  hidden?: boolean;
   status: {
     reachable: boolean;
     version: string | null;
@@ -475,8 +478,16 @@ export const api = {
     request<GkeSettings>("/api/v1/settings/gke", { method: "PUT", body: JSON.stringify({ projects }) }),
   checkGke: (project: GkeProject) =>
     request<GkeProjectCheck>("/api/v1/settings/gke/check", json("POST", project)),
-  createConnectCode: (projectId: string | null) =>
-    request<ConnectCode>("/api/v1/connect/codes", json("POST", { project_id: projectId })),
+  /** `replaces`: Fix a cluster KubeiQ cannot use; the new one takes its place in its projects. */
+  createConnectCode: (projectId: string | null, replaces?: string) =>
+    request<ConnectCode>(
+      "/api/v1/connect/codes",
+      json("POST", { project_id: projectId, replaces: replaces ?? null }),
+    ),
+  hideCluster: (clusterId: string, hidden: boolean) =>
+    request<void>("/api/v1/settings/clusters/hidden", json("PUT", { cluster_id: clusterId, hidden })),
+  /** Admins: every connected cluster, without probing them (fast). */
+  connectedClusters: () => request<Cluster[]>("/api/v1/clusters?all=true&check=false"),
   connectStatus: (id: string) => request<ConnectStatus>(`/api/v1/connect/codes/${id}`),
   kinds: (clusterId: string) =>
     request<KindCategory[]>(`/api/v1/manager/resources?${query({ cluster_id: clusterId })}`),

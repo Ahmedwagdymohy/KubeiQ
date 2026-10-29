@@ -11,7 +11,13 @@ from kubernetes import config as k8s_config
 from kubernetes.client import ApiClient, Configuration
 from loguru import logger
 
-from kubeiq.clusters.base import ClusterInfo, ClusterNotFoundError, ClusterSource, ConnectionMethod
+from kubeiq.clusters.base import (
+    ClusterInfo,
+    ClusterNotFoundError,
+    ClusterSource,
+    ConnectionMethod,
+    exec_login,
+)
 
 _LOCAL_HOSTS = {"127.0.0.1", "localhost", "0.0.0.0", "::1"}  # noqa: S104 - matched, not bound
 
@@ -33,6 +39,7 @@ class KubeconfigSource(ClusterSource):
         self._mtime: float | None = None
         self._contexts: dict[str, dict[str, Any]] = {}
         self._servers: dict[str, str] = {}
+        self._logins: dict[str, str | None] = {}
         self._default: str | None = None
         self._clients: dict[str, ApiClient] = {}
         self._error: str | None = None
@@ -57,6 +64,7 @@ class KubeconfigSource(ClusterSource):
                 server=self._servers.get(name),
                 namespace=ctx.get("context", {}).get("namespace"),
                 is_default=name == self._default,
+                login=self._logins.get(name),
             )
             for name, ctx in self._contexts.items()
         ]
@@ -119,6 +127,7 @@ class KubeconfigSource(ClusterSource):
                 name: clusters.get(ctx["context"].get("cluster"), {}).get("server")
                 for name, ctx in self._contexts.items()
             }
+            self._logins = {name: exec_login(raw, name) for name in self._contexts}
             self._default = current["name"] if current else None
             self._clients.clear()
             self._mtime = mtime
@@ -132,6 +141,6 @@ class KubeconfigSource(ClusterSource):
         self._error = error
 
     def _reset(self, mtime: float | None) -> None:
-        self._contexts, self._servers, self._clients = {}, {}, {}
+        self._contexts, self._servers, self._clients, self._logins = {}, {}, {}, {}
         self._default = None
         self._mtime = mtime

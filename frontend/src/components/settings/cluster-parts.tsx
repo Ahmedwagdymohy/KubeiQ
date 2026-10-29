@@ -54,12 +54,18 @@ export function ClusterRows({
   loading = false,
   empty,
   fix,
+  actions,
+  below,
 }: {
   clusters: Cluster[];
   failed: boolean;
   loading?: boolean;
   empty: string;
   fix?: (cluster: Cluster) => string[] | null;
+  /** Controls at the end of a row, such as the project switch. */
+  actions?: (cluster: Cluster) => ReactNode;
+  /** Under a row, such as the Fix panel. */
+  below?: (cluster: Cluster) => ReactNode;
 }) {
   if (clusters.length === 0)
     return (
@@ -75,7 +81,7 @@ export function ClusterRows({
         const commands = broken ? fix?.(cluster) : null;
         return (
           <li key={id} className="flex min-w-0 flex-col gap-1.5">
-            <div className="flex min-w-0 items-center gap-2 text-sm">
+            <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1 text-sm">
               <Dot
                 tone={
                   !status
@@ -89,6 +95,7 @@ export function ClusterRows({
                   {!status ? (failed ? "Could not check this cluster" : "Checking") : `Kubernetes ${status.version}`}
                 </span>
               )}
+              {actions && <span className="ml-auto flex shrink-0 items-center gap-3">{actions(cluster)}</span>}
             </div>
             {broken && (
               <p className="break-words pl-4 text-xs text-muted">{status.error ?? "Unreachable"}</p>
@@ -98,6 +105,7 @@ export function ClusterRows({
                 <Terminal commands={commands} />
               </div>
             )}
+            {below?.(cluster)}
           </li>
         );
       })}

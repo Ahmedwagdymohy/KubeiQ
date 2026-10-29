@@ -24,6 +24,7 @@ def upgrade() -> None:
         sa.Column("code_hash", sa.String(length=64), nullable=False),
         sa.Column("created_by", sa.String(length=254), nullable=False),
         sa.Column("project_id", sa.String(length=36), nullable=True),
+        sa.Column("replaces", sa.String(length=512), nullable=True),
         sa.Column("created_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("expires_at", sa.DateTime(timezone=True), nullable=False),
         sa.Column("used_at", sa.DateTime(timezone=True), nullable=True),

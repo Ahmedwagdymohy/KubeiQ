@@ -1,7 +1,7 @@
 "use client";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 
 import { ClusterRows, connectUrl, SourceCard, Step } from "@/components/settings/cluster-parts";
 import { Field, input, primaryButton, secondaryButton } from "@/components/settings/fields";
@@ -39,12 +39,14 @@ export function GkeProjectCard({
   clusters,
   failed,
   loading = false,
+  actions,
 }: {
   project: GkeSettings["projects"][number];
   settings: GkeSettings;
   clusters: Cluster[];
   failed: boolean;
   loading?: boolean;
+  actions?: (cluster: Cluster) => ReactNode;
 }) {
   const save = useSaveProjects();
   const email = settings.identity.email;
@@ -73,6 +75,7 @@ export function GkeProjectCard({
           loading={loading}
           empty="No GKE clusters in this project"
           fix={fix}
+          actions={actions}
         />
       )}
     </SourceCard>

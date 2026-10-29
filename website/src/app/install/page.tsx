@@ -5,7 +5,7 @@ import { Screen } from "@/components/blocks";
 import { CommandBlock } from "@/components/command-block";
 import { FieldHero } from "@/components/field-hero";
 import { rise } from "@/components/ui";
-import { DOCS_URL, GITHUB_URL, INSTALL_COMMAND } from "@/lib/site";
+import { DOCS_URL, GITHUB_URL, INSTALL_COMMAND, UNINSTALL_COMMAND } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Install",
@@ -110,6 +110,12 @@ export default function InstallPage() {
           <Step i={4} title="Update or Remove">
             <p>To update, run the installer again. To stop KubeiQ:</p>
             <CommandBlock commands={["cd ~/kubeiq && docker compose down"]} />
+            <p>
+              To remove it, with its data, run the uninstaller. It asks first, keeps the images and tools
+              other software uses, and never touches your clusters. Add --keep-data to install again later
+              as it was.
+            </p>
+            <CommandBlock commands={[UNINSTALL_COMMAND]} />
           </Step>
         </ol>
       </section>

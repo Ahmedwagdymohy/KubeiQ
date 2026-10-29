@@ -82,7 +82,10 @@ Never hard-code colors; use the Tailwind tokens (`bg-frame`, `bg-surface`, `text
   "<name> is connected" with Done. "Add a kubeconfig file instead" is the quiet fallback. Google
   Cloud fills in the VM's project, then Check Access lists each cluster with its state and the exact
   commands for what is missing. Connected clusters that KubeiQ reaches but cannot read are amber,
-  with their fix underneath; errors wrap, never overflow.
+  with their fix underneath; errors wrap, never overflow. Each row ends with "In <project>" (a
+  checkbox; with several projects, a link to Projects). Server kubeconfig rows add Hide, and Fix
+  for contexts that log in through gcloud, aws or az (the connect command for that context, with a
+  live result). Hidden clusters fold into one "2 hidden clusters · Show" line.
 - **Resizable sidebar** (Cluster Doctor): drag the divider; width remembered per browser.
 - **Incident list**: one row per issue — severity dot, workload name, "Kind in namespace",
   short root cause, confidence number, chevron. Click to expand: How to fix → commands →

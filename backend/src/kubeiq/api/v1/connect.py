@@ -28,6 +28,8 @@ _HOST = re.compile(r"^[A-Za-z0-9.\-]+(:\d{1,5})?$|^\[[0-9A-Fa-f:.]+\](:\d{1,5})?
 
 class CodeIn(BaseModel):
     project_id: str | None = Field(default=None, max_length=36)
+    # Fix: the connected cluster takes this one's place in its projects, and this one is hidden.
+    replaces: str | None = Field(default=None, max_length=512)
 
 
 class CodeOut(BaseModel):
@@ -56,7 +58,9 @@ async def create_code(body: CodeIn, session: SessionDep, user: AdminUser) -> Cod
     if project is None:
         projects = await auth_repository.list_projects(session)
         project = projects[0] if len(projects) == 1 else None
-    row, code = await service.create_code(session, user.username, project.id if project else None)
+    row, code = await service.create_code(
+        session, user.username, project.id if project else None, body.replaces
+    )
     return CodeOut(
         id=row.id, code=code, expires_at=row.expires_at, project=project.name if project else None
     )

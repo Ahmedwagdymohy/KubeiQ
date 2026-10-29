@@ -108,6 +108,7 @@ class ConnectCode(Base):
     code_hash: Mapped[str] = mapped_column(String(64), unique=True)
     created_by: Mapped[str] = mapped_column(String(254))
     project_id: Mapped[str | None] = mapped_column(String(36))  # where the cluster goes
+    replaces: Mapped[str | None] = mapped_column(String(512))  # a cluster it takes the place of
     created_at: Mapped[datetime] = mapped_column(default=_now)
     expires_at: Mapped[datetime]
     used_at: Mapped[datetime | None]

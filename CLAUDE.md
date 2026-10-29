@@ -74,7 +74,7 @@ frontend/           The self-hosted app: Next.js (TypeScript, Tailwind, App Rout
   src/lib/api.ts      typed API client and SSE helper; lib/scope.ts = cluster in scope (top bar), lib/fleet.ts = workload health
 website/            Marketing site (live at kubeiq.pages.dev): landing, product pages, pricing, install. Static export
 ee/                 Commercial features (separate license)
-deploy/             install.sh (the one-line installer), connect.sh (read-only cluster access; edit here, then
+deploy/             install.sh (the one-line installer), uninstall.sh (removes only what it set up), connect.sh (read-only cluster access; edit here, then
                     `make sync-connect`), Caddyfile, rbac/
 examples/           Intentionally broken workloads for testing diagnoses
 docs/               Architecture, roadmap, ADRs

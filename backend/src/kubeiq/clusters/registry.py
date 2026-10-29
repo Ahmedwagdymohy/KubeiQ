@@ -49,6 +49,10 @@ class ClusterRegistry:
 
     async def check(self, cluster_id: str) -> ClusterStatus:
         """Probe the API server version, then whether KubeiQ may read the cluster."""
+        login = self.get_cluster(cluster_id).login
+        if login:
+            # Without the CLI the client sends no credentials at all; say so instead of probing.
+            return ClusterStatus(reachable=False, can_read=False, error=needs_login(login))
         server = None
         try:
             client = self.api_client(cluster_id)
@@ -62,6 +66,15 @@ class ClusterRegistry:
             logger.debug("Probe failed for {}: {}", cluster_id, exc)
             return ClusterStatus(reachable=False, error=describe_error(exc, server))
         return await probe_read(client, ClusterStatus(reachable=True, version=info.git_version))
+
+
+def needs_login(command: str) -> str:
+    tool = {"gke-gcloud-auth-plugin": "gcloud", "aws": "aws", "az": "az", "kubelogin": "az"}
+    name = tool.get(command, command)
+    return (
+        f"Logs in through {name}, which KubeiQ cannot use. Fix gives KubeiQ its own read-only "
+        "access instead"
+    )
 
 
 async def probe_read(client: ApiClient, status: ClusterStatus) -> ClusterStatus:

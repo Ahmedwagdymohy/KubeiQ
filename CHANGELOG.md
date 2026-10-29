@@ -14,10 +14,19 @@ All notable changes to KubeiQ. Versions follow [Semantic Versioning](https://sem
   by itself. KubeiQ tests the cluster before saving it and says why when it cannot reach it.
 - **minikube and kind on the same machine just work.** The connect command and the installer link
   KubeiQ to the cluster's Docker network.
+- **Every cluster in one place.** Settings › Clusters puts each cluster in your project with one
+  switch, and new clusters join it by themselves (the command, a pasted file, GKE). Contexts of the
+  server's kubeconfig can be hidden, and those that log in through gcloud, aws or az get a Fix: one
+  command gives KubeiQ its own read-only access, and the new cluster takes the old one's place.
+- **Uninstall** with one command (`deploy/uninstall.sh`): removes KubeiQ's containers, data,
+  images and install directory, and nothing else. `--keep-data` keeps it to come back later.
 - **GKE: Check Access** lists a project's clusters before you add it and shows, per cluster, the
   exact commands for any missing access.
 
 ### Changed
+- The top bar opens on a cluster that works, lists working clusters first and says which ones
+  need a fix. Overview links broken clusters to Settings and tells admins about connected clusters
+  that are in no project.
 - Cluster health also checks that KubeiQ may read the cluster, and unreachable clusters say why
   (no answer, refused, unknown host, certificate) with the address.
 - KubeiQ serves `connect.sh` itself, so the script always matches the server.

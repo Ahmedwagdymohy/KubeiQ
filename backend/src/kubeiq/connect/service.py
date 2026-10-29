@@ -17,12 +17,12 @@ from kubernetes.client import VersionApi
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from kubeiq.auth import plan
+from kubeiq.auth import membership
 from kubeiq.auth import repository as auth_repository
 from kubeiq.clusters.base import ClusterStatus
 from kubeiq.clusters.errors import UNREACHABLE, describe_error
 from kubeiq.clusters.registry import PROBE_TIMEOUT_SECONDS, get_uploaded_source, probe_read
-from kubeiq.db.models import DEFAULT_ORG, ConnectCode, Project, StoredKubeconfig
+from kubeiq.db.models import DEFAULT_ORG, ConnectCode, StoredKubeconfig
 from kubeiq.settings import kubeconfigs, repository
 from kubeiq.settings.crypto import decrypt, encrypt
 from kubeiq.settings.service import sync_uploaded_clusters
@@ -72,13 +72,14 @@ def expired(row: ConnectCode) -> bool:
 
 
 async def create_code(
-    session: AsyncSession, created_by: str, project_id: str | None
+    session: AsyncSession, created_by: str, project_id: str | None, replaces: str | None = None
 ) -> tuple[ConnectCode, str]:
     code = CODE_PREFIX + secrets.token_urlsafe(24)
     row = ConnectCode(
         code_hash=_hash(code),
         created_by=created_by,
         project_id=project_id,
+        replaces=replaces,
         expires_at=datetime.now(UTC) + CODE_TTL,
     )
     session.add(row)
@@ -127,7 +128,11 @@ async def connect(
     file = await _save(session, clean_name(name or context), content, server)
     await sync_uploaded_clusters(session)
     cluster_id = get_uploaded_source().make_id(f"{file}/{context}")
-    project, note = await _add_to_project(session, row.project_id, cluster_id)
+    # Fixing a cluster KubeiQ could not use: the new one takes its place in its projects.
+    project = await membership.replace(session, row.replaces, cluster_id) if row.replaces else None
+    note = None
+    if project is None:
+        project, note = await membership.add_to_project(session, row.project_id, [cluster_id])
 
     row.used_at = datetime.now(UTC)
     row.state = "connected"
@@ -216,27 +221,6 @@ async def _save(session: AsyncSession, name: str, content: str, server: str | No
     session.add(StoredKubeconfig(name=candidate, content=encrypt(content)))
     await session.commit()
     return candidate
-
-
-async def _add_to_project(
-    session: AsyncSession, project_id: str | None, cluster_id: str
-) -> tuple[str | None, str | None]:
-    """(project name, note). Over the plan's cluster limit it stays out of the project."""
-    project = await session.get(Project, project_id) if project_id else None
-    if project is None:
-        return None, None
-    scopes = auth_repository.scopes_of(project)
-    if any(s.get("cluster_id") == cluster_id for s in scopes):
-        return project.name, None
-    clusters = await auth_repository.project_clusters(session)
-    if len(clusters | {cluster_id}) > plan.max_clusters():
-        return None, (
-            f"The {plan.plan_name()} plan includes {plan.max_clusters()} clusters, so it is not "
-            f"in project {project.name} yet"
-        )
-    project.scopes = [*scopes, {"cluster_id": cluster_id, "namespaces": []}]
-    await session.commit()
-    return project.name, None
 
 
 def script(base_url: str) -> str:

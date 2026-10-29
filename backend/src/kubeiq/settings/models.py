@@ -45,6 +45,7 @@ class TestResult(BaseModel):
 class KubeconfigIn(BaseModel):
     name: str = Field(min_length=1, max_length=40, pattern=r"^[a-z0-9]([a-z0-9-]*[a-z0-9])?$")
     content: str = Field(min_length=10, max_length=256_000)
+    project_id: str | None = None  # where its clusters go; the only project when not given
 
 
 class KubeconfigOut(BaseModel):

@@ -9,7 +9,13 @@ from typing import Any
 from kubernetes import config as k8s_config
 from kubernetes.client import ApiClient, Configuration
 
-from kubeiq.clusters.base import ClusterInfo, ClusterNotFoundError, ClusterSource, ConnectionMethod
+from kubeiq.clusters.base import (
+    ClusterInfo,
+    ClusterNotFoundError,
+    ClusterSource,
+    ConnectionMethod,
+    exec_login,
+)
 from kubeiq.clusters.kubeconfig import KubeconfigSource
 
 
@@ -43,6 +49,7 @@ class UploadedKubeconfigSource(ClusterSource):
                         method=self.method,
                         server=servers.get(spec.get("cluster")),
                         namespace=spec.get("namespace"),
+                        login=exec_login(config, ctx["name"]),
                     )
                 )
         return clusters

@@ -6,6 +6,7 @@ How the connection is made (kubeconfig, bearer token, in-cluster agent) stays hi
 
 from abc import ABC, abstractmethod
 from enum import StrEnum
+from typing import Any
 
 from kubernetes.client import ApiClient
 from pydantic import BaseModel
@@ -26,6 +27,9 @@ class ClusterInfo(BaseModel):
     server: str | None = None
     namespace: str | None = None
     is_default: bool = False
+    # The CLI a context logs in with (gke-gcloud-auth-plugin, aws, az): not in KubeiQ's image.
+    login: str | None = None
+    hidden: bool = False  # an admin hid it (server kubeconfig contexts cannot be removed)
 
 
 class ClusterStatus(BaseModel):
@@ -34,6 +38,24 @@ class ClusterStatus(BaseModel):
     error: str | None = None
     # Reachable, but KubeiQ's identity may not read it (no RBAC binding): investigations would fail.
     can_read: bool | None = None
+
+
+def exec_login(config: dict[str, Any], context: str) -> str | None:
+    """The command a kubeconfig context logs in with, if it runs one (an exec plugin)."""
+    spec = next(
+        (c.get("context") or {} for c in config.get("contexts") or [] if c.get("name") == context),
+        {},
+    )
+    user = next(
+        (
+            u.get("user") or {}
+            for u in config.get("users") or []
+            if u.get("name") == spec.get("user")
+        ),
+        {},
+    )
+    command = (user.get("exec") or {}).get("command")
+    return str(command).rsplit("/", 1)[-1] if command else None
 
 
 class ClusterNotFoundError(LookupError):

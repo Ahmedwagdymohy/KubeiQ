@@ -82,6 +82,7 @@ pulls the images and starts everything with Docker Compose. When it finishes:
 | Update | Run the installer again |
 | Logs | `cd ~/kubeiq && docker compose logs -f` |
 | Stop | `cd ~/kubeiq && docker compose down` |
+| Uninstall | `curl -fsSL https://raw.githubusercontent.com/Ahmedwagdymohy/KubeiQ/main/deploy/uninstall.sh \| sh` (asks first; `--keep-data` to come back later) |
 | Run from a clone | `docker compose up --build` |
 
 ### Running in Production

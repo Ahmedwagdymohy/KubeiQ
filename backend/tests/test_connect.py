@@ -1,3 +1,4 @@
+import asyncio
 import errno
 from pathlib import Path
 from types import SimpleNamespace
@@ -9,10 +10,12 @@ from kubernetes.client.exceptions import ApiException
 from urllib3.exceptions import ConnectTimeoutError, MaxRetryError, NewConnectionError
 
 from kubeiq.api.v1 import settings as settings_api
+from kubeiq.auth import membership
 from kubeiq.clusters import registry as registry_module
 from kubeiq.clusters.base import ClusterStatus
 from kubeiq.clusters.errors import UNREACHABLE, describe_error
 from kubeiq.connect import service
+from kubeiq.db import session as db_session
 from tests.test_gke import FakeResponse, cluster, source_with
 from tests.test_settings import KUBECONFIG
 
@@ -189,7 +192,7 @@ def test_same_cluster_again_replaces_it_and_another_gets_a_new_name(
 def test_over_the_plan_the_cluster_connects_outside_the_project(
     client: TestClient, reachable: list[str], monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.setattr(service.plan, "max_clusters", lambda: 0)
+    monkeypatch.setattr(membership.plan, "max_clusters", lambda: 0)
     client.post("/api/v1/projects", json={"name": "Platform"})
     response = hand_over(client, new_code(client)["code"])
     assert response.status_code == 200
@@ -261,3 +264,85 @@ def test_gke_check_lists_clusters_and_their_access(
 
     missing = client.post("/api/v1/settings/gke/check", json={"project_id": "nope-project"})
     assert "was not found" in missing.json()["error"]
+
+
+GCLOUD_KUBECONFIG = """
+apiVersion: v1
+kind: Config
+current-context: gke_shop_us-central1-a_dev
+clusters:
+  - name: gke_shop_us-central1-a_dev
+    cluster: {server: "https://10.13.0.2", certificate-authority-data: "Zm9v"}
+contexts:
+  - name: gke_shop_us-central1-a_dev
+    context: {cluster: gke_shop_us-central1-a_dev, user: me}
+users:
+  - name: me
+    user:
+      exec:
+        apiVersion: client.authentication.k8s.io/v1beta1
+        command: /usr/lib/google-cloud-sdk/bin/gke-gcloud-auth-plugin
+"""
+
+
+async def test_contexts_that_log_in_through_a_cli_say_so(tmp_path: Path) -> None:
+    from kubeiq.clusters.kubeconfig import KubeconfigSource
+
+    path = tmp_path / "config"
+    path.write_text(GCLOUD_KUBECONFIG)
+    source = KubeconfigSource(str(path))
+    [info] = source.list_clusters()
+    assert info.login == "gke-gcloud-auth-plugin"
+
+    status = await registry_module.ClusterRegistry([source]).check(info.id)
+    assert status.reachable is False
+    assert status.error is not None
+    assert status.error.startswith("Logs in through gcloud, which KubeiQ cannot use")
+
+
+def test_pasted_kubeconfig_joins_the_only_project(client: TestClient) -> None:
+    client.post("/api/v1/projects", json={"name": "Platform"})
+    client.post("/api/v1/settings/kubeconfigs", json={"name": "staging", "content": KUBECONFIG})
+    listed = client.get("/api/v1/clusters", params={"check": False}).json()
+    assert [c["id"] for c in listed] == [CLUSTER]
+
+
+def test_hidden_clusters_leave_lists_and_projects(client: TestClient) -> None:
+    client.post("/api/v1/projects", json={"name": "Platform"})
+    client.post("/api/v1/settings/kubeconfigs", json={"name": "staging", "content": KUBECONFIG})
+    hide = {"cluster_id": CLUSTER, "hidden": True}
+    assert client.put("/api/v1/settings/clusters/hidden", json=hide).status_code == 204
+
+    assert client.get("/api/v1/clusters", params={"check": False}).json() == []
+    every = client.get("/api/v1/clusters", params={"check": False, "all": True}).json()
+    assert [(c["id"], c["hidden"]) for c in every] == [(CLUSTER, True)]
+    assert client.get("/api/v1/projects").json()[0]["scopes"] == []
+
+    show = {"cluster_id": CLUSTER, "hidden": False}
+    client.put("/api/v1/settings/clusters/hidden", json=show)
+    every = client.get("/api/v1/clusters", params={"check": False, "all": True}).json()
+    assert every[0]["hidden"] is False
+
+
+def test_fix_puts_the_new_cluster_in_the_old_ones_place(
+    client: TestClient, reachable: list[str]
+) -> None:
+    broken = "kubeconfig:gke_shop_us-central1-a_dev"
+    scopes = [{"cluster_id": broken, "namespaces": ["shop"]}]
+    client.post("/api/v1/projects", json={"name": "Platform", "scopes": scopes})
+
+    code = new_code(client, replaces=broken)
+    response = hand_over(client, code["code"])
+    assert response.status_code == 200
+    assert "in project Platform" in response.text
+
+    project = client.get("/api/v1/projects").json()[0]
+    assert project["scopes"] == [{"cluster_id": CLUSTER, "namespaces": ["shop"]}]
+    every = client.get("/api/v1/clusters", params={"check": False, "all": True}).json()
+    assert {c["id"]: c["hidden"] for c in every}[CLUSTER] is False
+
+    async def hidden_ids() -> set[str]:
+        async with db_session.get_sessionmaker()() as session:
+            return await membership.hidden(session)
+
+    assert asyncio.run(hidden_ids()) == {broken}  # the broken context is hidden
