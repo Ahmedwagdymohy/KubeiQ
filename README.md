@@ -78,7 +78,7 @@ pulls the images and starts everything with Docker Compose. When it finishes:
 |------|---------|
 | Use another port | `export KUBEIQ_PORT=3001` before running the installer |
 | Serve over HTTPS | `export KUBEIQ_DOMAIN=kubeiq.example.com` (DNS pointing at the server, ports 80 and 443 open) |
-| Install a release | `export KUBEIQ_REF=v0.2.0` |
+| Install a release | `export KUBEIQ_REF=v0.3.0` |
 | Update | Run the installer again |
 | Logs | `cd ~/kubeiq && docker compose logs -f` |
 | Stop | `cd ~/kubeiq && docker compose down` |

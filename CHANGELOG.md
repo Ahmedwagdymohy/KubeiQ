@@ -2,7 +2,7 @@
 
 All notable changes to KubeiQ. Versions follow [Semantic Versioning](https://semver.org/).
 
-## Unreleased
+## 0.3.0 — 2026-10-30
 
 ### Added
 - **Ask about an issue.** Every diagnosed issue in Cluster Doctor has a follow-up chat: ask why
