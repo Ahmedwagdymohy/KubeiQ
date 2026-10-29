@@ -81,7 +81,11 @@ Update this file in the same commit that completes a task.
 
 ## Phase 5 — Production & distribution
 - [ ] Helm chart
-- [ ] In-cluster agent (outbound connection, no open ports) as a second `ClusterSource`
+- [ ] KubeiQ Agent: in-cluster agent that connects out over WebSocket, for private and firewalled clusters (design: [docs/agent.md](agent.md))
+  - [ ] Tunnel protocol and `AgentSource` (`ClusterSource`): concurrent and streamed requests, reconnects
+  - [ ] Agent image (GHCR, multi-arch), install manifest served by KubeiQ, Helm chart
+  - [ ] Settings › Clusters › Agent: install command with a one-time code, live status, revoke
+  - [ ] End-to-end test on kind with the API server unreachable from KubeiQ
 - [x] Production Compose stack: one-origin proxy with automatic HTTPS, Postgres, generated secrets, readiness on the database
 - [x] Versioned multi-arch images to GHCR (`main`, `x.y.z`, `latest`); the installer pulls them
 - [x] Changelog (CHANGELOG.md) and tagged releases
