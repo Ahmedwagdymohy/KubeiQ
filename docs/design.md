@@ -53,6 +53,8 @@ Never hard-code colors; use the Tailwind tokens (`bg-frame`, `bg-surface`, `text
 
 - **Manrope for everything users read**: headings, labels, lists, progress, history.
 - Labels are normal case (`text-sm font-medium text-muted`), never mono uppercase.
+- Side menus (the app sidebar, the Settings areas, Cluster Manager's kinds) use medium (500) for
+  items and semibold (600) for the active one, so they read clearly on the tinted frame.
 - **Mono (JetBrains Mono) only for things users copy or match exactly**: commands and resource refs.
 
 ## Layout patterns
@@ -99,7 +101,8 @@ Never hard-code colors; use the Tailwind tokens (`bg-frame`, `bg-surface`, `text
   reason, **Investigate with Cluster Doctor**, facts, connected resources, labels.
 
 - **Cluster Manager**: toolbar (cluster, namespace), kind sidebar grouped by category with a
-  filter, a table from the server's own columns, and an object panel with Overview / YAML / Events /
+  filter and an icon per kind (`manager/kind-icons.tsx`, drawn in our stroke style; the active
+  kind's icon is cyan), a table from the server's own columns, and an object panel with Overview / YAML / Events /
   Logs tabs. Actions sit in the panel header next to Investigate and Show on map, only when the
   user may change things. Text that is not a command (YAML, logs) uses the code block, not the
   `$` terminal.

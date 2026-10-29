@@ -4,6 +4,9 @@ All notable changes to KubeiQ. Versions follow [Semantic Versioning](https://sem
 
 ## Unreleased
 
+### Changed
+- Cluster Manager shows an icon for every kind, and side menus use a bolder weight.
+
 ### Added
 - **Ask about an issue.** Every diagnosed issue in Cluster Doctor has a follow-up chat: ask why
   it started, what else it affects or how to check the fix. Answers use the diagnosis and look
