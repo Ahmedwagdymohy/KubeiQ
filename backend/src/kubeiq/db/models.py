@@ -9,6 +9,7 @@ from sqlalchemy import (
     JSON,
     Boolean,
     DateTime,
+    Float,
     ForeignKey,
     Index,
     Integer,
@@ -172,6 +173,28 @@ class ClusterSetting(Base):
     # Notification routing for this cluster (channels and events), see 08.
     alerts: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
     created_at: Mapped[datetime] = mapped_column(default=_now)
+
+
+class UsageSample(Base):
+    """Measured usage of a cluster (ADR 0015). ``seconds`` is the span one sample stands for:
+    60 for raw samples, 600 once older samples are averaged."""
+
+    __tablename__ = "usage_samples"
+    __table_args__ = (Index("ix_usage_cluster_at", "cluster_id", "at"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    org_id: Mapped[str] = mapped_column(String(64), default=DEFAULT_ORG)
+    cluster_id: Mapped[str] = mapped_column(String(512))
+    at: Mapped[datetime] = mapped_column(default=_now)
+    seconds: Mapped[int] = mapped_column(Integer, default=60)
+    cpu_used: Mapped[float | None] = mapped_column(Float)
+    cpu_capacity: Mapped[float | None] = mapped_column(Float)
+    memory_used: Mapped[float | None] = mapped_column(Float)
+    memory_capacity: Mapped[float | None] = mapped_column(Float)
+    pods_running: Mapped[int | None] = mapped_column(Integer)
+    pods: Mapped[int | None] = mapped_column(Integer)
+    nodes_ready: Mapped[int | None] = mapped_column(Integer)
+    nodes: Mapped[int | None] = mapped_column(Integer)
 
 
 class StoredKubeconfig(Base):

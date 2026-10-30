@@ -96,7 +96,7 @@ Full requirements in [docs/requirements](requirements/README.md); items move her
 - [x] App shell: grouped sidebar, pinning, cluster status bar, Ctrl+1..9, a command palette that finds resources (01)
 - [x] Clusters screen: one row per cluster, labels and environments, add/edit dialog with tabs, thresholds (02). The Agent method waits for the KubeiQ Agent (Phase 5)
 - [ ] Settings regrouped; two-factor sign-in; several AI providers; danger zone (03)
-- [ ] Multi-cluster dashboard cards with real usage history (04)
+- [x] Multi-cluster dashboard cards with real usage history (04). Drag-and-resize layouts are still open
 - [ ] Resource tables with status and usage columns, live watches, YAML edit with diff, log viewer, terminal (05)
 - [ ] Pod Distribution and Timeline; health-first map (06)
 - [ ] AI log analysis and a cluster assistant (07)

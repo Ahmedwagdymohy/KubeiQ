@@ -117,6 +117,50 @@ def events_for(api: ApiClient, kind: str, namespace: str | None, name: str) -> l
     return events[:EVENT_LIMIT]
 
 
+FEED_LIMIT = 200
+
+
+def _feed_event(item: dict[str, Any]) -> KubeEvent:
+    meta = item.get("metadata") or {}
+    involved = item.get("involvedObject") or item.get("regarding") or {}
+    source = item.get("source") or {}
+    return KubeEvent(
+        type=item.get("type") or "Normal",
+        reason=item.get("reason") or "",
+        message=(item.get("message") or item.get("note") or "").strip(),
+        count=item.get("count") or (item.get("series") or {}).get("count") or 1,
+        last_seen=item.get("lastTimestamp")
+        or item.get("eventTime")
+        or meta.get("creationTimestamp"),
+        first_seen=item.get("firstTimestamp") or meta.get("creationTimestamp"),
+        kind=involved.get("kind"),
+        name=involved.get("name"),
+        namespace=involved.get("namespace") or meta.get("namespace"),
+        source=source.get("component") or item.get("reportingComponent") or None,
+    )
+
+
+def recent_events(
+    api: ApiClient, namespaces: list[str] | None, warnings_only: bool, limit: int
+) -> list[KubeEvent]:
+    """The newest events of a cluster (or of some namespaces), newest first."""
+    query: list[tuple[str, Any]] = [("limit", FEED_LIMIT)]
+    if warnings_only:
+        query.append(("fieldSelector", "type=Warning"))
+    paths = (
+        [resource_path("", "v1", "events")]
+        if namespaces is None
+        else [resource_path("", "v1", "events", ns) for ns in namespaces]
+    )
+    events = [
+        _feed_event(item)
+        for path in paths
+        for item in (request(api, "GET", path, query=query).get("items") or [])
+    ]
+    events.sort(key=lambda e: e.last_seen or "", reverse=True)
+    return events[:limit]
+
+
 def pod_logs(
     api: ApiClient,
     namespace: str,

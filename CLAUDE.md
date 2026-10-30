@@ -38,6 +38,7 @@ features (teams, SSO, RBAC, audit, more clusters), never core usefulness.
 | 0012 | Projects hold the clusters (lists show projects' clusters, admins too); first sign-in opens /welcome; free plan 3 users, 1 project, 3 clusters |
 | 0013 | Sign in with Google is free core (OIDC + PKCE on the server, invite only: admins allow emails with a role); generic OIDC/LDAP/SAML stay `ee/` |
 | 0014 | One command connects a cluster: a one-time code, KubeiQ serves `connect.sh`, tests the cluster before saving, links local Docker networks (minikube) |
+| 0015 | Usage history: a sample per cluster per minute in our own database, 10-minute averages after a day, 7 days; disk only from the kubelet, never guessed |
 
 Do not reverse an ADR silently — write a new ADR that supersedes it.
 
@@ -51,7 +52,8 @@ backend/            FastAPI service (Python 3.12, uv). Package: backend/src/kube
     clusters/       ClusterSource abstraction: kubeconfig, uploaded kubeconfigs, GKE (cloud identity), token;
                     meta.py = per-cluster settings (display name, labels, default namespace, thresholds)
     connect/        one-command connect: one-time codes, served copy of deploy/connect.sh + rbac (make sync-connect)
-    usage/          cluster summary for the status bar and dashboard: node readiness, metrics-server usage
+    usage/          cluster summary for the status bar and dashboard (node readiness, metrics-server usage),
+                    history.py = usage samples for trend lines (ADR 0015)
     collectors/     read-only evidence collectors (pods, events, logs, deployments, network)
     detectors/      deterministic rule engine (CrashLoopBackOff, ImagePull, OOM, ...)
     agent/          LLM agent: tools, prompts, structured output

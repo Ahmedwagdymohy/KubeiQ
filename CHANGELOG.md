@@ -25,6 +25,15 @@ All notable changes to KubeiQ. Versions follow [Semantic Versioning](https://sem
 - **Connect with a token.** API server address, ServiceAccount token and CA, tested before saving.
   TLS is always verified; there is no switch to skip it.
 
+- **Cluster cards on Overview.** Switch between the ledger and a card per cluster, at four sizes
+  (Glance, Standard, Detailed, Full): health, nodes, pods, namespaces, CPU, memory and disk bars,
+  24-hour trend lines, failing workloads with Investigate, the latest warnings. Filter by label
+  (other cards dim), sort by health, name or usage, and open a card into a large view. Your choice
+  is saved per user.
+- **Usage history** (ADR 0015): KubeiQ records each cluster's usage every minute, keeps a day of
+  minutes and a week of 10-minute averages, so trend lines show measured data only. Disk usage comes
+  from the kubelet when KubeiQ's identity may read it, and is never guessed.
+
 ### Changed
 - The read-only role reads metrics and the remaining built-in kinds (still no Secrets). Run the
   connect command again on existing clusters to show usage.

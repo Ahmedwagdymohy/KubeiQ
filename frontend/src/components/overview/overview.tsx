@@ -6,10 +6,12 @@ import { useState } from "react";
 
 import { headline, timeAgo, tone } from "@/components/doctor/history-list";
 import { RefreshIcon } from "@/components/icons";
+import { ClusterCards, SIZES, type CardSize, type CardSort } from "@/components/overview/cluster-cards";
 import { type ClusterHealth, useFleet } from "@/components/overview/use-fleet";
 import { primaryButton, secondaryButton } from "@/components/settings/fields";
 import { Dot } from "@/components/ui";
 import { useMe } from "@/hooks/use-me";
+import { usePreference } from "@/hooks/use-preferences";
 import { api, type MapStatus } from "@/lib/api";
 import { investigateHref, managerHref, type Workload } from "@/lib/fleet";
 
@@ -84,7 +86,7 @@ export function Overview() {
       <AINotice />
       <OutsideProjectNotice />
 
-      <Ledger health={fleet.health} loading={fleet.clusters.isPending} />
+      <Fleet health={fleet.health} loading={fleet.clusters.isPending} />
 
       <div className="grid grid-cols-[minmax(0,1fr)] gap-4 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
         <FailingWorkloads problems={problems} loading={fleet.loading && !ready.length} />
@@ -199,6 +201,107 @@ function Panel({
       </div>
       {children}
     </section>
+  );
+}
+
+/* ---------- The fleet: cluster cards or the ledger, the user's choice ---------- */
+
+type FleetPrefs = { view: "cards" | "ledger"; size: CardSize; sort: CardSort; labels: string[] };
+const FLEET_DEFAULT: FleetPrefs = { view: "ledger", size: "standard", sort: "health", labels: [] };
+
+function Segmented<T extends string>({ value, options, onChange, label }: { value: T; options: [T, string][]; onChange: (v: T) => void; label: string }) {
+  return (
+    <div role="radiogroup" aria-label={label} className="flex rounded-lg border border-control p-0.5">
+      {options.map(([id, text]) => (
+        <button
+          key={id}
+          type="button"
+          role="radio"
+          aria-checked={value === id}
+          onClick={() => onChange(id)}
+          className={`h-7 rounded-md px-2.5 text-sm transition-colors ${value === id ? "bg-surface-2 font-medium text-fg" : "text-muted hover:text-fg"}`}
+        >
+          {text}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** Cards or ledger (remembered per user), with sizes, sort and label filters for the cards. */
+function Fleet({ health, loading }: { health: ClusterHealth[]; loading: boolean }) {
+  const [saved, setPrefs] = usePreference<Partial<FleetPrefs>>("overview", FLEET_DEFAULT);
+  const prefs = { ...FLEET_DEFAULT, ...saved };
+  const set = (patch: Partial<FleetPrefs>) => setPrefs({ ...prefs, ...patch });
+  const allLabels = [...new Map(health.flatMap((h) => h.cluster.labels ?? []).map((l) => [l.name, l])).values()];
+  const active = prefs.labels.filter((l) => allLabels.some((a) => a.name === l));
+
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="flex flex-wrap items-center gap-2">
+        <Segmented
+          label="View"
+          value={prefs.view}
+          options={[
+            ["cards", "Cards"],
+            ["ledger", "Ledger"],
+          ]}
+          onChange={(view) => set({ view })}
+        />
+        {prefs.view === "cards" && (
+          <>
+            <Segmented label="Card size" value={prefs.size} options={SIZES} onChange={(size) => set({ size })} />
+            <select
+              aria-label="Sort clusters"
+              value={prefs.sort}
+              onChange={(e) => set({ sort: e.target.value as CardSort })}
+              className="h-8 rounded-lg border border-control bg-bg px-2 text-sm text-fg outline-none focus:border-accent"
+            >
+              <option value="health">Sort by health</option>
+              <option value="name">Sort by name</option>
+              <option value="cpu">Sort by CPU</option>
+              <option value="memory">Sort by memory</option>
+            </select>
+            {allLabels.length > 0 && (
+              <div className="flex flex-wrap items-center gap-1.5" aria-label="Filter by label">
+                {allLabels.map((l) => {
+                  const on = active.includes(l.name);
+                  return (
+                    <button
+                      key={l.name}
+                      type="button"
+                      aria-pressed={on}
+                      onClick={() => set({ labels: on ? active.filter((a) => a !== l.name) : [...active, l.name] })}
+                      className={`h-7 rounded-full border px-2.5 text-xs transition-colors ${
+                        on ? "border-accent font-medium text-fg" : "border-control text-muted hover:text-fg"
+                      }`}
+                    >
+                      {l.name}
+                    </button>
+                  );
+                })}
+                {active.length > 0 && (
+                  <button type="button" onClick={() => set({ labels: [] })} className="px-1 text-xs text-subtle hover:text-fg">
+                    Clear
+                  </button>
+                )}
+              </div>
+            )}
+          </>
+        )}
+      </div>
+      {prefs.view === "cards" ? (
+        loading ? (
+          <LedgerSkeleton />
+        ) : health.length === 0 ? (
+          <Ledger health={health} loading={false} />
+        ) : (
+          <ClusterCards health={health} size={prefs.size} sort={prefs.sort} labels={active} />
+        )
+      ) : (
+        <Ledger health={health} loading={loading} />
+      )}
+    </div>
   );
 }
 

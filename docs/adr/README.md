@@ -18,3 +18,4 @@ Short records of significant decisions. To change a decision, add a new ADR that
 | [0012](0012-projects-hold-clusters.md) | Projects hold the clusters; first sign-in sets one up | Accepted |
 | [0013](0013-sign-in-with-google.md) | Sign in with Google in the free core | Accepted |
 | [0014](0014-one-command-connect.md) | Connecting a cluster with one command | Accepted |
+| [0015](0015-usage-history.md) | Usage history for trend lines: measured samples in our own database | Accepted |

@@ -12,6 +12,7 @@ from kubeiq import __version__
 from kubeiq.api import health
 from kubeiq.api.v1.router import router as v1_router
 from kubeiq.auth.master import master_key
+from kubeiq.clusters.registry import get_registry
 from kubeiq.core.config import Settings, get_settings
 from kubeiq.core.logging import setup_logging
 from kubeiq.db.migrate import upgrade_database
@@ -24,6 +25,7 @@ from kubeiq.settings.service import (
     sync_token_clusters,
     sync_uploaded_clusters,
 )
+from kubeiq.usage.history import sample_forever
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -42,10 +44,15 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             await sync_token_clusters(session)
         if interrupted:
             logger.warning("Marked {} interrupted investigation(s) as failed", interrupted)
-        gke_refresh = asyncio.create_task(refresh_gke_forever())
+        tasks = [asyncio.create_task(refresh_gke_forever())]
+        if settings.usage_sample_seconds > 0:
+            tasks.append(
+                asyncio.create_task(sample_forever(get_registry(), settings.usage_sample_seconds))
+            )
         yield
         logger.info("KubeiQ shutting down")
-        gke_refresh.cancel()
+        for task in tasks:
+            task.cancel()
         await get_runner().shutdown()
 
     app = FastAPI(title="KubeiQ", version=__version__, lifespan=lifespan)

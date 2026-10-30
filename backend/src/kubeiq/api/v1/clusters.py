@@ -17,6 +17,7 @@ from kubeiq.clusters.errors import describe_error
 from kubeiq.clusters.registry import ClusterRegistry, get_registry
 from kubeiq.core.k8s import REQUEST_TIMEOUT
 from kubeiq.db.session import get_session
+from kubeiq.usage import history
 from kubeiq.usage.summary import ClusterSummary, status_health, summarize
 
 router = APIRouter(prefix="/clusters", tags=["clusters"])
@@ -119,6 +120,19 @@ async def cluster_summary(cluster_id: str, registry: Registry, user: CurrentUser
         return await asyncio.to_thread(summarize, api, probe)
     except Exception as exc:
         return ClusterSummary(health="healthy", version=probe.version, reason=describe_error(exc))
+
+
+@router.get("/{cluster_id:path}/usage", response_model=list[history.UsagePoint])
+async def cluster_usage(
+    cluster_id: str,
+    user: CurrentUser,
+    session: Annotated[AsyncSession, Depends(get_session)],
+    hours: Annotated[int, Query(ge=1, le=168)] = 24,
+) -> list[history.UsagePoint]:
+    """Recorded usage for trend lines: measured samples only, oldest first."""
+    if not user.access.can("read", cluster_id, None):
+        raise HTTPException(status_code=403, detail="Usage covers the whole cluster")
+    return await history.points(session, cluster_id, hours)
 
 
 # Declared last: the greedy path parameter would otherwise capture ".../namespaces".
