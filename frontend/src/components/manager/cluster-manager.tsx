@@ -9,6 +9,7 @@ import { KindSidebar } from "@/components/manager/kind-sidebar";
 import { ObjectPanel } from "@/components/manager/object-panel";
 import { ResourceTable } from "@/components/manager/resource-table";
 import { useAllNamespaces } from "@/hooks/use-me";
+import { usePreference } from "@/hooks/use-preferences";
 import { api } from "@/lib/api";
 import { resolveCluster, setClusterScope, useClusterPicked, useClusterScope } from "@/lib/scope";
 
@@ -28,6 +29,29 @@ export function ClusterManager() {
     const name = params.get("name");
     return name ? { namespace: params.get("in") || null, name } : null;
   });
+
+  // The sidebar and the command palette link here with a new kind or object: follow the URL
+  // when it changes from outside (adjusting state during render).
+  const linked = `${params.get("kind") ?? ""}|${params.get("name") ?? ""}|${params.get("in") ?? ""}|${params.get("cluster") ?? ""}`;
+  const [lastLinked, setLastLinked] = useState(linked);
+  if (linked !== lastLinked) {
+    setLastLinked(linked);
+    const name = params.get("name");
+    const nextKind = params.get("kind") ?? DEFAULT_KIND;
+    if (nextKind !== kindId) setKindId(nextKind);
+    const nextSelected = name ? { namespace: params.get("in") || null, name } : null;
+    if (nextSelected?.name !== selected?.name || nextSelected?.namespace !== selected?.namespace)
+      setSelected(nextSelected);
+    if (params.get("cluster") && params.get("cluster") !== chosen) setChosen(params.get("cluster"));
+    if (params.get("namespace") !== null && params.get("namespace") !== namespace)
+      setNamespace(params.get("namespace") ?? "");
+  }
+
+  // The app sidebar lists the built-in kinds; this full list (custom resources too) is opt-in
+  // while it is expanded, and always there when it is collapsed to the icon rail.
+  const [appSidebar] = usePreference<{ collapsed: boolean }>("sidebar", { collapsed: false });
+  const [allKinds, setAllKinds] = usePreference<boolean>("manager.kinds", false);
+  const showKinds = appSidebar.collapsed || allKinds;
 
   const scoped = useClusterScope();
   const cluster = chosen ?? resolveCluster(clusters.data, scoped);
@@ -129,9 +153,22 @@ export function ClusterManager() {
           ))}
         </select>
         <span className="ml-auto hidden text-sm text-subtle sm:inline">Read-only by default</span>
+        {!appSidebar.collapsed && (
+          <button
+            type="button"
+            onClick={() => setAllKinds(!allKinds)}
+            aria-pressed={allKinds}
+            className={`hidden h-8 rounded-lg border px-2.5 text-sm transition-colors md:block ${
+              allKinds ? "border-accent text-fg" : "border-control text-muted hover:text-fg"
+            }`}
+          >
+            All kinds
+          </button>
+        )}
       </div>
 
       <div className="flex min-h-0 flex-1">
+        {showKinds && (
         <KindSidebar
           categories={kinds.data ?? []}
           loading={kinds.isPending && Boolean(cluster)}
@@ -144,6 +181,7 @@ export function ClusterManager() {
             sync({ kind: k, selected: null });
           }}
         />
+        )}
         <div className="flex min-w-0 flex-1">
           <div className={`min-w-0 flex-1 ${selected ? "hidden xl:block" : ""}`}>
             {cluster && kind && (

@@ -2,6 +2,24 @@
 
 All notable changes to KubeiQ. Versions follow [Semantic Versioning](https://semver.org/).
 
+## Unreleased
+
+### Added
+- **A sidebar that knows Kubernetes.** Products, then the resources grouped the way people think
+  (Workloads, Network, Config, Storage, Access, Cluster), one group open at a time. Pin up to five
+  items to the top, or collapse the sidebar to an icon rail; both follow you to any browser.
+- **Cluster status bar.** The cluster in scope, its health (reachable, readable, nodes Ready),
+  version, nodes, namespaces, pods and CPU and memory usage when metrics-server runs. "No access"
+  opens its fix; "Degraded" opens Cluster Doctor.
+- **Command palette (Ctrl+K).** Jump to any page, resource kind or setting, find objects by name in
+  the cluster in scope and open or investigate them, switch clusters, toggle the theme.
+- **Ctrl+1 to Ctrl+9** switch clusters. KubeiQ remembers your last cluster per user.
+- Breadcrumbs: Cluster Manager / Deployments / checkout.
+
+### Changed
+- The read-only role reads metrics and the remaining built-in kinds (still no Secrets). Run the
+  connect command again on existing clusters to show usage.
+
 ## 0.3.0 — 2026-10-30
 
 ### Added

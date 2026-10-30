@@ -26,6 +26,7 @@ from kubeiq.products.manager.models import (
     ObjectDetail,
     PodLogs,
     ResourceList,
+    SearchHit,
     WorkloadPod,
 )
 from kubeiq.settings.service import changes_enabled
@@ -73,6 +74,21 @@ async def list_kinds(
         return await discover(cluster_id, api, refresh)
     except Exception as exc:
         raise HTTPException(status_code=502, detail=describe_error(exc)) from exc
+
+
+@router.get("/search", response_model=list[SearchHit])
+async def search(
+    registry: Registry,
+    user: CurrentUser,
+    cluster_id: ClusterId,
+    q: Annotated[str, Query(min_length=1, max_length=100)],
+) -> list[SearchHit]:
+    """Find objects by name for the command palette, within what the user may read."""
+    _see_cluster(user, cluster_id)
+    allowed = user.access.namespaces(cluster_id)
+    api = _client(registry, cluster_id)
+    scope = None if allowed is None else sorted(allowed)
+    return await _call(resources.search, cluster_id, api, q, scope)
 
 
 @router.get("/list", response_model=ResourceList)

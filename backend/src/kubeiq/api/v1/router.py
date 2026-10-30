@@ -13,6 +13,7 @@ from kubeiq.api.v1 import (
     diagnose,
     evidence,
     investigations,
+    me,
     projects,
     settings,
     users,
@@ -28,6 +29,7 @@ router.include_router(connect.public)
 
 protected = APIRouter(dependencies=[Depends(current_principal)])
 protected.include_router(clusters.router)
+protected.include_router(me.router)
 protected.include_router(connect.admin)
 protected.include_router(evidence.router)
 protected.include_router(diagnose.router)

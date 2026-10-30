@@ -1,11 +1,19 @@
 """Lists, objects, events and logs for any resource kind. Secret values are never fetched."""
 
+import time
+from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
 import yaml
 from kubernetes.client import ApiClient
 
-from kubeiq.products.manager.kube import METADATA_ONLY, TABLE, request, resource_path
+from kubeiq.products.manager.kube import (
+    METADATA_LIST,
+    METADATA_ONLY,
+    TABLE,
+    request,
+    resource_path,
+)
 from kubeiq.products.manager.models import (
     Column,
     KubeEvent,
@@ -13,6 +21,7 @@ from kubeiq.products.manager.models import (
     PodLogs,
     ResourceList,
     Row,
+    SearchHit,
     WorkloadPod,
 )
 
@@ -222,3 +231,81 @@ def _workload_pod(item: dict[str, Any]) -> WorkloadPod:
         ready=f"{sum(bool(s.get('ready')) for s in main)}/{total}",
         restarts=sum(int(s.get("restartCount") or 0) for s in statuses),
     )
+
+
+# What the command palette finds by name: (group, version, resource, kind, namespaced).
+SEARCH_KINDS = [
+    ("apps", "v1", "deployments", "Deployment", True),
+    ("apps", "v1", "statefulsets", "StatefulSet", True),
+    ("apps", "v1", "daemonsets", "DaemonSet", True),
+    ("batch", "v1", "cronjobs", "CronJob", True),
+    ("batch", "v1", "jobs", "Job", True),
+    ("", "v1", "pods", "Pod", True),
+    ("", "v1", "services", "Service", True),
+    ("networking.k8s.io", "v1", "ingresses", "Ingress", True),
+    ("", "v1", "configmaps", "ConfigMap", True),
+    ("", "v1", "secrets", "Secret", True),
+    ("", "v1", "persistentvolumeclaims", "PersistentVolumeClaim", True),
+    ("", "v1", "namespaces", "Namespace", False),
+    ("", "v1", "nodes", "Node", False),
+]
+SEARCH_LIMIT = 40
+_PER_KIND = 8
+_SEARCH_TTL = 20.0
+_names: dict[tuple[str, str], tuple[float, list[tuple[str | None, str]]]] = {}
+
+
+def _names_at(cache_key: str, api: ApiClient, path: str) -> list[tuple[str | None, str]]:
+    """(namespace, name) of every object at a list path; metadata only, cached briefly."""
+    cached = _names.get((cache_key, path))
+    if cached and time.monotonic() - cached[0] < _SEARCH_TTL:
+        return cached[1]
+    body = request(api, "GET", path, query=[("limit", LIST_LIMIT)], accept=METADATA_LIST)
+    found = [
+        ((item.get("metadata") or {}).get("namespace"), (item.get("metadata") or {})["name"])
+        for item in body.get("items") or []
+        if (item.get("metadata") or {}).get("name")
+    ]
+    _names[(cache_key, path)] = (time.monotonic(), found)
+    return found
+
+
+def search(
+    cache_key: str, api: ApiClient, text: str, namespaces: list[str] | None
+) -> list[SearchHit]:
+    """Objects whose name contains ``text``, names that start with it first.
+
+    ``namespaces=None`` searches everything (cluster-wide kinds too); a list limits the search to
+    those namespaces, for members whose projects allow only some.
+    """
+    needle = text.strip().lower()
+    if not needle:
+        return []
+    jobs: list[tuple[tuple[str, str, str, str, bool], str]] = []
+    for kind in SEARCH_KINDS:
+        group, version, resource, _, namespaced = kind
+        if namespaces is None:
+            jobs.append((kind, resource_path(group, version, resource)))
+        elif namespaced:
+            jobs += [(kind, resource_path(group, version, resource, ns)) for ns in namespaces]
+
+    def run(job: tuple[tuple[str, str, str, str, bool], str]) -> list[SearchHit]:
+        (group, version, resource, kind, _), path = job
+        try:
+            names = _names_at(cache_key, api, path)
+        except Exception:
+            return []  # a kind this identity may not list, or a missing API
+        hits = [
+            SearchHit(
+                group=group, version=version, resource=resource, kind=kind, namespace=ns, name=n
+            )
+            for ns, n in names
+            if needle in n.lower()
+        ]
+        hits.sort(key=lambda h: (not h.name.lower().startswith(needle), len(h.name), h.name))
+        return hits[:_PER_KIND]
+
+    with ThreadPoolExecutor(max_workers=8) as pool:
+        results = [hit for hits in pool.map(run, jobs) for hit in hits]
+    results.sort(key=lambda h: (not h.name.lower().startswith(needle), len(h.name)))
+    return results[:SEARCH_LIMIT]

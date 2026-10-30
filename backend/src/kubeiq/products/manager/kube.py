@@ -12,6 +12,7 @@ from kubeiq.core.k8s import REQUEST_TIMEOUT
 
 TABLE = "application/json;as=Table;v=v1;g=meta.k8s.io,application/json"
 METADATA_ONLY = "application/json;as=PartialObjectMetadata;v=v1;g=meta.k8s.io,application/json"
+METADATA_LIST = "application/json;as=PartialObjectMetadataList;v=v1;g=meta.k8s.io,application/json"
 
 _GROUP = re.compile(r"^[a-z0-9.-]*$")
 _VERSION = re.compile(r"^v[0-9]+[a-z0-9]*$")

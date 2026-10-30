@@ -11,7 +11,7 @@ import { useMe } from "@/hooks/use-me";
 import { api } from "@/lib/api";
 
 /** The signed-in user at the foot of the sidebar; opens Account and Sign Out. */
-export function UserMenu({ onNavigate }: { onNavigate?: () => void }) {
+export function UserMenu({ onNavigate, compact = false }: { onNavigate?: () => void; compact?: boolean }) {
   const me = useMe();
   const router = useRouter();
   const pathname = usePathname();
@@ -49,8 +49,26 @@ export function UserMenu({ onNavigate }: { onNavigate?: () => void }) {
         ? projects.map((p) => p.project).join(", ")
         : "No projects yet";
 
+  const avatar = (
+    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-control bg-bg text-xs font-semibold uppercase text-fg">
+      {username.slice(0, 1)}
+    </span>
+  );
+
   return (
     <div ref={ref} className="relative">
+      {compact ? (
+        <button
+          type="button"
+          aria-expanded={open}
+          aria-label={`Account: ${username}`}
+          title={username}
+          onClick={() => setOpen((v) => !v)}
+          className="flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-frame-hover"
+        >
+          {avatar}
+        </button>
+      ) : (
       <button
         type="button"
         aria-expanded={open}
@@ -58,9 +76,7 @@ export function UserMenu({ onNavigate }: { onNavigate?: () => void }) {
         onClick={() => setOpen((v) => !v)}
         className="flex w-full items-center gap-2.5 rounded-lg px-2 py-1.5 text-left transition-colors hover:bg-frame-hover"
       >
-        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-control bg-bg text-xs font-semibold uppercase text-fg">
-          {username.slice(0, 1)}
-        </span>
+        {avatar}
         <span className="flex min-w-0 flex-1 flex-col leading-tight">
           <span className="truncate text-sm font-medium text-fg">{username}</span>
           <span className="truncate text-xs text-subtle">{scope}</span>
@@ -71,8 +87,9 @@ export function UserMenu({ onNavigate }: { onNavigate?: () => void }) {
           className={`shrink-0 text-subtle transition-transform ${open ? "" : "rotate-180"}`}
         />
       </button>
+      )}
       {open && (
-        <div className="absolute inset-x-0 bottom-full z-30 mb-1 flex flex-col rounded-lg border border-border bg-bg p-1 text-sm shadow-lg shadow-black/10">
+        <div className={`absolute bottom-full z-30 mb-1 ${compact ? "left-0 w-48" : "inset-x-0"} flex flex-col rounded-lg border border-border bg-bg p-1 text-sm shadow-lg shadow-black/10`}>
           <Link
             href="/settings#account"
             onClick={(event) => {

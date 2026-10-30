@@ -356,6 +356,25 @@ export type ClusterAction = ObjectRef & {
   replicas?: number;
 };
 
+export type Gauge = { used: number; capacity: number };
+export type ClusterHealthState = "healthy" | "degraded" | "unhealthy" | "no-access" | "offline";
+export type ClusterSummary = {
+  health: ClusterHealthState;
+  reason: string | null;
+  version: string | null;
+  nodes: number | null;
+  nodes_ready: number | null;
+  namespaces: number | null;
+  pods: number | null;
+  pods_running: number | null;
+  cpu: Gauge | null;
+  memory: Gauge | null;
+  metrics: boolean;
+  metrics_error: string | null;
+};
+export type SearchHit = ObjectRef & { kind: string };
+export type Preferences = Record<string, unknown>;
+
 /** Fired when the backend says the session is gone, so the app can send the user to sign in. */
 export const UNAUTHORIZED_EVENT = "kubeiq:unauthorized";
 
@@ -444,6 +463,13 @@ export const api = {
   /** Admins: every connected cluster, also those not in a project yet. */
   allClusters: () => request<Cluster[]>("/api/v1/clusters?all=true"),
   plan: () => request<Plan>("/api/v1/plan"),
+  clusterSummary: (clusterId: string) =>
+    request<ClusterSummary>(`/api/v1/clusters/${encodeCluster(clusterId)}/summary`),
+  preferences: () => request<Preferences>("/api/v1/me/preferences"),
+  savePreference: (key: string, value: unknown) =>
+    request<void>(`/api/v1/me/preferences/${key}`, json("PUT", value)),
+  search: (clusterId: string, q: string, signal?: AbortSignal) =>
+    request<SearchHit[]>(`/api/v1/manager/search?${query({ cluster_id: clusterId, q })}`, { signal }),
   namespaces: (clusterId: string) =>
     request<string[]>(`/api/v1/clusters/${encodeCluster(clusterId)}/namespaces`),
   startInvestigation: (clusterId: string, namespace: string | null) =>

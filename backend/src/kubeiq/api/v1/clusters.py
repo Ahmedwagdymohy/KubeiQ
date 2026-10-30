@@ -14,6 +14,7 @@ from kubeiq.clusters.errors import describe_error
 from kubeiq.clusters.registry import ClusterRegistry, get_registry
 from kubeiq.core.k8s import REQUEST_TIMEOUT
 from kubeiq.db.session import get_session
+from kubeiq.usage.summary import ClusterSummary, status_health, summarize
 
 router = APIRouter(prefix="/clusters", tags=["clusters"])
 
@@ -74,6 +75,27 @@ async def list_namespaces(cluster_id: str, registry: Registry, user: CurrentUser
     except Exception as exc:
         raise HTTPException(status_code=502, detail=describe_error(exc)) from exc
     return sorted(ns.metadata.name for ns in result.items if ns.metadata and ns.metadata.name)
+
+
+@router.get("/{cluster_id:path}/summary", response_model=ClusterSummary)
+async def cluster_summary(cluster_id: str, registry: Registry, user: CurrentUser) -> ClusterSummary:
+    """Health for the status bar: reachable and readable, node readiness, usage."""
+    allowed = user.access.clusters()
+    if not user.is_admin and allowed is not None and cluster_id not in allowed:
+        raise HTTPException(status_code=403, detail="Your projects do not include this cluster")
+    try:
+        probe = await registry.check(cluster_id)
+        api = registry.api_client(cluster_id)
+    except ClusterNotFoundError as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    broken = status_health(probe)
+    # Nodes are cluster-wide: members limited to some namespaces see the connection state only.
+    if broken or not user.access.can("read", cluster_id, None):
+        return ClusterSummary(health=broken or "healthy", reason=probe.error, version=probe.version)
+    try:
+        return await asyncio.to_thread(summarize, api, probe)
+    except Exception as exc:
+        return ClusterSummary(health="healthy", version=probe.version, reason=describe_error(exc))
 
 
 # Declared last: the greedy path parameter would otherwise capture ".../namespaces".

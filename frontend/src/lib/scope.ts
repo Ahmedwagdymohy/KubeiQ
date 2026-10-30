@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useSyncExternalStore } from "react";
 
-import type { Cluster } from "@/lib/api";
+import { api, type Cluster } from "@/lib/api";
 
 /**
  * The cluster in scope, shared by the top bar and every product. Stored per browser so the
@@ -41,6 +41,13 @@ export function setClusterScope(id: string, user = true) {
     // storage unavailable; the scope still applies until reload
   }
   window.dispatchEvent(new CustomEvent<Detail>(EVENT, { detail: { id, user } }));
+  // Remembered per user too, so another browser opens on the same cluster.
+  if (user) api.savePreference("cluster", id).catch(() => undefined);
+}
+
+/** On a browser that has no cluster in scope yet, use the one this user picked last. */
+export function restoreClusterScope(saved: unknown) {
+  if (typeof saved === "string" && saved && read() === null) setClusterScope(saved, false);
 }
 
 export function useClusterScope(): string | null {

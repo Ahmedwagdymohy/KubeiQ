@@ -93,7 +93,7 @@ Update this file in the same commit that completes a task.
 
 ## Product requirements (planned)
 Full requirements in [docs/requirements](requirements/README.md); items move here when scheduled.
-- [ ] App shell: grouped sidebar, pinning, cluster status bar, Ctrl+1..9, a command palette that finds resources (01)
+- [x] App shell: grouped sidebar, pinning, cluster status bar, Ctrl+1..9, a command palette that finds resources (01)
 - [ ] Clusters screen: one row per cluster, labels and environments, add/edit dialog with tabs, thresholds (02)
 - [ ] Settings regrouped; two-factor sign-in; several AI providers; danger zone (03)
 - [ ] Multi-cluster dashboard cards with real usage history (04)
