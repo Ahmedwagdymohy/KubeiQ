@@ -4,7 +4,8 @@ from datetime import datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import delete, func, select
+from pydantic import BaseModel
+from sqlalchemy import delete, func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from kubeiq.auth import google, plan, repository
@@ -23,7 +24,7 @@ from kubeiq.auth.models import (
 )
 from kubeiq.auth.passwords import generate_password, hash_password
 from kubeiq.core.config import Settings, get_settings
-from kubeiq.db.models import AuditEvent, ProjectMember, User
+from kubeiq.db.models import DEFAULT_ORG, AuditEvent, ProjectMember, User
 from kubeiq.db.session import get_session
 
 router = APIRouter(tags=["users"])
@@ -204,6 +205,62 @@ async def delete_user(
     await session.delete(user)
     await session.commit()
     await repository.record(session, admin.username, "user.delete", target=username)
+
+
+class AuditPage(BaseModel):
+    items: list[AuditOut]
+    total: int
+
+
+@router.get("/audit/search", response_model=AuditPage)
+async def search_audit(
+    admin: AdminUser,
+    session: SessionDep,
+    username: str | None = None,
+    action: str | None = None,
+    target_kind: str | None = None,
+    cluster_id: str | None = None,
+    q: Annotated[str | None, Query(max_length=200)] = None,
+    offset: Annotated[int, Query(ge=0)] = 0,
+    limit: Annotated[int, Query(ge=1, le=200)] = 25,
+) -> AuditPage:
+    """The activity log with filters and pages: who, what (an action or its prefix like
+    "k8s."), which kind of target, which cluster, and free text."""
+    conditions = [AuditEvent.org_id == DEFAULT_ORG]
+    if username:
+        conditions.append(AuditEvent.username == username)
+    if action:
+        conditions.append(
+            AuditEvent.action.startswith(action)
+            if action.endswith(".")
+            else AuditEvent.action == action
+        )
+    if target_kind:
+        conditions.append(AuditEvent.target.startswith(f"{target_kind}/"))
+    if cluster_id:
+        conditions.append(AuditEvent.cluster_id == cluster_id)
+    if q:
+        like = f"%{q.lower()}%"
+        conditions.append(
+            or_(
+                func.lower(AuditEvent.target).like(like),
+                func.lower(AuditEvent.detail).like(like),
+                func.lower(AuditEvent.username).like(like),
+                func.lower(AuditEvent.action).like(like),
+            )
+        )
+    total = await session.scalar(select(func.count()).select_from(AuditEvent).where(*conditions))
+    rows = await session.execute(
+        select(AuditEvent)
+        .where(*conditions)
+        .order_by(AuditEvent.created_at.desc(), AuditEvent.id.desc())
+        .offset(offset)
+        .limit(limit)
+    )
+    return AuditPage(
+        items=[AuditOut.model_validate(e, from_attributes=True) for e in rows.scalars()],
+        total=int(total or 0),
+    )
 
 
 @router.get("/audit", response_model=list[AuditOut])

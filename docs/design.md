@@ -100,6 +100,15 @@ Never hard-code colors; use the Tailwind tokens (`bg-frame`, `bg-surface`, `text
 - **Settings groups**: the area list has small group labels (Workspace, People, Intelligence,
   Operations, System); Danger Zone is last, in red. Its actions are red-bordered cards with the
   phrase to type in mono and a filled red button that stays disabled until the phrase matches.
+- **Notifications** (Settings): Channels as bordered rows (name, type, then Send test, Pause, Edit,
+  Remove as text actions; a failed last delivery in red under the row) and an Add Channel form with
+  type chips and the type's fields (secrets show "Configured"); "When to alert" as checkboxes with
+  inline parameters, cooldown and quiet hours, one Save. Edit Cluster has an Alerts tab (channels and
+  rules for that cluster; all checked means all).
+- **Activity** (Settings): filter selects and search above a list of entries, each with a coloured
+  action pill (red deletes and failures, amber cluster changes, grey sign-ins, cyan settings), the
+  target in mono, time, who and where; a details panel on wide screens; "Showing 1 to 25 of 259" with
+  Previous and Next.
 - **Settings**: one view per area (`/settings#ai`, `#clusters`, ...), an area list beside it. Each
   area is a label column (title, description, a summary such as the model in use or seats used)
   beside a grey panel with the controls.

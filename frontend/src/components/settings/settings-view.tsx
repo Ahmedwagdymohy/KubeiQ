@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 
 import { AboutSection } from "@/components/settings/about-section";
+import { NotificationsSection } from "@/components/settings/notifications-section";
 import { AppearanceSection, DangerSection, GeneralSection, LicenseSection } from "@/components/settings/workspace-sections";
 import { AccountSection } from "@/components/settings/account-section";
 import { ActivitySection } from "@/components/settings/activity-section";
@@ -18,6 +19,7 @@ import { areaFromHash, settingsAreas, type SettingsArea } from "@/lib/settings-n
 
 const VIEWS: Record<SettingsArea, () => ReactNode> = {
   general: () => <GeneralSection />,
+  notifications: () => <NotificationsSection />,
   appearance: () => <AppearanceSection />,
   license: () => <LicenseSection />,
   danger: () => <DangerSection />,

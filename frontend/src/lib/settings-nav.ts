@@ -8,6 +8,7 @@ export const SETTINGS_AREAS = [
   { id: "users", label: "Users", admin: true, group: "People" },
   { id: "signin", label: "Sign-In", admin: true, group: "People" },
   { id: "ai", label: "AI Model", admin: true, group: "Intelligence" },
+  { id: "notifications", label: "Notifications", admin: true, group: "Operations" },
   { id: "changes", label: "Cluster Changes", admin: true, group: "Operations" },
   { id: "activity", label: "Activity", admin: true, group: "System" },
   { id: "license", label: "License", admin: true, group: "System" },

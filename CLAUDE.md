@@ -60,6 +60,7 @@ backend/            FastAPI service (Python 3.12, uv). Package: backend/src/kube
                     scoped.py = assistant tools limited to the user's namespaces, log_analysis.py
     investigations/ orchestration, async jobs, progress events
     security/       redaction of secrets/PII before anything reaches an LLM
+    notifications/  channels (Slack, Teams, Discord, Telegram, webhook, email), rules, the alert engine
     settings/       Settings page backend: AI model + kubeconfig uploads, Fernet-encrypted, override env
     auth/           master key, users, sessions, projects/access checks (deps.py), plan limits, audit
     db/             persistence models, sessions, Alembic migrations (applied at startup)

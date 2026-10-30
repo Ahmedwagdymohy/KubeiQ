@@ -37,6 +37,8 @@ class Settings(BaseSettings):
 
     # How often to record each cluster's usage for trend lines (ADR 0015). 0 turns it off.
     usage_sample_seconds: int = 60
+    # How often the alert engine checks clusters for notifications. 0 turns it off.
+    alert_seconds: int = 60
 
     kubeconfig: str | None = None
     # Set to host.docker.internal when running in Docker against kind/minikube/k3d clusters.
