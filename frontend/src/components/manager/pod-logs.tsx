@@ -3,6 +3,8 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useState, type ReactNode } from "react";
 
+import { SparkleIcon } from "@/components/icons";
+import { LogAnalysisPanel } from "@/components/manager/log-analysis";
 import { Switch } from "@/components/settings/fields";
 import { Spinner } from "@/components/ui";
 import { api, type KindInfo } from "@/lib/api";
@@ -53,6 +55,8 @@ export function PodLogsView({
   const [stamps, setStamps] = useState(true);
   const [search, setSearch] = useState("");
   const [hit, setHit] = useState(0);
+  const [analyzing, setAnalyzing] = useState(false);
+  const [focus, setFocus] = useState(-1);
   const box = useRef<HTMLDivElement>(null);
   const logs = useQuery({
     queryKey: ["manager", "logs", cluster, namespace, pod, container, tail, previous],
@@ -65,7 +69,15 @@ export function PodLogsView({
   const fresh = paused ? Math.max(0, latest.length - latest.lastIndexOf(paused[paused.length - 1]) - 1) : 0;
   const q = search.trim().toLowerCase();
   const matches = q ? shown.flatMap((line, i) => (line.toLowerCase().includes(q) ? [i] : [])) : [];
-  const current = matches.length ? matches[((hit % matches.length) + matches.length) % matches.length] : -1;
+  const current = focus >= 0 ? focus : matches.length ? matches[((hit % matches.length) + matches.length) % matches.length] : -1;
+  const jump = (line: string) => {
+    const needle = line.slice(0, 80);
+    const at = shown.findIndex((l) => splitStamp(l)[1].includes(needle));
+    if (at >= 0) {
+      setPaused(paused ?? latest);
+      setFocus(at);
+    }
+  };
 
   useEffect(() => {
     if (current >= 0) box.current?.querySelector(`[data-line="${current}"]`)?.scrollIntoView({ block: "center" });
@@ -116,7 +128,26 @@ export function PodLogsView({
           </button>
         )}
         {logs.isFetching && !paused && <Spinner />}
+        <button
+          type="button"
+          onClick={() => setAnalyzing(true)}
+          className="ml-auto flex h-8 items-center gap-1.5 rounded-lg border border-control px-2.5 text-sm font-medium text-fg transition-colors hover:border-subtle"
+        >
+          <SparkleIcon width={14} height={14} className="text-accent" />
+          Analyze
+        </button>
       </div>
+      {analyzing && (
+        <LogAnalysisPanel
+          cluster={cluster}
+          namespace={namespace}
+          pod={pod}
+          container={logs.data?.container}
+          previous={previous}
+          onJump={jump}
+          onClose={() => setAnalyzing(false)}
+        />
+      )}
       <div className="flex flex-wrap items-center gap-2">
         <div className="flex h-8 min-w-0 flex-1 items-center rounded-lg border border-control bg-bg focus-within:border-accent sm:max-w-80">
           <input
@@ -125,6 +156,7 @@ export function PodLogsView({
             onChange={(e) => {
               setSearch(e.target.value);
               setHit(0);
+              setFocus(-1);
             }}
             onKeyDown={(e) => e.key === "Enter" && setHit((h) => h + (e.shiftKey ? -1 : 1))}
             placeholder="Search logs"

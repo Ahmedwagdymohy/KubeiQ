@@ -122,5 +122,13 @@ def describe_call(tool: str, args: dict[str, Any]) -> str:
         "describe_service": f"Checking Service {args.get('name', '')}",
         "get_configmap": f"Reading ConfigMap {args.get('name', '')}",
         "describe_node": f"Inspecting node {args.get('name', '')}",
+        "list_namespaces": "Listing namespaces",
+        "find_problem_pods": f"Looking for failing pods in {args['namespace']}"
+        if args.get("namespace")
+        else "Looking for failing pods",
+        "recent_warnings": f"Reading warning events in {args['namespace']}"
+        if args.get("namespace")
+        else "Reading warning events",
+        "list_workloads": f"Listing workloads in {args.get('namespace', '')}",
     }
     return phrases.get(tool, tool).strip()

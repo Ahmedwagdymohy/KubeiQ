@@ -197,6 +197,35 @@ class UsageSample(Base):
     nodes: Mapped[int | None] = mapped_column(Integer)
 
 
+class AssistantConversation(Base):
+    """A conversation with the cluster assistant: one user's, about one cluster."""
+
+    __tablename__ = "assistant_conversations"
+    __table_args__ = (Index("ix_assistant_user", "user_id", "updated_at"),)
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    org_id: Mapped[str] = mapped_column(String(64), default=DEFAULT_ORG)
+    user_id: Mapped[str] = mapped_column(String(36))
+    cluster_id: Mapped[str] = mapped_column(String(512))
+    title: Mapped[str] = mapped_column(String(120))
+    created_at: Mapped[datetime] = mapped_column(default=_now)
+    updated_at: Mapped[datetime] = mapped_column(default=_now)
+
+
+class AssistantMessage(Base):
+    __tablename__ = "assistant_messages"
+    __table_args__ = (Index("ix_assistant_messages", "conversation_id"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    conversation_id: Mapped[str] = mapped_column(
+        ForeignKey("assistant_conversations.id", ondelete="CASCADE")
+    )
+    role: Mapped[str] = mapped_column(String(16))  # "user" or "assistant"
+    content: Mapped[str] = mapped_column(Text)
+    steps: Mapped[list[str]] = mapped_column(JSON, default=list)  # what the answer looked at
+    created_at: Mapped[datetime] = mapped_column(default=_now)
+
+
 class StoredKubeconfig(Base):
     """A kubeconfig file added in Settings. ``content`` is encrypted."""
 

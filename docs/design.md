@@ -163,6 +163,15 @@ Never hard-code colors; use the Tailwind tokens (`bg-frame`, `bg-surface`, `text
   (search with "1 of 4" and arrows, Wrap, Timestamps, Copy, Download); error lines use
   `--terminal-error`, warnings `--terminal-warn`. The terminal opens on request (sessions are
   audited) in xterm with the terminal tokens.
+- **Assistant**: "Assistant" with a cyan sparkle in the top bar opens a 460px panel on the right
+  (full screen on a phone) for the cluster in scope: header with History and New, suggested questions
+  as outlined rows when empty, the user's questions as grey bubbles on the right, answers as text
+  with "Looked at: ..." above them and commands in the terminal block, one live line ("Looking for
+  failing pods") while it works. `openAssistant(question)` opens it with a question (Explain).
+- **Log analysis**: Analyze (sparkle, outlined) at the end of the log controls opens a bordered card
+  above the logs: status pill, summary, "Lines that matter" (mono line, meaning in severity colour;
+  clicking jumps to and highlights the line), root cause, numbered fix steps, the terminal block,
+  watch next, Investigate this workload, and an "Ask about these logs" field.
 - **Dialogs** for changes: title as a question ("Restart checkout?"), one sentence on the effect,
   Cancel and the action. Deleting requires typing the name; the delete button uses `bg-danger`.
 - **Sign-in**: one centered white card on the frame tint with the logo; the hint says the admin uses the master key.

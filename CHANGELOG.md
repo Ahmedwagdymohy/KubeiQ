@@ -54,6 +54,15 @@ All notable changes to KubeiQ. Versions follow [Semantic Versioning](https://sem
 - **More actions.** Drain a node (respects disruption budgets, skips DaemonSet pods), run a CronJob
   now, suspend and resume CronJobs and Jobs. Production clusters ask for their name first.
 
+- **Analyze logs with AI.** One click in the log viewer: a summary, the lines that matter (click one
+  to jump to it), the root cause, fix steps with complete commands and what to watch next, from
+  bounded, redacted logs plus the pod's status and events. Ask follow-up questions in place.
+- **Cluster assistant.** The sparkle button in the top bar opens an assistant for the cluster in
+  scope: "why is checkout failing", "which pods restarted today". It looks at the cluster live with
+  read-only tools it picks itself (each check shows as it runs), stays inside the namespaces you may
+  read, and keeps your conversations (rename, delete). It starts with suggestions from the
+  cluster's current problems.
+
 ### Changed
 - The read-only role reads metrics and the remaining built-in kinds (still no Secrets). Run the
   connect command again on existing clusters to show usage.

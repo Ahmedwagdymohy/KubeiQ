@@ -8,6 +8,7 @@ import { Suspense, useCallback, useEffect, useState, type ReactNode } from "reac
 
 import { CloseIcon, MenuIcon, SearchIcon } from "@/components/icons";
 import { DEFAULT_KIND } from "@/components/manager/kinds";
+import { AssistantPanel } from "@/components/assistant/assistant-panel";
 import { CommandPalette, openPalette } from "@/components/shell/command-palette";
 import { Sidebar } from "@/components/shell/sidebar";
 import { ClusterSwitcher, StatusBar, useScopedClusters } from "@/components/shell/status-bar";
@@ -267,6 +268,7 @@ function TopBar({
           <span className="hidden md:inline">Search</span>
           <kbd className="hidden rounded border border-border px-1 font-sans text-[11px] md:inline">Ctrl K</kbd>
         </button>
+        <AssistantPanel />
         <ThemeToggle />
       </div>
     </header>
