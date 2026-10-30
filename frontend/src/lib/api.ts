@@ -367,7 +367,13 @@ export type KubeEvent = {
   message: string;
   count: number;
   last_seen: string | null;
+  first_seen?: string | null;
+  kind?: string | null;
+  name?: string | null;
+  namespace?: string | null;
+  source?: string | null;
 };
+export type UsagePoint = { at: string; cpu: number | null; memory: number | null; pods_running: number | null };
 export type PodLogs = { container: string; containers: string[]; lines: string[]; truncated: boolean };
 export type ObjectRef = {
   group: string;
@@ -396,6 +402,7 @@ export type ClusterSummary = {
   pods_running: number | null;
   cpu: Gauge | null;
   memory: Gauge | null;
+  disk: Gauge | null;
   metrics: boolean;
   metrics_error: string | null;
 };
@@ -492,6 +499,10 @@ export const api = {
   plan: () => request<Plan>("/api/v1/plan"),
   clusterSummary: (clusterId: string) =>
     request<ClusterSummary>(`/api/v1/clusters/${encodeCluster(clusterId)}/summary`),
+  usage: (clusterId: string, hours = 24) =>
+    request<UsagePoint[]>(`/api/v1/clusters/${encodeCluster(clusterId)}/usage?hours=${hours}`),
+  feed: (clusterId: string, opts: { namespace?: string | null; warnings?: boolean; limit?: number } = {}) =>
+    request<KubeEvent[]>(`/api/v1/manager/feed?${query({ cluster_id: clusterId, ...opts })}`),
   preferences: () => request<Preferences>("/api/v1/me/preferences"),
   savePreference: (key: string, value: unknown) =>
     request<void>(`/api/v1/me/preferences/${key}`, json("PUT", value)),

@@ -4,6 +4,7 @@ Usage comes from metrics-server (``metrics.k8s.io``). Without it the numbers are
 zero or guessed.
 """
 
+import json
 from typing import Any, Literal, cast
 
 from kubernetes.client import ApiClient, CoreV1Api, CustomObjectsApi
@@ -53,6 +54,7 @@ class ClusterSummary(BaseModel):
     pods_running: int | None = None
     cpu: Gauge | None = None
     memory: Gauge | None = None
+    disk: Gauge | None = None  # node filesystems, from the kubelet; None when it cannot be read
     metrics: bool = False
     metrics_error: str | None = None
 
@@ -143,7 +145,30 @@ def nodes(
     return result, error, (len(running), len(pods))
 
 
-def summarize(api: ApiClient, status: ClusterStatus) -> ClusterSummary:
+def node_disk(api: ApiClient, names: list[str]) -> Gauge | None:
+    """Used and total bytes of the nodes' filesystems, measured by each kubelet.
+
+    The kubelet's stats need ``nodes/proxy``, which KubeiQ's read-only role does not grant (it
+    allows more than reading). Identities that have it (an admin kubeconfig) show real disk
+    usage; the others show none, never capacity minus allocatable.
+    """
+    core = CoreV1Api(api)
+    used = capacity = 0.0
+    for name in names:
+        try:
+            # Raw bytes: the client would otherwise turn the JSON into a Python repr string.
+            response: Any = core.connect_get_node_proxy_with_path(
+                name, "stats/summary", _request_timeout=REQUEST_TIMEOUT, _preload_content=False
+            )
+            fs = json.loads(response.data)["node"]["fs"]
+        except Exception:
+            return None
+        used += float(fs.get("usedBytes") or 0)
+        capacity += float(fs.get("capacityBytes") or 0)
+    return Gauge(used=used, capacity=capacity) if capacity else None
+
+
+def summarize(api: ApiClient, status: ClusterStatus, disk: bool = True) -> ClusterSummary:
     """Status first (offline, no access), then node readiness, then usage."""
     broken = status_health(status)
     if broken:
@@ -174,4 +199,6 @@ def summarize(api: ApiClient, status: ClusterStatus) -> ClusterSummary:
             used=sum(n.memory.used for n in with_usage if n.memory),
             capacity=sum(n.memory.capacity for n in with_usage if n.memory),
         )
+    if disk and node_list:
+        summary.disk = node_disk(api, [n.name for n in node_list])
     return summary

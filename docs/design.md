@@ -89,6 +89,14 @@ Never hard-code colors; use the Tailwind tokens (`bg-frame`, `bg-surface`, `text
   AI-off notice; the **cluster ledger** (one row per cluster, workload health as a 100% stacked bar
   of healthy / degraded / failing with the figures, then its namespaces as thinner rows); Failing
   Workloads with their reason and an Investigate action; Recent Investigations.
+- **Overview fleet**: a Cards / Ledger switch (saved per user). Cards come in four sizes as a
+  segmented control (Glance, Standard, Detailed, Full), a sort select and label chips that dim the
+  cards that do not match. A card: status dot, mono name (opens the large view), version and method,
+  labels, health as coloured text; stats in a 4-column row; usage meters (60px label, 6px bar coloured
+  by the cluster's thresholds, percent, absolute values from Detailed); trend sparklines (one 2px
+  accent line on a 0-100 scale, crosshair and value on hover, "Since 03:56" while history is young,
+  breaks where nothing was recorded); failing workloads with Investigate; latest warnings. Offline or
+  unreadable cards show the reason and Fix in Settings, never empty numbers.
 - **Settings**: one view per area (`/settings#ai`, `#clusters`, ...), an area list beside it. Each
   area is a label column (title, description, a summary such as the model in use or seats used)
   beside a grey panel with the controls.

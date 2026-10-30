@@ -35,6 +35,9 @@ class Settings(BaseSettings):
     # http://localhost:3000). Sign-in with Google returns there. Empty: the API's own origin.
     app_url: str | None = None
 
+    # How often to record each cluster's usage for trend lines (ADR 0015). 0 turns it off.
+    usage_sample_seconds: int = 60
+
     kubeconfig: str | None = None
     # Set to host.docker.internal when running in Docker against kind/minikube/k3d clusters.
     kubeconfig_localhost_alias: str | None = None

@@ -51,6 +51,12 @@ class KubeEvent(BaseModel):
     message: str
     count: int
     last_seen: str | None
+    first_seen: str | None = None
+    # The object it is about, for cluster-wide feeds.
+    kind: str | None = None
+    name: str | None = None
+    namespace: str | None = None
+    source: str | None = None
 
 
 class WorkloadPod(BaseModel):

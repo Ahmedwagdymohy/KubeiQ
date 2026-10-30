@@ -137,6 +137,27 @@ async def object_events(
     return await _call(resources.events_for, api, kind, namespace or None, name)
 
 
+@router.get("/feed", response_model=list[KubeEvent])
+async def event_feed(
+    registry: Registry,
+    user: CurrentUser,
+    cluster_id: ClusterId,
+    namespace: str | None = None,
+    warnings: bool = False,
+    limit: Annotated[int, Query(ge=1, le=resources.FEED_LIMIT)] = 50,
+) -> list[KubeEvent]:
+    """The cluster's newest events, within the namespaces the user may read."""
+    _see_cluster(user, cluster_id)
+    if namespace:
+        check(user, "read", cluster_id, namespace)
+        scope: list[str] | None = [namespace]
+    else:
+        allowed = user.access.namespaces(cluster_id)
+        scope = None if allowed is None else sorted(allowed)
+    api = _client(registry, cluster_id)
+    return await _call(resources.recent_events, api, scope, warnings, limit)
+
+
 @router.get("/logs", response_model=PodLogs)
 async def logs(
     registry: Registry,
