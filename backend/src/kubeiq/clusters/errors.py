@@ -17,12 +17,20 @@ from urllib3.exceptions import (
 )
 from urllib3.exceptions import HTTPError as Urllib3Error
 
+# kubeiq.tunnel.hub answers with this header for an agent cluster whose agent is offline.
+DISCONNECTED_HEADER = "X-KubeiQ-Agent"
+AGENT_DISCONNECTED = (
+    "The KubeiQ agent for this cluster is not connected. Check that its pod is running and "
+    "can reach KubeiQ"
+)
 UNREACHABLE = "Cluster unreachable. Check the API server address, VPN or network access"
 
 
 def describe_error(exc: Exception, server: str | None = None) -> str:
     """With ``server`` (the API server URL), network errors name the address and likely cause."""
     if isinstance(exc, ApiException):
+        if exc.status == 503 and (exc.headers or {}).get(DISCONNECTED_HEADER) == "disconnected":
+            return AGENT_DISCONNECTED
         if exc.status == 401:
             return "Authentication failed. Check the credentials for this cluster"
         if exc.status == 403:

@@ -1,0 +1,125 @@
+# KubeiQ Agent __VERSION__ (ADR 0017). Connects out to KubeiQ; opens no port in this cluster.
+# Remove it with: kubectl delete --ignore-not-found -f __KUBEIQ_URL__/api/v1/agent/uninstall.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kubeiq-agent
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kubeiq-agent
+  namespace: kubeiq-agent
+---
+# The one-time install code. The agent trades it for its token and keeps the token here.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: kubeiq-agent
+  namespace: kubeiq-agent
+type: Opaque
+stringData:
+  code: "__CODE__"
+---
+# The agent may update only its own Secret, to save its token.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: kubeiq-agent-token
+  namespace: kubeiq-agent
+rules:
+  - apiGroups: [""]
+    resources: [secrets]
+    resourceNames: [kubeiq-agent]
+    verbs: [patch]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: kubeiq-agent-token
+  namespace: kubeiq-agent
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: kubeiq-agent-token
+subjects:
+  - kind: ServiceAccount
+    name: kubeiq-agent
+    namespace: kubeiq-agent
+---
+# Read-only access to the cluster (the kubeiq-readonly role, below). No Secrets.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kubeiq-agent-readonly
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: kubeiq-readonly
+subjects:
+  - kind: ServiceAccount
+    name: kubeiq-agent
+    namespace: kubeiq-agent
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: kubeiq-agent
+  namespace: kubeiq-agent
+  labels:
+    app.kubernetes.io/name: kubeiq-agent
+    app.kubernetes.io/version: "__VERSION__"
+spec:
+  replicas: 1  # one tunnel per cluster: a second agent would replace the first one's connection
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: kubeiq-agent
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: kubeiq-agent
+    spec:
+      serviceAccountName: kubeiq-agent
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 65532
+        runAsGroup: 65532
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: agent
+          image: "__IMAGE__"
+          imagePullPolicy: IfNotPresent
+          env:
+            - name: KUBEIQ_URL
+              value: "__KUBEIQ_URL__"
+            - name: KUBEIQ_AGENT_SECRET
+              value: kubeiq-agent
+            - name: KUBEIQ_AGENT_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 500m
+              memory: 128Mi
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: [ALL]
+          # The Secret is read on every connection attempt, so a new install code applies
+          # without a restart.
+          volumeMounts:
+            - name: credentials
+              mountPath: /etc/kubeiq-agent
+              readOnly: true
+      volumes:
+        - name: credentials
+          secret:
+            secretName: kubeiq-agent

@@ -7,6 +7,7 @@ Everything except sign-in and connect.sh needs a signed-in user (session cookie 
 from fastapi import APIRouter, Depends
 
 from kubeiq.api.v1 import (
+    agent,
     ai,
     auth,
     clusters,
@@ -29,6 +30,8 @@ router = APIRouter(prefix="/api/v1")
 router.include_router(auth.router)
 # connect.sh and the kubeconfig it hands over: authorized by a one-time code, not a session.
 router.include_router(connect.public)
+# The KubeiQ Agent: install manifest, registration and tunnel, authorized by a code or token.
+router.include_router(agent.public)
 # The terminal is a WebSocket: it checks the session cookie and the page's origin itself.
 router.include_router(terminal.router)
 
@@ -37,6 +40,7 @@ protected.include_router(clusters.router)
 protected.include_router(ai.router)
 protected.include_router(me.router)
 protected.include_router(connect.admin)
+protected.include_router(agent.admin)
 protected.include_router(evidence.router)
 protected.include_router(diagnose.router)
 protected.include_router(investigations.router)

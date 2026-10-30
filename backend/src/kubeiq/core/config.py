@@ -40,6 +40,10 @@ class Settings(BaseSettings):
     # How often the alert engine checks clusters for notifications. 0 turns it off.
     alert_seconds: int = 60
 
+    # The KubeiQ Agent image the served install manifest uses (ADR 0017). Empty: the published
+    # image of this KubeiQ version, ghcr.io/ahmedwagdymohy/kubeiq-agent:<version>.
+    agent_image: str | None = None
+
     kubeconfig: str | None = None
     # Set to host.docker.internal when running in Docker against kind/minikube/k3d clusters.
     kubeconfig_localhost_alias: str | None = None

@@ -26,6 +26,8 @@ from kubeiq.settings.service import (
     sync_token_clusters,
     sync_uploaded_clusters,
 )
+from kubeiq.tunnel import service as agents
+from kubeiq.tunnel.hub import get_hub
 from kubeiq.usage.history import sample_forever
 
 
@@ -43,6 +45,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             await sync_uploaded_clusters(session)
             await sync_gke(session)
             await sync_token_clusters(session)
+            await agents.sync(session)
+        await get_hub().start()
         if interrupted:
             logger.warning("Marked {} interrupted investigation(s) as failed", interrupted)
         tasks = [asyncio.create_task(refresh_gke_forever())]
@@ -58,6 +62,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         logger.info("KubeiQ shutting down")
         for task in tasks:
             task.cancel()
+        await get_hub().stop()
         await get_runner().shutdown()
 
     app = FastAPI(title="KubeiQ", version=__version__, lifespan=lifespan)

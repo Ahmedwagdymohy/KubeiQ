@@ -1,6 +1,7 @@
 name: Images
 
-# Publishes the backend and frontend images that docker-compose.yml and deploy/install.sh pull:
+# Publishes the backend and frontend images that docker-compose.yml and deploy/install.sh pull,
+# and the KubeiQ Agent image that the install manifest served by KubeiQ uses (ADR 0017):
 #   main     -> ghcr.io/ahmedwagdymohy/kubeiq-<name>:main
 #   v1.2.3   -> ghcr.io/ahmedwagdymohy/kubeiq-<name>:1.2.3 and :latest
 on:
@@ -22,7 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        name: [backend, frontend]
+        name: [backend, frontend, agent]
     steps:
       - uses: actions/checkout@v5
       - uses: docker/setup-qemu-action@v3
@@ -45,6 +46,7 @@ jobs:
           context: ${{ matrix.name }}
           platforms: linux/amd64,linux/arm64
           push: true
+          build-args: VERSION=${{ steps.meta.outputs.version }}
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha,scope=${{ matrix.name }}

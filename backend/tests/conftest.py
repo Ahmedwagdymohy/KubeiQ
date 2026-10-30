@@ -15,6 +15,7 @@ from kubeiq.db import session as db_session
 from kubeiq.db.migrate import upgrade_database
 from kubeiq.main import create_app
 from kubeiq.settings import crypto
+from kubeiq.tunnel import hub as hub_module
 
 MASTER_KEY = os.environ["KUBEIQ_MASTER_KEY"]  # set in tests/__init__.py
 AUTH = {"Authorization": f"Bearer {MASTER_KEY}"}
@@ -49,6 +50,8 @@ def client(  # an app with a real registry and a temporary database
         registry_module.get_local_source,
         registry_module.get_uploaded_source,
         registry_module.get_token_source,
+        registry_module.get_agent_source,
+        hub_module.get_hub,
         crypto._fernet,
     )
     for fn in caches:

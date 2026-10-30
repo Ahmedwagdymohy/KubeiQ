@@ -1,0 +1,16 @@
+# Removes the KubeiQ Agent: kubectl delete -f <this URL> --ignore-not-found
+# The kubeiq-readonly and kubeiq-changes ClusterRoles stay: the connect command uses them too.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: kubeiq-agent
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kubeiq-agent-readonly
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: kubeiq-agent-changes
