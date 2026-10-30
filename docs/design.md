@@ -61,12 +61,27 @@ Never hard-code colors; use the Tailwind tokens (`bg-frame`, `bg-surface`, `text
 
 - **App shell (framed sheet)**: one tinted frame holds a 228px labelled sidebar (logo + KubeiQ,
   Overview, Cluster Doctor, Cluster Map, Cluster Manager; Settings, Docs and the user row at the
-  bottom) and a 48px top bar (page title or breadcrumb, the cluster in scope, theme toggle), with no
+  bottom) and a 48px top bar (breadcrumb, Search, theme toggle), with no
   rule between them. The page sits on a white sheet inset 8px from the right and bottom, 1px edge,
   16px radius, no shadow. Active nav item: a neutral grey pill. On a phone the frame disappears: a
   48px top bar with a menu button that opens the navigation as a full-screen sheet.
-- **Cluster in scope**: the top bar picker (`lib/scope.ts`) is the cluster every product opens on;
-  picking one switches the page you are on. A `?cluster=` link still wins on the page it opens.
+- **Sidebar** (`components/shell/sidebar.tsx`, groups in `lib/navigation.ts`): Pinned (up to 5),
+  Products, Resources (collapsible groups with kind icons, one open at a time; a closed group holding
+  the current page shows a cyan dot), then Settings, Activity, Docs and the user row. Pins show on
+  hover. The collapse button beside the logo folds it to a 60px icon rail with tooltips. Pins and the
+  rail are saved per user (`use-preferences`). Cluster Manager's own kind list shows when the rail is
+  on, or with its "All kinds" button.
+- **Cluster status bar**: a 40px row at the top of the sheet (not on Settings): the cluster switcher
+  (dot, mono name; a menu with every cluster, working first, broken ones with their reason, Ctrl+N
+  hints, Add a cluster), health as coloured text that links to its fix, version, nodes, namespaces,
+  pods, then CPU and memory bars on the right (60% amber, 80% red). Narrow screens keep the switcher
+  and health; usage hides without metrics-server, never shows zero.
+- **Cluster in scope**: the switcher (`lib/scope.ts`) is the cluster every product opens on;
+  picking one switches the page you are on, and is remembered per user. A `?cluster=` link still
+  wins on the page it opens. Ctrl+1..9 switch with a short toast.
+- **Command palette** (Ctrl+K or Search in the top bar): a centred 640px card, groups Recent,
+  Objects (server search in the cluster in scope, mono names, Investigate on the row), Pages,
+  Resources, Settings, Actions; arrow keys, Enter opens, Shift+Enter investigates.
 - **Buttons**: one filled primary per screen, in the cyan accent. Everything else is outlined
   (`border-control`) or a text action. Tabs are 2px underlines. Cards are 8px radius, 1px edge.
 - **Overview**: answers "is anything broken and what do I do?". Title row with the finding as the

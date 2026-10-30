@@ -50,6 +50,7 @@ backend/            FastAPI service (Python 3.12, uv). Package: backend/src/kube
     core/           config, logging, shared utilities
     clusters/       ClusterSource abstraction: kubeconfig, uploaded kubeconfigs, GKE (cloud identity)
     connect/        one-command connect: one-time codes, served copy of deploy/connect.sh + rbac (make sync-connect)
+    usage/          cluster summary for the status bar and dashboard: node readiness, metrics-server usage
     collectors/     read-only evidence collectors (pods, events, logs, deployments, network)
     detectors/      deterministic rule engine (CrashLoopBackOff, ImagePull, OOM, ...)
     agent/          LLM agent: tools, prompts, structured output
@@ -69,9 +70,12 @@ frontend/           The self-hosted app: Next.js (TypeScript, Tailwind, App Rout
   src/app/login/      Sign-in page; AuthGate (components/auth) sends signed-out users here
   src/app/welcome/    First sign-in: create the project, then add clusters (AuthGate sends new admins)
   src/app/settings/   Settings: AI model, clusters, cluster changes, users, projects, activity, account
-  src/components/     UI building blocks (ui.tsx, icons.tsx), shell/ (sidebar + top bar frame), overview/, doctor/ ...
-  src/hooks/          use-investigation (SSE progress), use-me (signed-in user, access), use-can-edit, use-hash
-  src/lib/api.ts      typed API client and SSE helper; lib/scope.ts = cluster in scope (top bar), lib/fleet.ts = workload health
+  src/components/     UI building blocks (ui.tsx, icons.tsx), shell/ (sidebar, top bar, status bar,
+                      command palette), overview/, doctor/ ...
+  src/hooks/          use-investigation (SSE progress), use-me (signed-in user, access), use-can-edit, use-hash,
+                      use-preferences (per-user settings saved on the server: pins, sidebar, last cluster)
+  src/lib/api.ts      typed API client and SSE helper; lib/scope.ts = cluster in scope (status bar), lib/fleet.ts = workload health,
+                      lib/navigation.ts = sidebar groups (also used by the palette and breadcrumb)
 website/            Marketing site (live at kubeiq.pages.dev): landing, product pages, pricing, install. Static export
 ee/                 Commercial features (separate license)
 deploy/             install.sh (the one-line installer), uninstall.sh (removes only what it set up), connect.sh (read-only cluster access; edit here, then

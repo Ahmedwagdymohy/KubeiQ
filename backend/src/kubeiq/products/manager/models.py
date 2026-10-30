@@ -60,6 +60,15 @@ class WorkloadPod(BaseModel):
     restarts: int
 
 
+class SearchHit(BaseModel):
+    group: str
+    version: str
+    resource: str
+    kind: str
+    namespace: str | None
+    name: str
+
+
 class PodLogs(BaseModel):
     container: str
     containers: list[str]

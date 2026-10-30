@@ -135,3 +135,37 @@ export const SparkleIcon = (props: IconProps) => (
     <path d="M19 15.5c.15 1.6.9 2.35 2.5 2.5-1.6.15-2.35.9-2.5 2.5-.15-1.6-.9-2.35-2.5-2.5 1.6-.15 2.35-.9 2.5-2.5Z" />
   </Icon>
 );
+
+export const PinIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M9 3h6l-1 6 4 4H6l4-4Z" />
+    <path d="M12 13v8" />
+  </Icon>
+);
+
+export const SearchIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <circle cx="11" cy="11" r="6.5" />
+    <path d="m16 16 4.5 4.5" />
+  </Icon>
+);
+
+export const ActivityIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M12 7v5l3 2" />
+    <circle cx="12" cy="12" r="8.5" />
+  </Icon>
+);
+
+export const SidebarIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <rect x="3.5" y="4" width="17" height="16" rx="2" />
+    <path d="M9.5 4v16" />
+  </Icon>
+);
+
+export const PlusIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M12 5v14M5 12h14" />
+  </Icon>
+);

@@ -129,6 +129,18 @@ class AppSetting(Base):
     updated_at: Mapped[datetime] = mapped_column(default=_now, onupdate=_now)
 
 
+class UserPreference(Base):
+    """A preference of one person, e.g. key "pinned". The master key admin uses id "master"."""
+
+    __tablename__ = "user_preferences"
+
+    org_id: Mapped[str] = mapped_column(String(64), primary_key=True, default=DEFAULT_ORG)
+    user_id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    key: Mapped[str] = mapped_column(String(64), primary_key=True)
+    value: Mapped[Any] = mapped_column(JSON)
+    updated_at: Mapped[datetime] = mapped_column(default=_now, onupdate=_now)
+
+
 class StoredKubeconfig(Base):
     """A kubeconfig file added in Settings. ``content`` is encrypted."""
 

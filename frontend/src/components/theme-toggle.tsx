@@ -8,16 +8,18 @@ function currentTheme(): "light" | "dark" {
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
+export function toggleTheme() {
+  const next = currentTheme() === "dark" ? "light" : "dark";
+  document.documentElement.dataset.theme = next;
+  try {
+    localStorage.setItem("kubeiq-theme", next);
+  } catch {
+    // storage unavailable (private mode); theme still applies for this page
+  }
+}
+
 export function ThemeToggle() {
-  const toggle = () => {
-    const next = currentTheme() === "dark" ? "light" : "dark";
-    document.documentElement.dataset.theme = next;
-    try {
-      localStorage.setItem("kubeiq-theme", next);
-    } catch {
-      // storage unavailable (private mode); theme still applies for this page
-    }
-  };
+  const toggle = toggleTheme;
 
   return (
     <button
