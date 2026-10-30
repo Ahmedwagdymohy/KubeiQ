@@ -482,6 +482,20 @@ export type Distribution = {
   metrics: boolean;
 };
 
+export type ChannelType = "slack" | "teams" | "discord" | "telegram" | "webhook" | "email";
+export type Channel = { id: string; name: string; type: ChannelType; enabled: boolean; config: Record<string, unknown>; secrets: string[]; last_error: string | null };
+export type ChannelInput = { id?: string; name: string; type: ChannelType; enabled: boolean; config: Record<string, unknown> };
+export type AlertRules = {
+  enabled: string[];
+  failing_minutes: number;
+  event_reasons: string[];
+  cooldown_minutes: number;
+  quiet_start: number | null;
+  quiet_end: number | null;
+};
+export type Notifications = { channels: Channel[]; rules: AlertRules; available: { id: string; label: string }[] };
+export type ClusterAlerts = { channels: string[] | null; events: string[] | null };
+
 export type Gauge = { used: number; capacity: number };
 export type ClusterHealthState = "healthy" | "degraded" | "unhealthy" | "no-access" | "offline";
 export type ClusterSummary = {
@@ -617,6 +631,16 @@ export const api = {
   saveWorkspace: (body: WorkspaceSettings) => request<WorkspaceSettings>("/api/v1/settings/general", json("PUT", body)),
   danger: (action: "clear-activity" | "remove-clusters" | "reset", confirm: string) =>
     request<void>(`/api/v1/settings/danger/${action}`, json("POST", { confirm })),
+  notifications: () => request<Notifications>("/api/v1/settings/notifications"),
+  saveChannel: (body: ChannelInput) => request<Notifications>("/api/v1/settings/notifications/channels", json("POST", body)),
+  deleteChannel: (id: string) => request<Notifications>(`/api/v1/settings/notifications/channels/${id}`, json("DELETE")),
+  saveAlertRules: (body: AlertRules) => request<Notifications>("/api/v1/settings/notifications/rules", json("PUT", body)),
+  testChannel: (id: string) => request<TestResult>("/api/v1/settings/notifications/test", json("POST", { channel_id: id })),
+  clusterAlerts: (clusterId: string) => request<ClusterAlerts>(`/api/v1/settings/clusters/alerts?${query({ cluster_id: clusterId })}`),
+  saveClusterAlerts: (clusterId: string, body: ClusterAlerts) =>
+    request<ClusterAlerts>("/api/v1/settings/clusters/alerts", json("PUT", { cluster_id: clusterId, ...body })),
+  searchAudit: (params: Record<string, string | number | undefined>) =>
+    request<{ items: AuditEvent[]; total: number }>(`/api/v1/audit/search?${query(params)}`),
   preferences: () => request<Preferences>("/api/v1/me/preferences"),
   savePreference: (key: string, value: unknown) =>
     request<void>(`/api/v1/me/preferences/${key}`, json("PUT", value)),

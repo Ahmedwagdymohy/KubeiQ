@@ -57,6 +57,8 @@ from kubeiq.db.models import (
     UserPreference,
 )
 from kubeiq.db.session import get_session
+from kubeiq.notifications import service as notify
+from kubeiq.notifications.models import Alert, ChannelIn, ClusterAlerts, NotificationsOut, Rules
 from kubeiq.settings import kubeconfigs, repository, service
 from kubeiq.settings.crypto import decrypt, encrypt
 from kubeiq.settings.models import (
@@ -401,6 +403,100 @@ async def put_google(
         session, admin.username, "settings.google", detail="on" if saved["enabled"] else "off"
     )
     return _google_view(saved, request)
+
+
+@router.get("/notifications", response_model=NotificationsOut)
+async def get_notifications(session: SessionDep) -> NotificationsOut:
+    return notify.view(await notify.load(session))
+
+
+@router.post("/notifications/channels", response_model=NotificationsOut)
+async def save_channel(body: ChannelIn, session: SessionDep, admin: AdminUser) -> NotificationsOut:
+    """Add a channel, or replace one (by id). Secrets left out keep their saved values."""
+    doc = await notify.load(session)
+    existing = next((c for c in doc["channels"] if c["id"] == body.id), None) if body.id else None
+    if body.id and existing is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Channel not found")
+    try:
+        channel = notify.merge_channel(existing, body)
+    except ValueError as exc:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, str(exc)) from exc
+    doc["channels"] = [channel if c["id"] == channel["id"] else c for c in doc["channels"]]
+    if existing is None:
+        doc["channels"].append(channel)
+    await repository.put_value(session, notify.KEY, doc)
+    await audit.record(
+        session, admin.username, "settings.notifications.channel", target=channel["name"]
+    )
+    return notify.view(doc)
+
+
+@router.delete("/notifications/channels/{channel_id}", response_model=NotificationsOut)
+async def delete_channel(
+    channel_id: str, session: SessionDep, admin: AdminUser
+) -> NotificationsOut:
+    doc = await notify.load(session)
+    doc["channels"] = [c for c in doc["channels"] if c["id"] != channel_id]
+    await repository.put_value(session, notify.KEY, doc)
+    await audit.record(
+        session, admin.username, "settings.notifications.channel.delete", target=channel_id
+    )
+    return notify.view(doc)
+
+
+@router.put("/notifications/rules", response_model=NotificationsOut)
+async def save_rules(body: Rules, session: SessionDep, admin: AdminUser) -> NotificationsOut:
+    doc = await notify.load(session)
+    doc["rules"] = body.model_dump()
+    await repository.put_value(session, notify.KEY, doc)
+    await audit.record(session, admin.username, "settings.notifications.rules")
+    return notify.view(doc)
+
+
+class ChannelTest(BaseModel):
+    channel_id: str
+
+
+@router.post("/notifications/test", response_model=TestResult)
+async def test_channel(body: ChannelTest, session: SessionDep, admin: AdminUser) -> TestResult:
+    doc = await notify.load(session)
+    channel = next((c for c in doc["channels"] if c["id"] == body.channel_id), None)
+    if channel is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Channel not found")
+    alert = Alert(
+        key="test",
+        rule="cluster.unreachable",
+        cluster_id=None,
+        cluster=None,
+        title="KubeiQ test message",
+        text=f"Sent by {admin.username} from Settings. Alerts will look like this.",
+    )
+    error = await notify.deliver(channel, alert)
+    return TestResult(ok=error is None, message=error or "Sent")
+
+
+class ClusterAlertsIn(ClusterAlerts):
+    cluster_id: str = Field(min_length=1, max_length=512)
+
+
+@router.get("/clusters/alerts", response_model=ClusterAlerts)
+async def get_cluster_alerts(cluster_id: str, session: SessionDep) -> ClusterAlerts:
+    return notify.routing(await session.get(ClusterSetting, (DEFAULT_ORG, cluster_id)))
+
+
+@router.put("/clusters/alerts", response_model=ClusterAlerts)
+async def put_cluster_alerts(
+    body: ClusterAlertsIn, session: SessionDep, admin: AdminUser
+) -> ClusterAlerts:
+    """Which channels a cluster sends to, and for which rules (None: all)."""
+    rows = await meta.seen(session, [body.cluster_id])
+    routing = ClusterAlerts(channels=body.channels, events=body.events)
+    rows[body.cluster_id].alerts = routing.model_dump()
+    await session.commit()
+    await audit.record(
+        session, admin.username, "settings.cluster.alerts", cluster_id=body.cluster_id
+    )
+    return routing
 
 
 @router.get("/general", response_model=WorkspaceSettings)

@@ -19,6 +19,7 @@ from kubeiq.db.migrate import upgrade_database
 from kubeiq.db.session import get_sessionmaker
 from kubeiq.investigations import repository
 from kubeiq.investigations.runner import get_runner
+from kubeiq.notifications import engine as alerts
 from kubeiq.settings.service import (
     refresh_gke_forever,
     sync_gke,
@@ -48,6 +49,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         if settings.usage_sample_seconds > 0:
             tasks.append(
                 asyncio.create_task(sample_forever(get_registry(), settings.usage_sample_seconds))
+            )
+        if settings.alert_seconds > 0:
+            tasks.append(
+                asyncio.create_task(alerts.run_forever(get_registry(), settings.alert_seconds))
             )
         yield
         logger.info("KubeiQ shutting down")

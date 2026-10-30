@@ -93,6 +93,14 @@ class InvestigationRunner:
                 # is guaranteed to find the complete timeline.
                 await progress(ProgressEvent(step="done", status="completed", detail=detail))
                 await repository.mark_completed(session, investigation, report)
+                if not report.healthy:
+                    from kubeiq.notifications.engine import investigation_finished
+
+                    task = asyncio.create_task(
+                        investigation_finished(investigation.cluster_id, investigation.id, report)
+                    )
+                    _background.add(task)
+                    task.add_done_callback(_background.discard)
             finally:
                 self.broker.close(investigation_id)
                 self._sequences.pop(investigation_id, None)
@@ -102,6 +110,9 @@ class InvestigationRunner:
             investigation.id, ProgressEvent(step="done", status="failed", detail=error)
         )
         await repository.mark_failed(session, investigation, error)
+
+
+_background: set[asyncio.Task[None]] = set()  # alert tasks, kept until they finish
 
 
 @lru_cache

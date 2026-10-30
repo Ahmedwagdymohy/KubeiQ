@@ -47,7 +47,7 @@ function useRefresh() {
   };
 }
 
-type EditTab = "general" | "connection" | "usage";
+type EditTab = "general" | "connection" | "usage" | "alerts";
 
 /** Edit a cluster: General (name, labels, namespace, project), Connection, Usage thresholds. */
 export function EditClusterDialog({
@@ -78,6 +78,7 @@ export function EditClusterDialog({
           ["general", "General"],
           ["connection", "Connection"],
           ["usage", "Usage"],
+          ["alerts", "Alerts"],
         ]}
         active={tab}
         onChange={setTab}
@@ -86,8 +87,9 @@ export function EditClusterDialog({
         {tab === "general" && <GeneralTab cluster={cluster} meta={meta} onChange={setMeta} />}
         {tab === "connection" && <ConnectionTab cluster={cluster} onFixed={() => { refresh(); onClose(); }} />}
         {tab === "usage" && <UsageTab meta={meta} onChange={setMeta} />}
+        {tab === "alerts" && <AlertsTab cluster={cluster} onSaved={onClose} />}
       </div>
-      {tab !== "connection" && (
+      {tab !== "connection" && tab !== "alerts" && (
         <div className="sticky bottom-0 flex flex-wrap items-center justify-end gap-3 border-t border-border bg-bg px-5 py-3">
           {save.error && <span className="mr-auto text-sm text-danger">{(save.error as Error).message}</span>}
           <button type="button" className={secondaryButton} onClick={onClose}>
@@ -269,6 +271,66 @@ export function ProbeLine({ probe }: { probe: ClusterProbe }) {
   if (!probe.reachable) return <span className="text-sm text-danger">{probe.error ?? "Unreachable"}</span>;
   if (probe.can_read === false) return <span className="text-sm text-warning">{probe.error ?? "No read access"}</span>;
   return <span className="text-sm text-healthy">Connected · Kubernetes {probe.version}</span>;
+}
+
+/** Which channels this cluster sends to, and for which rules. Unchecked lists mean "all". */
+function AlertsTab({ cluster, onSaved }: { cluster: Cluster; onSaved: () => void }) {
+  const notifications = useQuery({ queryKey: ["notifications"], queryFn: api.notifications });
+  const current = useQuery({ queryKey: ["cluster-alerts", cluster.id], queryFn: () => api.clusterAlerts(cluster.id) });
+  const [draft, setDraft] = useState<{ channels: string[] | null; events: string[] | null } | null>(null);
+  const value = draft ?? current.data ?? { channels: null, events: null };
+  const save = useMutation({ mutationFn: () => api.saveClusterAlerts(cluster.id, value), onSuccess: onSaved });
+  if (!notifications.data || !current.data) return <p className="text-sm text-muted">Loading</p>;
+  const { channels, rules, available } = notifications.data;
+  const pick = (list: string[] | null, all: string[], id: string, on: boolean) => {
+    const base = list ?? all;
+    const next = on ? [...new Set([...base, id])] : base.filter((x) => x !== id);
+    return next.length === all.length ? null : next;
+  };
+  const enabled = available.filter((r) => rules.enabled.includes(r.id));
+  return (
+    <>
+      {channels.length === 0 ? (
+        <p className="text-sm text-muted">
+          No notification channels yet. Add one in <a href="#notifications" className="text-accent hover:underline">Settings › Notifications</a>
+        </p>
+      ) : (
+        <div className="flex flex-col gap-2">
+          <span className="text-sm font-medium">Send to</span>
+          {channels.map((c) => (
+            <label key={c.id} className="flex items-center gap-2.5 text-sm">
+              <input
+                type="checkbox"
+                className="h-4 w-4 accent-[var(--accent)]"
+                checked={value.channels === null || value.channels.includes(c.id)}
+                onChange={(e) => setDraft({ ...value, channels: pick(value.channels, channels.map((x) => x.id), c.id, e.target.checked) })}
+              />
+              {c.name}
+            </label>
+          ))}
+        </div>
+      )}
+      <div className="flex flex-col gap-2">
+        <span className="text-sm font-medium">For</span>
+        {enabled.length === 0 && <p className="text-sm text-muted">No alert rules are on</p>}
+        {enabled.map((r) => (
+          <label key={r.id} className="flex items-center gap-2.5 text-sm">
+            <input
+              type="checkbox"
+              className="h-4 w-4 accent-[var(--accent)]"
+              checked={value.events === null || value.events.includes(r.id)}
+              onChange={(e) => setDraft({ ...value, events: pick(value.events, enabled.map((x) => x.id), r.id, e.target.checked) })}
+            />
+            {r.label}
+          </label>
+        ))}
+      </div>
+      {save.error && <p className="text-sm text-danger">{(save.error as Error).message}</p>}
+      <button type="button" className={`${primaryButton} self-start`} disabled={save.isPending} onClick={() => save.mutate()}>
+        {save.isPending ? "Saving" : "Save alerts"}
+      </button>
+    </>
+  );
 }
 
 function UsageTab({ meta, onChange }: { meta: ClusterMeta; onChange: (m: ClusterMeta) => void }) {

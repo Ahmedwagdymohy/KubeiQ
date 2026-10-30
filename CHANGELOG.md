@@ -80,6 +80,16 @@ All notable changes to KubeiQ. Versions follow [Semantic Versioning](https://sem
 - **Users show their status.** Invited until the first sign-in, then the last sign-in time; revoke an
   invitation, send a new password, or copy the sign-in link for Google users.
 
+- **Notifications.** Alerts in Slack, Microsoft Teams, Discord, Telegram, email or a signed webhook,
+  each with Send test. Rules: a cluster unreachable (and back), lost read access, a workload failing
+  longer than N minutes, a node NotReady, a critical Cluster Doctor finding, warning events with
+  chosen reasons, plan limits. One check per cluster per minute feeds every rule; an alert goes out
+  once, again after the cooldown, and when resolved, never during quiet hours. Choose per cluster
+  which channels and rules apply. Alerts link back to KubeiQ (set `KUBEIQ_APP_URL`).
+- **Activity you can search.** Filter by action, user, cluster and text, page through it, and open an
+  entry's details; it refreshes by itself.
+- Every change endpoint is covered by a test that a viewer cannot use it.
+
 ### Changed
 - The read-only role reads metrics and the remaining built-in kinds (still no Secrets). Run the
   connect command again on existing clusters to show usage.
