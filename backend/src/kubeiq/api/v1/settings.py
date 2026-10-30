@@ -1,18 +1,22 @@
 """Settings API: AI model and kubeconfig files. Secrets are write-only."""
 
 import asyncio
+import os
+import platform
 from datetime import UTC, datetime
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from kubernetes.client import VersionApi
 from pydantic import BaseModel, Field
+from sqlalchemy import delete
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from kubeiq import __version__
 from kubeiq.auth import google, membership
 from kubeiq.auth import repository as audit
+from kubeiq.auth import repository as auth_repository
 from kubeiq.auth.deps import AdminUser, require_admin
 from kubeiq.clusters import meta
 from kubeiq.clusters.base import ClusterStatus
@@ -28,6 +32,7 @@ from kubeiq.clusters.registry import (
     PROBE_TIMEOUT_SECONDS,
     get_gke_source,
     get_local_source,
+    get_registry,
     get_token_source,
     get_uploaded_source,
     probe_read,
@@ -35,6 +40,22 @@ from kubeiq.clusters.registry import (
 )
 from kubeiq.clusters.token import TokenClusterIn
 from kubeiq.core.config import Settings, get_settings
+from kubeiq.db.models import (
+    DEFAULT_ORG,
+    AppSetting,
+    AssistantConversation,
+    AssistantMessage,
+    AuditEvent,
+    ClusterSetting,
+    ConnectCode,
+    IncidentMessage,
+    Investigation,
+    InvestigationEvent,
+    Project,
+    ProjectMember,
+    UsageSample,
+    UserPreference,
+)
 from kubeiq.db.session import get_session
 from kubeiq.settings import kubeconfigs, repository, service
 from kubeiq.settings.crypto import decrypt, encrypt
@@ -43,6 +64,7 @@ from kubeiq.settings.models import (
     AISettingsIn,
     AISettingsOut,
     ChangesSettings,
+    DangerIn,
     GkeSettingsIn,
     GkeSettingsOut,
     GoogleSettingsIn,
@@ -51,8 +73,11 @@ from kubeiq.settings.models import (
     KubeconfigOut,
     LocalKubeconfig,
     TestResult,
+    WorkspaceSettings,
 )
 from kubeiq.settings.providers import PROVIDERS, Provider
+
+STARTED_AT = datetime.now(UTC)
 
 router = APIRouter(prefix="/settings", tags=["settings"], dependencies=[Depends(require_admin)])
 
@@ -378,10 +403,101 @@ async def put_google(
     return _google_view(saved, request)
 
 
+@router.get("/general", response_model=WorkspaceSettings)
+async def get_general(session: SessionDep) -> WorkspaceSettings:
+    return WorkspaceSettings(**(await repository.get_value(session, repository.GENERAL_KEY) or {}))
+
+
+@router.put("/general", response_model=WorkspaceSettings)
+async def put_general(
+    body: WorkspaceSettings, session: SessionDep, admin: AdminUser
+) -> WorkspaceSettings:
+    await repository.put_value(session, repository.GENERAL_KEY, body.model_dump())
+    await audit.record(session, admin.username, "settings.general")
+    return body
+
+
+def _confirm(body: DangerIn, phrase: str) -> None:
+    if body.confirm.strip().lower() != phrase:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, f'Type "{phrase}" to confirm')
+
+
+@router.post("/danger/clear-activity", status_code=status.HTTP_204_NO_CONTENT)
+async def clear_activity(body: DangerIn, session: SessionDep, admin: AdminUser) -> None:
+    """Delete the activity log. The clearing itself is recorded as the first new entry."""
+    _confirm(body, "clear activity")
+    await session.execute(delete(AuditEvent).where(AuditEvent.org_id == DEFAULT_ORG))
+    await session.commit()
+    await audit.record(session, admin.username, "settings.activity.clear")
+
+
+async def _remove_clusters(session: AsyncSession) -> int:
+    """Remove every cluster added in Settings (files, tokens, GKE projects) and take all
+    clusters out of the projects. The server's own kubeconfig cannot be removed here."""
+    removed = 0
+    for row in await repository.list_kubeconfigs(session):
+        await session.delete(row)
+        removed += 1
+    await session.commit()
+    await service.sync_uploaded_clusters(session)
+    tokens = await service.load_token_clusters(session)
+    removed += len(tokens)
+    await service.save_token_clusters(session, [])
+    await repository.put_value(session, repository.GKE_KEY, {"projects": []})
+    get_gke_source().set_projects([])
+    for project in await auth_repository.list_projects(session):
+        project.scopes = []
+    await session.execute(delete(ClusterSetting).where(ClusterSetting.org_id == DEFAULT_ORG))
+    await session.commit()
+    return removed
+
+
+@router.post("/danger/remove-clusters", status_code=status.HTTP_204_NO_CONTENT)
+async def remove_clusters(body: DangerIn, session: SessionDep, admin: AdminUser) -> None:
+    _confirm(body, "remove clusters")
+    removed = await _remove_clusters(session)
+    await audit.record(session, admin.username, "settings.clusters.remove-all", detail=str(removed))
+
+
+@router.post("/danger/reset", status_code=status.HTTP_204_NO_CONTENT)
+async def reset_workspace(
+    body: DangerIn, session: SessionDep, admin: AdminUser, base: SettingsDep
+) -> None:
+    """Back to a fresh install: clusters, projects, users (except the built-in admin), settings,
+    investigations and conversations go. The activity log stays, with this reset in it."""
+    _confirm(body, "reset workspace")
+    await _remove_clusters(session)
+    for model in (
+        IncidentMessage,
+        InvestigationEvent,
+        Investigation,
+        AssistantMessage,
+        AssistantConversation,
+        UsageSample,
+        UserPreference,
+        ConnectCode,
+        ProjectMember,
+        Project,
+    ):
+        await session.execute(delete(model))
+    await session.execute(delete(AppSetting).where(AppSetting.org_id == DEFAULT_ORG))
+    for user in await auth_repository.list_users(session):
+        if user.username != base.admin_username:
+            await auth_repository.delete_user_sessions(session, user.id)
+            await session.delete(user)
+    await session.commit()
+    await audit.record(session, admin.username, "settings.reset")
+
+
 @router.get("/about", response_model=AboutOut)
-async def about(base: SettingsDep) -> AboutOut:
+async def about(base: SettingsDep, session: SessionDep) -> AboutOut:
     local = get_local_source()
     return AboutOut(
+        build=os.environ.get("KUBEIQ_BUILD") or None,
+        started_at=STARTED_AT,
+        python=platform.python_version(),
+        clusters=len(get_registry().list_clusters()),
+        users=await auth_repository.count_users(session),
         version=__version__,
         database="PostgreSQL" if base.database_url.startswith("postgres") else "SQLite",
         secrets="Encrypted with KUBEIQ_SECRET_KEY"

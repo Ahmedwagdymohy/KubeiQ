@@ -1,14 +1,18 @@
-/** Settings areas. Each opens its own view at /settings#<id>. */
+/** Settings areas, grouped. Each opens its own view at /settings#<id>. */
 export const SETTINGS_AREAS = [
-  { id: "ai", label: "AI Model", admin: true },
-  { id: "clusters", label: "Clusters", admin: true },
-  { id: "changes", label: "Cluster Changes", admin: true },
-  { id: "users", label: "Users", admin: true },
-  { id: "signin", label: "Sign-In", admin: true },
-  { id: "projects", label: "Projects", admin: true },
-  { id: "activity", label: "Activity", admin: true },
-  { id: "account", label: "Account", admin: false },
-  { id: "about", label: "About", admin: true },
+  { id: "general", label: "General", admin: true, group: "Workspace" },
+  { id: "appearance", label: "Appearance", admin: false, group: "Workspace" },
+  { id: "clusters", label: "Clusters", admin: true, group: "Workspace" },
+  { id: "projects", label: "Projects", admin: true, group: "Workspace" },
+  { id: "account", label: "Account", admin: false, group: "People" },
+  { id: "users", label: "Users", admin: true, group: "People" },
+  { id: "signin", label: "Sign-In", admin: true, group: "People" },
+  { id: "ai", label: "AI Model", admin: true, group: "Intelligence" },
+  { id: "changes", label: "Cluster Changes", admin: true, group: "Operations" },
+  { id: "activity", label: "Activity", admin: true, group: "System" },
+  { id: "license", label: "License", admin: true, group: "System" },
+  { id: "about", label: "About", admin: true, group: "System" },
+  { id: "danger", label: "Danger Zone", admin: true, group: "System" },
 ] as const;
 
 export type SettingsArea = (typeof SETTINGS_AREAS)[number]["id"];

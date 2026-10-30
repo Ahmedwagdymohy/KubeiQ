@@ -3,6 +3,7 @@
 import type { ReactNode } from "react";
 
 import { AboutSection } from "@/components/settings/about-section";
+import { AppearanceSection, DangerSection, GeneralSection, LicenseSection } from "@/components/settings/workspace-sections";
 import { AccountSection } from "@/components/settings/account-section";
 import { ActivitySection } from "@/components/settings/activity-section";
 import { AISection } from "@/components/settings/ai-section";
@@ -16,6 +17,10 @@ import { useMe } from "@/hooks/use-me";
 import { areaFromHash, settingsAreas, type SettingsArea } from "@/lib/settings-nav";
 
 const VIEWS: Record<SettingsArea, () => ReactNode> = {
+  general: () => <GeneralSection />,
+  appearance: () => <AppearanceSection />,
+  license: () => <LicenseSection />,
+  danger: () => <DangerSection />,
   ai: () => <AISection />,
   clusters: () => <ClustersSection />,
   changes: () => <ChangesSection />,
@@ -41,14 +46,18 @@ export function SettingsView() {
         aria-label="Settings"
         className="shrink-0 border-b border-border lg:w-[208px] lg:border-b-0 lg:border-r lg:p-3"
       >
-        <p className="hidden px-2.5 pb-2 pt-1 text-xs text-subtle lg:block">Settings</p>
         <ul className="flex gap-5 overflow-x-auto px-4 lg:flex-col lg:gap-0.5 lg:px-0">
-          {areas.map(({ id, label }) => (
+          {areas.map(({ id, label, group }, i) => (
             <li key={id} className="shrink-0">
+              {(i === 0 || areas[i - 1].group !== group) && (
+                <p className={`hidden px-2.5 pb-1.5 text-xs font-medium text-subtle lg:block ${i === 0 ? "pt-1" : "pt-4"}`}>{group}</p>
+              )}
               <a
                 href={`#${id}`}
                 aria-current={id === active ? "page" : undefined}
                 className={`flex h-11 items-center whitespace-nowrap border-b-2 text-sm transition-colors lg:h-8 lg:rounded-lg lg:border-b-0 lg:px-2.5 ${
+                  id === "danger" && id !== active ? "!text-danger " : ""
+                }${
                   id === active
                     ? "border-accent font-semibold text-fg lg:bg-surface-2"
                     : "border-transparent font-medium text-muted hover:text-fg lg:hover:bg-surface"

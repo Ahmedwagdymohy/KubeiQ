@@ -97,6 +97,9 @@ Never hard-code colors; use the Tailwind tokens (`bg-frame`, `bg-surface`, `text
   accent line on a 0-100 scale, crosshair and value on hover, "Since 03:56" while history is young,
   breaks where nothing was recorded); failing workloads with Investigate; latest warnings. Offline or
   unreadable cards show the reason and Fix in Settings, never empty numbers.
+- **Settings groups**: the area list has small group labels (Workspace, People, Intelligence,
+  Operations, System); Danger Zone is last, in red. Its actions are red-bordered cards with the
+  phrase to type in mono and a filled red button that stays disabled until the phrase matches.
 - **Settings**: one view per area (`/settings#ai`, `#clusters`, ...), an area list beside it. Each
   area is a label column (title, description, a summary such as the model in use or seats used)
   beside a grey panel with the controls.

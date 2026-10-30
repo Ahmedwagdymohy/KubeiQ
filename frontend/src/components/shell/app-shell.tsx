@@ -20,7 +20,7 @@ import { api } from "@/lib/api";
 import { findResource } from "@/lib/navigation";
 import { INSIGHTS, PRODUCTS } from "@/lib/products";
 import { restoreClusterScope, setClusterScope, useClusterScope, resolveCluster } from "@/lib/scope";
-import { SETTINGS_AREAS } from "@/lib/settings-nav";
+import { areaFromHash, SETTINGS_AREAS } from "@/lib/settings-nav";
 
 type Location = { kind: string | null; name: string | null; namespace: string | null };
 const NOWHERE: Location = { kind: null, name: null, namespace: null };
@@ -56,7 +56,11 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   const prefs = usePreferences();
   useEffect(() => {
-    if (prefs.data) restoreClusterScope(prefs.data.cluster);
+    if (!prefs.data) return;
+    restoreClusterScope(prefs.data.cluster);
+    const mono = (prefs.data.appearance as { mono?: string } | undefined)?.mono;
+    if (mono === "system") document.documentElement.dataset.mono = "system";
+    else delete document.documentElement.dataset.mono;
   }, [prefs.data]);
 
   useEffect(() => {
@@ -193,9 +197,8 @@ function Breadcrumb({ pathname, location, kind }: { pathname: string; location: 
   let leaf: { name: string; sub: string | null } | null = null;
 
   if (pathname.startsWith("/settings")) {
-    parts.push(
-      SETTINGS_AREAS.find((a) => `#${a.id}` === hash)?.label ?? (me.data?.role === "admin" ? "AI Model" : "Account"),
-    );
+    const area = areaFromHash(hash, me.data?.role === "admin");
+    parts.push(SETTINGS_AREAS.find((a) => a.id === area)?.label ?? "");
   } else if (pathname === "/manager" && kind) {
     const [g, , r] = kind.split("/");
     const served = kinds.data?.flatMap((c) => c.kinds).find((k) => (k.group || "core") === g && k.resource === r);

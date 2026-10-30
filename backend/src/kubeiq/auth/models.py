@@ -71,6 +71,9 @@ class UserOut(BaseModel):
     auth_provider: Literal["password", "google"] = "password"
     created_at: datetime
     projects: list[ProjectAccess] = Field(default_factory=list)
+    # Invited until the first sign-in; the last successful sign-in from the activity log.
+    status: Literal["invited", "active"] = "active"
+    last_sign_in: datetime | None = None
 
 
 class UserCreated(UserOut):

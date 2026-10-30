@@ -97,7 +97,8 @@ Update this file in the same commit that completes a task.
 Full requirements in [docs/requirements](requirements/README.md); items move here when scheduled.
 - [x] App shell: grouped sidebar, pinning, cluster status bar, Ctrl+1..9, a command palette that finds resources (01)
 - [x] Clusters screen: one row per cluster, labels and environments, add/edit dialog with tabs, thresholds (02). The Agent method waits for the KubeiQ Agent (Phase 5)
-- [ ] Settings regrouped; two-factor sign-in; several AI providers; danger zone (03)
+- [x] Settings regrouped; General, Appearance, License, About, danger zone; user status (03)
+- [ ] Two-factor sign-in (TOTP and backup codes); several AI providers with a default (03)
 - [x] Multi-cluster dashboard cards with real usage history (04). Drag-and-resize layouts are still open
 - [x] Resource tables with status and usage columns, live watches, YAML edit with diff, log viewer, terminal (05). Bottom drawers stay a side panel; column resize is open
 - [x] Pod Distribution and Timeline; health-first map (06). Pod dots per app in the map overview are open

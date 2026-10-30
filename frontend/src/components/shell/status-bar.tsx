@@ -7,6 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import { CheckIcon, ChevronDownIcon, PlusIcon } from "@/components/icons";
 import { LabelList } from "@/components/settings/cluster-labels";
 import { useMe } from "@/hooks/use-me";
+import { useWorkspace } from "@/hooks/use-workspace";
 import { api, type Cluster, type ClusterHealthState, type Gauge } from "@/lib/api";
 import { byTone, clusterTone, TONE_DOT } from "@/lib/clusters";
 import { resolveCluster, setClusterScope, useClusterScope } from "@/lib/scope";
@@ -36,6 +37,7 @@ export function useScopedClusters() {
 export function StatusBar() {
   const { current, ordered } = useScopedClusters();
   const admin = useMe().data?.role === "admin";
+  const workspace = useWorkspace();
   const summary = useQuery({
     queryKey: ["cluster-summary", current?.id],
     queryFn: () => api.clusterSummary(current!.id),
@@ -88,7 +90,7 @@ export function StatusBar() {
           )}
         </div>
       )}
-      {s?.cpu && s.memory && current.settings?.metrics !== false && (
+      {s?.cpu && s.memory && current.settings?.metrics !== false && workspace.show_usage && (
         <div className="ml-auto hidden items-center gap-4 lg:flex">
           <UsageBar
             label="CPU"

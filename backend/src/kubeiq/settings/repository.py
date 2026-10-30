@@ -13,6 +13,7 @@ AI_KEY = "ai"
 CHANGES_KEY = "changes"
 GKE_KEY = "gke"
 GOOGLE_KEY = "google"
+GENERAL_KEY = "general"
 TOKEN_KEY = "token_clusters"  # noqa: S105 - a settings key, not a secret
 
 
