@@ -416,6 +416,19 @@ export type ClusterAction = ObjectRef & {
 export type ApplyResult = { yaml: string; object: Record<string, unknown>; name: string; namespace: string | null; created: boolean; dry_run: boolean };
 export type FileListing = { path: string; entries: { name: string; directory: boolean }[]; truncated: boolean };
 
+export type LogAnalysis = {
+  summary: string;
+  status: "healthy" | "degraded" | "failing";
+  errors: { line: number; meaning: string; severity: "critical" | "warning" | "info" }[];
+  root_cause: string | null;
+  fix_steps: string[];
+  commands: string[];
+  watch: string[];
+};
+export type AnalyzedLogs = { pod: string; namespace: string; container: string; previous: boolean; lines: string[]; analysis: LogAnalysis };
+export type Conversation = { id: string; cluster_id: string; title: string; created_at: string; updated_at: string };
+export type AssistantMessage = { id: number; role: "user" | "assistant"; content: string; steps: string[]; created_at: string };
+
 export type Gauge = { used: number; capacity: number };
 export type ClusterHealthState = "healthy" | "degraded" | "unhealthy" | "no-access" | "offline";
 export type ClusterSummary = {
@@ -530,6 +543,19 @@ export const api = {
     request<UsagePoint[]>(`/api/v1/clusters/${encodeCluster(clusterId)}/usage?hours=${hours}`),
   feed: (clusterId: string, opts: { namespace?: string | null; warnings?: boolean; limit?: number } = {}) =>
     request<KubeEvent[]>(`/api/v1/manager/feed?${query({ cluster_id: clusterId, ...opts })}`),
+  aiStatus: () => request<{ enabled: boolean }>("/api/v1/ai/status"),
+  analyzeLogs: (body: { cluster_id: string; namespace: string; pod: string; container?: string; previous: boolean }) =>
+    request<AnalyzedLogs>("/api/v1/ai/logs/analyze", json("POST", body)),
+  conversations: (clusterId: string) =>
+    request<Conversation[]>(`/api/v1/ai/conversations?${query({ cluster_id: clusterId })}`),
+  createConversation: (clusterId: string) =>
+    request<Conversation>("/api/v1/ai/conversations", json("POST", { cluster_id: clusterId })),
+  conversation: (id: string) =>
+    request<Conversation & { messages: AssistantMessage[] }>(`/api/v1/ai/conversations/${id}`),
+  renameConversation: (id: string, title: string) =>
+    request<Conversation>(`/api/v1/ai/conversations/${id}`, json("PATCH", { title })),
+  deleteConversation: (id: string) => request<void>(`/api/v1/ai/conversations/${id}`, json("DELETE")),
+  suggestions: (clusterId: string) => request<string[]>(`/api/v1/ai/suggestions?${query({ cluster_id: clusterId })}`),
   preferences: () => request<Preferences>("/api/v1/me/preferences"),
   savePreference: (key: string, value: unknown) =>
     request<void>(`/api/v1/me/preferences/${key}`, json("PUT", value)),
@@ -697,23 +723,22 @@ export function streamInvestigation(
 
 
 /**
- * Ask a follow-up question about an incident. `onStep` gets each live check the AI runs
- * ("Reading logs of pod web-1"); resolves with the stored question and answer.
+ * POST and read server-sent events: `step` events go to `onStep` ("Reading logs of pod web-1"),
+ * then the `messages` event's data is returned, or an `error` event throws.
  */
-export async function askIncident(
-  investigationId: string,
-  incidentId: string,
-  message: string,
+export async function postStream<T>(
+  path: string,
+  body: unknown,
   onStep: (detail: string) => void,
   signal?: AbortSignal,
-): Promise<ChatMessage[]> {
+): Promise<T> {
   let response: Response;
   try {
-    response = await fetch(`${API_BASE_URL}/api/v1/investigations/${investigationId}/chat`, {
+    response = await fetch(`${API_BASE_URL}${path}`, {
       method: "POST",
       credentials: "include",
       headers: { "content-type": "application/json", accept: "text/event-stream" },
-      body: JSON.stringify({ incident_id: incidentId, message }),
+      body: JSON.stringify(body),
       signal,
     });
   } catch (error) {
@@ -723,8 +748,8 @@ export async function askIncident(
   if (!response.ok || !response.body) {
     let detail = `Request failed (${response.status})`;
     try {
-      const body = await response.json();
-      if (typeof body.detail === "string") detail = body.detail;
+      const data = await response.json();
+      if (typeof data.detail === "string") detail = data.detail;
     } catch {
       // keep the generic message
     }
@@ -751,9 +776,28 @@ export async function askIncident(
       if (!data.length) continue; // pings
       const payload = JSON.parse(data.join("\n"));
       if (event === "step") onStep(payload.detail);
-      else if (event === "messages") return payload as ChatMessage[];
+      else if (event === "messages") return payload as T;
       else if (event === "error") throw new ApiError(payload.detail, 502);
     }
   }
   throw new ApiError("The answer was interrupted. Try again", 0);
+}
+
+/**
+ * Ask a follow-up question about an incident. `onStep` gets each live check the AI runs
+ * ("Reading logs of pod web-1"); resolves with the stored question and answer.
+ */
+export function askIncident(
+  investigationId: string,
+  incidentId: string,
+  message: string,
+  onStep: (detail: string) => void,
+  signal?: AbortSignal,
+): Promise<ChatMessage[]> {
+  return postStream<ChatMessage[]>(
+    `/api/v1/investigations/${investigationId}/chat`,
+    { incident_id: incidentId, message },
+    onStep,
+    signal,
+  );
 }

@@ -7,6 +7,7 @@ Everything except sign-in and connect.sh needs a signed-in user (session cookie 
 from fastapi import APIRouter, Depends
 
 from kubeiq.api.v1 import (
+    ai,
     auth,
     clusters,
     connect,
@@ -32,6 +33,7 @@ router.include_router(terminal.router)
 
 protected = APIRouter(dependencies=[Depends(current_principal)])
 protected.include_router(clusters.router)
+protected.include_router(ai.router)
 protected.include_router(me.router)
 protected.include_router(connect.admin)
 protected.include_router(evidence.router)

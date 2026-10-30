@@ -10,11 +10,13 @@ import {
   SearchIcon,
   SettingsIcon,
   SidebarIcon,
+  SparkleIcon,
   StethoscopeIcon,
   SunIcon,
 } from "@/components/icons";
 import { KindIcon } from "@/components/manager/kind-icons";
 import { INVESTIGABLE } from "@/components/manager/kinds";
+import { openAssistant } from "@/components/assistant/assistant-panel";
 import { useScopedClusters } from "@/components/shell/status-bar";
 import { toggleTheme } from "@/components/theme-toggle";
 import { useMe } from "@/hooks/use-me";
@@ -178,6 +180,7 @@ function Palette({ onClose, onToggleSidebar }: { onClose: () => void; onToggleSi
             },
           ]
         : []),
+      { id: "assistant", group: "Actions", label: "Ask the assistant", keywords: "ai chat question explain", icon: <SparkleIcon />, run: () => openAssistant() },
       { id: "theme", group: "Actions", label: "Toggle light and dark", keywords: "theme dark light mode", icon: <SunIcon />, run: toggleTheme },
       { id: "sidebar", group: "Actions", label: "Collapse or expand the sidebar", keywords: "sidebar rail menu", icon: <SidebarIcon />, run: onToggleSidebar },
     ];

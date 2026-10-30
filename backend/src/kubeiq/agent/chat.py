@@ -34,15 +34,42 @@ async def answer(
 ) -> str:
     """Answer one question. ``history`` holds earlier ``{"role", "content"}`` turns, oldest first.
     Without ``tools`` (cluster unreachable) the model answers from the diagnosis alone."""
+    return await converse(
+        CHAT_SYSTEM_PROMPT,
+        build_chat_context(diagnosis, cluster_id),
+        history,
+        question,
+        llm,
+        tools,
+        TOOL_SPECS,
+        max_steps,
+        on_step,
+    )
+
+
+async def converse(
+    system: str,
+    context: str,
+    history: list[dict[str, str]],
+    question: str,
+    llm: LLMClient,
+    tools: Tools | None,
+    specs_available: list[dict[str, Any]],
+    max_steps: int,
+    on_step: StepCallback | None = None,
+) -> str:
+    """The tool-calling chat loop shared by incident follow-ups, log questions and the cluster
+    assistant: the model picks the read-only tools it needs, each call is reported by
+    ``on_step``, and after ``max_steps`` it must answer with what it has."""
     messages: list[dict[str, Any]] = [
-        {"role": "system", "content": CHAT_SYSTEM_PROMPT},
-        {"role": "user", "content": build_chat_context(diagnosis, cluster_id)},
+        {"role": "system", "content": system},
+        {"role": "user", "content": context},
         {"role": "assistant", "content": "Understood. What would you like to know?"},
         *history[-MAX_HISTORY:],
         {"role": "user", "content": question},
     ]
-    specs = TOOL_SPECS if tools is not None else None
-    known = {spec["function"]["name"] for spec in TOOL_SPECS}
+    specs = specs_available if tools is not None else None
+    known = {spec["function"]["name"] for spec in specs_available}
 
     for _ in range(max_steps):
         reply = await llm.complete(messages, specs)

@@ -56,7 +56,8 @@ backend/            FastAPI service (Python 3.12, uv). Package: backend/src/kube
                     history.py = usage samples for trend lines (ADR 0015)
     collectors/     read-only evidence collectors (pods, events, logs, deployments, network)
     detectors/      deterministic rule engine (CrashLoopBackOff, ImagePull, OOM, ...)
-    agent/          LLM agent: tools, prompts, structured output
+    agent/          LLM agent: tools, prompts, structured output; chat.converse = the shared tool-calling chat loop,
+                    scoped.py = assistant tools limited to the user's namespaces, log_analysis.py
     investigations/ orchestration, async jobs, progress events
     security/       redaction of secrets/PII before anything reaches an LLM
     settings/       Settings page backend: AI model + kubeconfig uploads, Fernet-encrypted, override env
