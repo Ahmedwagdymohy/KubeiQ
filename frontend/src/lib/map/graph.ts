@@ -16,7 +16,8 @@
  * Modified by the KubeiQ Authors: merged Headlamp's resourceMap/graph/graphModel.tsx,
  * graphLookup.ts and graphGrouping.tsx. Nodes carry KubeiQ map data (kind, status, reason)
  * instead of KubeObjects; namespace/node grouping, plugin hooks and performance metrics were
- * removed; a problems-only and search filter works on whole connected components.
+ * removed; a problems-only and search filter works on whole connected components, and the
+ * overview sorts groups health first.
  */
 
 import type { MapEdge, MapNode, MapStatus } from "@/lib/api";
@@ -279,6 +280,8 @@ export function groupGraph(mapNodes: MapNode[], mapEdges: MapEdge[], filter: Map
     return weight;
   };
   forEachNode(root, (node) => node.nodes?.sort((a, b) => sortWeight(b) - sortWeight(a)));
+  // The overview puts problems first: failing apps, then degraded, then healthy (stable within).
+  root.nodes?.sort((a, b) => RANK[statusOf(b)] - RANK[statusOf(a)]);
   return root;
 }
 

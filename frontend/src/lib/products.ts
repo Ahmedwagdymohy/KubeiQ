@@ -1,6 +1,6 @@
 import type { ComponentType } from "react";
 
-import { ManagerIcon, MapIcon, StethoscopeIcon } from "@/components/icons";
+import { DistributionIcon, ManagerIcon, MapIcon, StethoscopeIcon, TimelineIcon } from "@/components/icons";
 
 export const GITHUB_URL = "https://github.com/Ahmedwagdymohy/KubeiQ";
 
@@ -30,5 +30,21 @@ export const PRODUCTS: Product[] = [
     name: "Cluster Manager",
     description: "Browse every resource, read YAML, events and logs",
     icon: ManagerIcon,
+  },
+];
+
+/** Views across a cluster's resources, in the sidebar's Insights group. */
+export const INSIGHTS: Product[] = [
+  {
+    href: "/timeline",
+    name: "Timeline",
+    description: "What happened in the cluster: events and KubeiQ's own activity",
+    icon: TimelineIcon,
+  },
+  {
+    href: "/distribution",
+    name: "Pod Distribution",
+    description: "How pods spread across nodes, and nodes you could remove",
+    icon: DistributionIcon,
   },
 ];

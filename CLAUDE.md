@@ -65,12 +65,14 @@ backend/            FastAPI service (Python 3.12, uv). Package: backend/src/kube
     db/             persistence models, sessions, Alembic migrations (applied at startup)
     products/map/   Cluster Map: extra collectors, relations (ported from Headlamp), health, /api/v1/map
     products/manager/ Cluster Manager: kind discovery, Table API lists, YAML, events, logs, actions
+    products/insights/ Timeline (events + KubeiQ activity) and Pod Distribution, /api/v1/insights
   tests/
 frontend/           The self-hosted app: Next.js (TypeScript, Tailwind, App Router, React Query)
   src/app/page.tsx    Overview: cluster ledger (workload health per cluster), failing workloads, recent investigations
   src/app/doctor/     Cluster Doctor (/doctor?id=<investigation>; ?cluster=&namespace=&focus=<ref> starts a scan)
   src/app/map/        Cluster Map (React Flow + ELK); graph logic in src/lib/map (adapted from Headlamp)
   src/app/manager/    Cluster Manager (?cluster&namespace&kind&name&in are shareable)
+  src/app/timeline/, src/app/distribution/  Insights: the event timeline and pod distribution
   src/app/login/      Sign-in page; AuthGate (components/auth) sends signed-out users here
   src/app/welcome/    First sign-in: create the project, then add clusters (AuthGate sends new admins)
   src/app/settings/   Settings: AI model, clusters, cluster changes, users, projects, activity, account

@@ -169,3 +169,17 @@ export const PlusIcon = (props: IconProps) => (
     <path d="M12 5v14M5 12h14" />
   </Icon>
 );
+
+export const TimelineIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M3.5 12h3.5l2.5-6.5 5 13 2.5-6.5h3.5" />
+  </Icon>
+);
+
+export const DistributionIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <rect x="4" y="11" width="4" height="9" rx="1" />
+    <rect x="10" y="5" width="4" height="15" rx="1" />
+    <rect x="16" y="8" width="4" height="12" rx="1" />
+  </Icon>
+);

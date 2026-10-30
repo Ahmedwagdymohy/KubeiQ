@@ -63,6 +63,15 @@ All notable changes to KubeiQ. Versions follow [Semantic Versioning](https://sem
   read, and keeps your conversations (rename, delete). It starts with suggestions from the
   cluster's current problems.
 
+- **Timeline.** Everything that happened in a cluster in one live feed: Kubernetes events plus
+  KubeiQ's own entries (investigations, changes made in Cluster Manager, terminals, connections).
+  Filter by type, source, namespace and text; open an event's details; Explain a warning with the
+  assistant.
+- **Pod Distribution.** A balance score for how evenly pods spread, pods per node against
+  allocatable with the average marked, node cards with usage, pending pods with Investigate, and
+  nodes that look safe to remove, with why.
+- **Health-first map.** Cluster Map's overview shows failing apps first, then degraded, then healthy.
+
 ### Changed
 - The read-only role reads metrics and the remaining built-in kinds (still no Secrets). Run the
   connect command again on existing clusters to show usage.

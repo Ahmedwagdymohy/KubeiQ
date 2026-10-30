@@ -18,7 +18,7 @@ import { useMe } from "@/hooks/use-me";
 import { usePreference, usePreferences } from "@/hooks/use-preferences";
 import { api } from "@/lib/api";
 import { findResource } from "@/lib/navigation";
-import { PRODUCTS } from "@/lib/products";
+import { INSIGHTS, PRODUCTS } from "@/lib/products";
 import { restoreClusterScope, setClusterScope, useClusterScope, resolveCluster } from "@/lib/scope";
 import { SETTINGS_AREAS } from "@/lib/settings-nav";
 
@@ -173,7 +173,7 @@ function PhoneClusterPicker() {
 function productName(pathname: string): string {
   if (pathname === "/") return "Overview";
   if (pathname.startsWith("/settings")) return "Settings";
-  return PRODUCTS.find((p) => pathname === p.href || pathname.startsWith(`${p.href}/`))?.name ?? "KubeiQ";
+  return [...PRODUCTS, ...INSIGHTS].find((p) => pathname === p.href || pathname.startsWith(`${p.href}/`))?.name ?? "KubeiQ";
 }
 
 /** "Group / Page / Resource": the middle collapses on narrow screens. */

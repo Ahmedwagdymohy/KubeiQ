@@ -172,6 +172,14 @@ Never hard-code colors; use the Tailwind tokens (`bg-frame`, `bg-surface`, `text
   above the logs: status pill, summary, "Lines that matter" (mono line, meaning in severity colour;
   clicking jumps to and highlights the line), root cause, numbered fix steps, the terminal block,
   watch next, Investigate this workload, and an "Ask about these logs" field.
+- **Timeline** (`/timeline`): title with the warnings count in amber and Live; a filter row
+  (Type and Source as segmented controls, namespace picker, search); rows with a dot (amber warning,
+  cyan KubeiQ, grey normal), the reason (amber for warnings), the object in mono with its kind icon,
+  ×count, a two-line message and the source; Explain and Open on hover; a 400px details panel.
+- **Pod Distribution** (`/distribution`): three cards (Balance score with its verdict, Average,
+  Issues), "Pods per node" bars against the largest allocatable with a 1px average marker, rows that
+  expand into pod squares coloured by state, Pending pods with Investigate, node cards (a ring of pods
+  against allocatable, counts, CPU and memory bars, taints in mono), Scale-down candidates with why.
 - **Dialogs** for changes: title as a question ("Restart checkout?"), one sentence on the effect,
   Cancel and the action. Deleting requires typing the name; the delete button uses `bg-danger`.
 - **Sign-in**: one centered white card on the frame tint with the logo; the hint says the admin uses the master key.
