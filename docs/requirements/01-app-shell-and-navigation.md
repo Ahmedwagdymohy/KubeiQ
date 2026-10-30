@@ -22,6 +22,10 @@ to move around.
     Endpoint Slices, Gateway API), Config (ConfigMaps, Secrets, quotas, limits), Storage, Access
     (service accounts, roles, bindings), Cluster (Nodes, Namespaces, Events, Custom Resources, Helm).
   - **System:** Settings, Activity (audit), Docs.
+> Decided after testing (2026-10-30): the Resources groups are not in the app sidebar, because they
+> repeated Cluster Manager's kind list. Kinds stay in Cluster Manager, where they can be pinned to
+> the sidebar, and the command palette finds every kind.
+
 - **MUST** keep one group open at a time; the group holding the current page opens by itself, and a
   closed group with the current page shows a small cyan dot.
 - **MUST** let the sidebar collapse to an icon rail (tooltips on hover), remembered per user.

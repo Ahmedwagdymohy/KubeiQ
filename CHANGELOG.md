@@ -5,9 +5,9 @@ All notable changes to KubeiQ. Versions follow [Semantic Versioning](https://sem
 ## Unreleased
 
 ### Added
-- **A sidebar that knows Kubernetes.** Products, then the resources grouped the way people think
-  (Workloads, Network, Config, Storage, Access, Cluster), one group open at a time. Pin up to five
-  items to the top, or collapse the sidebar to an icon rail; both follow you to any browser.
+- **A calmer sidebar.** Products, Insights and System. Pin up to five items to the top (any resource
+  kind too, from Cluster Manager's kind list), or collapse the sidebar to an icon rail; both follow
+  you to any browser.
 - **Cluster status bar.** The cluster in scope, its health (reachable, readable, nodes Ready),
   version, nodes, namespaces, pods and CPU and memory usage when metrics-server runs. "No access"
   opens its fix; "Degraded" opens Cluster Doctor.

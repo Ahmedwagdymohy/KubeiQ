@@ -1,36 +1,16 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
 import Image from "next/image";
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
 
 import { UserMenu } from "@/components/auth/user-menu";
-import {
-  ActivityIcon,
-  ChevronDownIcon,
-  ChevronIcon,
-  DocsIcon,
-  OverviewIcon,
-  PinIcon,
-  SettingsIcon,
-  SidebarIcon,
-} from "@/components/icons";
+import { ActivityIcon, DocsIcon, OverviewIcon, PinIcon, SettingsIcon, SidebarIcon } from "@/components/icons";
 import { KindIcon } from "@/components/manager/kind-icons";
-import { kindKey } from "@/components/manager/kinds";
-import { useAllNamespaces, useMe } from "@/hooks/use-me";
+import { useMe } from "@/hooks/use-me";
 import { usePreference } from "@/hooks/use-preferences";
-import { api } from "@/lib/api";
-import {
-  findResource,
-  MAX_PINS,
-  RESOURCE_GROUPS,
-  resourceHref,
-  type ResourceGroup,
-  type ResourceItem,
-} from "@/lib/navigation";
+import { findResource, MAX_PINS } from "@/lib/navigation";
 import { GITHUB_URL, INSIGHTS, PRODUCTS } from "@/lib/products";
-import { resolveCluster, useClusterScope } from "@/lib/scope";
 
 export type Entry = { href: string; label: string; icon: ReactNode };
 
@@ -50,36 +30,18 @@ export function entryFor(href: string): Entry | null {
   const product = [...PRODUCT_ENTRIES, ...INSIGHT_ENTRIES].find((e) => e.href === href);
   if (product) return product;
   const kind = new URLSearchParams(href.split("?")[1] ?? "").get("kind");
+  if (!kind) return null;
+  // Kinds pinned from Cluster Manager, custom resources too: named after their resource.
   const found = findResource(kind);
-  return found
-    ? { href, label: found.item.label, icon: <KindIcon resource={found.item.resource} width={16} height={16} /> }
-    : null;
+  const resource = kind.split("/")[2] ?? kind;
+  const label = found?.item.label ?? resource.charAt(0).toUpperCase() + resource.slice(1);
+  return { href, label, icon: <KindIcon resource={resource} width={16} height={16} /> };
 }
-
-/** Kinds this cluster serves, keyed by group/resource, so links use the cluster's own version. */
-function useServedKinds() {
-  const clusters = useQuery({ queryKey: ["clusters"], queryFn: api.clusters });
-  const cluster = resolveCluster(clusters.data, useClusterScope());
-  const kinds = useQuery({
-    queryKey: ["manager", "kinds", cluster],
-    queryFn: () => api.kinds(cluster!),
-    enabled: Boolean(cluster),
-    staleTime: 5 * 60_000,
-  });
-  const served = new Map<string, string>();
-  for (const k of kinds.data?.flatMap((c) => c.kinds) ?? []) served.set(`${k.group || "core"}/${k.resource}`, kindKey(k));
-  return { served: kinds.data ? served : null, cluster };
-}
-
-const short = (kind: string) => {
-  const [g, , r] = kind.split("/");
-  return `${g}/${r}`;
-};
 
 /**
- * The app's navigation. Products, then the resource groups (one open at a time, the one holding
- * the current page opens by itself), then system pages. Collapses to an icon rail; up to five
- * items can be pinned to the top. Both are saved per user.
+ * The app's navigation: products, insights, then system pages. Resource kinds live in Cluster
+ * Manager, not here. Collapses to an icon rail; up to five items can be pinned to the top. Both
+ * are saved per user.
  */
 export function Sidebar({
   pathname,
@@ -101,23 +63,8 @@ export function Sidebar({
   const admin = me.data?.role === "admin";
   const [pins, setPins] = usePreference<string[]>("pinned", []);
   const [notice, setNotice] = useState<string | null>(null);
-  const { served, cluster } = useServedKinds();
-  const allNamespaces = useAllNamespaces(cluster);
   const current = pathname === "/manager" ? findResource(kind) : null;
 
-  const [openGroup, setOpenGroup] = useState<string | null>(current?.group.name ?? null);
-  const [lastGroup, setLastGroup] = useState(current?.group.name ?? null);
-  if ((current?.group.name ?? null) !== lastGroup) {
-    setLastGroup(current?.group.name ?? null);
-    if (current) setOpenGroup(current.group.name);
-  }
-
-  const visible = (items: ResourceItem[]) =>
-    items.filter(
-      (i) => (allNamespaces || i.namespaced) && (!served || served.has(short(i.kind))),
-    );
-  const hrefOf = (i: ResourceItem) => resourceHref(served?.get(short(i.kind)) ?? i.kind);
-  const itemActive = (i: ResourceItem) => current?.item.kind === i.kind;
 
   const togglePin = (href: string) => {
     if (pins.includes(href)) setPins(pins.filter((p) => p !== href));
@@ -148,18 +95,6 @@ export function Sidebar({
           {[...PRODUCT_ENTRIES, ...INSIGHT_ENTRIES].map((e) => (
             <RailLink key={e.href} entry={e} active={isActive(pathname, e.href)} />
           ))}
-          <hr className="my-1.5 w-6 border-border" />
-          {RESOURCE_GROUPS.map((g) => {
-            const items = visible(g.items);
-            if (!items.length) return null;
-            return (
-              <RailLink
-                key={g.name}
-                entry={{ href: hrefOf(items[0]), label: g.name, icon: <KindIcon resource={g.icon} width={16} height={16} /> }}
-                active={current?.group.name === g.name}
-              />
-            );
-          })}
         </div>
         <div className="flex flex-col items-center gap-0.5 pt-3">
           <RailLink
@@ -242,37 +177,6 @@ export function Sidebar({
             />
           ))}
         </Group>
-        <Group title="Resources">
-          {RESOURCE_GROUPS.map((g) => {
-            const items = visible(g.items);
-            if (!items.length) return null;
-            return (
-              <ResourceSection
-                key={g.name}
-                group={g}
-                open={openGroup === g.name}
-                holdsCurrent={current?.group.name === g.name}
-                onToggle={() => setOpenGroup(openGroup === g.name ? null : g.name)}
-              >
-                {items.map((i) => {
-                  const href = hrefOf(i);
-                  const pinKey = resourceHref(i.kind);
-                  return (
-                    <NavRow
-                      key={i.kind}
-                      entry={{ href, label: i.label, icon: <KindIcon resource={i.resource} width={15} height={15} /> }}
-                      active={pathname === "/manager" && itemActive(i)}
-                      pinned={pins.includes(pinKey)}
-                      onPin={() => togglePin(pinKey)}
-                      onNavigate={onNavigate}
-                      nested
-                    />
-                  );
-                })}
-              </ResourceSection>
-            );
-          })}
-        </Group>
       </div>
       {notice && (
         <p role="status" className="mx-3 mt-2 rounded-lg bg-bg px-3 py-2 text-xs text-muted shadow-sm">
@@ -318,59 +222,18 @@ function Group({ title, children }: { title: string; children: ReactNode }) {
   );
 }
 
-function ResourceSection({
-  group,
-  open,
-  holdsCurrent,
-  onToggle,
-  children,
-}: {
-  group: ResourceGroup;
-  open: boolean;
-  holdsCurrent: boolean;
-  onToggle: () => void;
-  children: ReactNode;
-}) {
-  return (
-    <div className="flex flex-col gap-0.5">
-      <button
-        type="button"
-        onClick={onToggle}
-        aria-expanded={open}
-        className="flex h-9 items-center gap-2.5 rounded-lg px-2.5 text-left text-sm font-medium text-muted transition-colors hover:bg-frame-hover hover:text-fg lg:h-8"
-      >
-        <span className="text-subtle">
-          <KindIcon resource={group.icon} width={16} height={16} />
-        </span>
-        <span className="flex-1">{group.name}</span>
-        {holdsCurrent && !open && (
-          <span aria-label="Current page is here" className="h-1.5 w-1.5 rounded-full bg-accent" />
-        )}
-        {open ? (
-          <ChevronDownIcon width={14} height={14} className="text-subtle" />
-        ) : (
-          <ChevronIcon width={14} height={14} className="text-subtle" />
-        )}
-      </button>
-      {open && <div className="flex flex-col gap-0.5 pb-1">{children}</div>}
-    </div>
-  );
-}
-
 function NavRow({
   entry,
   active,
   pinned = false,
   onPin,
   onNavigate,
-  nested = false,
 }: {
   entry: Entry;
   active: boolean;
   pinned?: boolean;
   onPin?: () => void;
   onNavigate?: () => void;
-  nested?: boolean;
 }) {
   return (
     <div className="group relative">
@@ -378,9 +241,7 @@ function NavRow({
         href={entry.href}
         onClick={onNavigate}
         aria-current={active ? "page" : undefined}
-        className={`flex h-9 items-center gap-2.5 rounded-lg pr-8 text-sm transition-colors lg:h-8 ${
-          nested ? "pl-8" : "pl-2.5"
-        } ${active ? "bg-frame-hover font-semibold text-fg" : "font-medium text-muted hover:bg-frame-hover hover:text-fg"}`}
+        className={`flex h-9 items-center gap-2.5 rounded-lg pl-2.5 pr-8 text-sm transition-colors lg:h-8 ${active ? "bg-frame-hover font-semibold text-fg" : "font-medium text-muted hover:bg-frame-hover hover:text-fg"}`}
       >
         <span className={active ? "text-accent" : "text-subtle"}>{entry.icon}</span>
         <span className="truncate">{entry.label}</span>

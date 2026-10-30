@@ -13,7 +13,6 @@ import { Modal } from "@/components/modal";
 import { CreateFromYaml } from "@/components/manager/yaml-panel";
 import { useCanEdit } from "@/hooks/use-can-edit";
 import { useAllNamespaces } from "@/hooks/use-me";
-import { usePreference } from "@/hooks/use-preferences";
 import { api } from "@/lib/api";
 import { resolveCluster, setClusterScope, useClusterPicked, useClusterScope } from "@/lib/scope";
 
@@ -51,12 +50,6 @@ export function ClusterManager() {
     if (params.get("namespace") !== null && params.get("namespace") !== picked)
       setNamespace(params.get("namespace"));
   }
-
-  // The app sidebar lists the built-in kinds; this full list (custom resources too) is opt-in
-  // while it is expanded, and always there when it is collapsed to the icon rail.
-  const [appSidebar] = usePreference<{ collapsed: boolean }>("sidebar", { collapsed: false });
-  const [allKinds, setAllKinds] = usePreference<boolean>("manager.kinds", false);
-  const showKinds = appSidebar.collapsed || allKinds;
 
   const [creating, setCreating] = useState(false);
   const [created, setCreated] = useState<string | null>(null);
@@ -168,22 +161,9 @@ export function ClusterManager() {
             Create
           </button>
         )}
-        {!appSidebar.collapsed && (
-          <button
-            type="button"
-            onClick={() => setAllKinds(!allKinds)}
-            aria-pressed={allKinds}
-            className={`hidden h-8 rounded-lg border px-2.5 text-sm transition-colors md:block ${
-              allKinds ? "border-accent text-fg" : "border-control text-muted hover:text-fg"
-            }`}
-          >
-            All kinds
-          </button>
-        )}
       </div>
 
       <div className="flex min-h-0 flex-1">
-        {showKinds && (
         <KindSidebar
           categories={kinds.data ?? []}
           loading={kinds.isPending && Boolean(cluster)}
@@ -196,7 +176,6 @@ export function ClusterManager() {
             sync({ kind: k, selected: null });
           }}
         />
-        )}
         <div className="flex min-w-0 flex-1">
           <div className={`min-w-0 flex-1 ${selected ? "hidden xl:block" : ""}`}>
             {cluster && kind && (
