@@ -86,7 +86,9 @@ class PodLogs(BaseModel):
 
 class Action(BaseModel):
     cluster_id: str
-    action: Literal["scale", "restart", "delete", "cordon", "uncordon"]
+    action: Literal[
+        "scale", "restart", "delete", "cordon", "uncordon", "trigger", "suspend", "resume", "drain"
+    ]
     group: str = ""
     version: str
     resource: str

@@ -9,11 +9,14 @@ import { INVESTIGABLE, ON_MAP, SELECTS_PODS } from "@/components/manager/kinds";
 import { ObjectActions } from "@/components/manager/object-actions";
 import { ObjectEvents } from "@/components/manager/object-events";
 import { ObjectOverview } from "@/components/manager/object-overview";
+import { PodFiles } from "@/components/manager/pod-files";
 import { PodLogsView, WorkloadLogs } from "@/components/manager/pod-logs";
-import { CodeBlock } from "@/components/ui";
+import { PodTerminal } from "@/components/manager/pod-terminal";
+import { YamlPanel } from "@/components/manager/yaml-panel";
+import { useCanEdit } from "@/hooks/use-can-edit";
 import { api, type KindInfo } from "@/lib/api";
 
-type Tab = "overview" | "yaml" | "events" | "logs";
+type Tab = "overview" | "yaml" | "events" | "logs" | "terminal" | "files";
 
 export function ObjectPanel({
   cluster,
@@ -37,11 +40,14 @@ export function ObjectPanel({
   });
   const isPod = kind.group === "" && kind.resource === "pods";
   const hasLogs = Boolean(namespace) && (isPod || SELECTS_PODS.has(`${kind.group}/${kind.resource}`));
+  const canEdit = useCanEdit(cluster, namespace);
+  const shell = isPod && canEdit && Boolean(namespace);
   const tabs: [Tab, string][] = [
     ["overview", "Overview"],
     ["yaml", "YAML"],
     ["events", "Events"],
     ...(hasLogs ? ([["logs", "Logs"]] as [Tab, string][]) : []),
+    ...(shell ? ([["terminal", "Terminal"], ["files", "Files"]] as [Tab, string][]) : []),
   ];
   const scope = `cluster=${encodeURIComponent(cluster)}&namespace=${encodeURIComponent(namespace ?? "")}`;
   const ref_ = namespace ? `${kind.kind}/${namespace}/${name}` : `${kind.kind}/${name}`;
@@ -116,15 +122,10 @@ export function ObjectPanel({
           <ObjectOverview detail={detail.data} kind={kind} />
         )}
         {detail.data && tab === "yaml" && (
-          <div className="flex flex-col gap-3 p-6">
-            {detail.data.values_hidden && (
-              <p className="text-sm text-muted">
-                Secret values are never read. Only names and metadata are shown.
-              </p>
-            )}
-            <CodeBlock text={detail.data.yaml.trimEnd()} />
-          </div>
+          <YamlPanel cluster={cluster} kind={kind} detail={detail.data} objectRef={{ namespace, name }} />
         )}
+        {tab === "terminal" && shell && namespace && <PodTerminal cluster={cluster} namespace={namespace} pod={name} />}
+        {tab === "files" && shell && namespace && <PodFiles cluster={cluster} namespace={namespace} pod={name} />}
         {tab === "events" && (
           <ObjectEvents cluster={cluster} kind={kind.kind} namespace={namespace} name={name} />
         )}

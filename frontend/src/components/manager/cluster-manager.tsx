@@ -9,6 +9,9 @@ import { KindSidebar } from "@/components/manager/kind-sidebar";
 import { NamespacePicker } from "@/components/manager/namespace-picker";
 import { ObjectPanel } from "@/components/manager/object-panel";
 import { ResourceTable } from "@/components/manager/resource-table";
+import { Modal } from "@/components/modal";
+import { CreateFromYaml } from "@/components/manager/yaml-panel";
+import { useCanEdit } from "@/hooks/use-can-edit";
 import { useAllNamespaces } from "@/hooks/use-me";
 import { usePreference } from "@/hooks/use-preferences";
 import { api } from "@/lib/api";
@@ -55,6 +58,9 @@ export function ClusterManager() {
   const [allKinds, setAllKinds] = usePreference<boolean>("manager.kinds", false);
   const showKinds = appSidebar.collapsed || allKinds;
 
+  const [creating, setCreating] = useState(false);
+  const [created, setCreated] = useState<string | null>(null);
+
   const scoped = useClusterScope();
   const cluster = chosen ?? resolveCluster(clusters.data, scoped);
 
@@ -78,6 +84,7 @@ export function ClusterManager() {
   const namespace = picked ?? clusters.data?.find((c) => c.id === cluster)?.namespace ?? "";
   const scope = allNamespaces ? namespace : namespace || (namespaces.data?.[0] ?? "");
   const kind = kinds.data?.flatMap((c) => c.kinds).find((k) => kindKey(k) === kindId) ?? null;
+  const canCreate = useCanEdit(cluster ?? "", scope || null);
 
   const sync = (next: {
     cluster?: string | null;
@@ -150,7 +157,17 @@ export function ClusterManager() {
             </optgroup>
           ))}
         </select>
-        <span className="ml-auto hidden text-sm text-subtle sm:inline">Read-only by default</span>
+        {created && <span className="text-sm text-accent">{created}</span>}
+        <span className="ml-auto hidden text-sm text-subtle sm:inline">{canCreate ? "Changes are on" : "Read-only by default"}</span>
+        {canCreate && (
+          <button
+            type="button"
+            onClick={() => setCreating(true)}
+            className="h-8 rounded-lg border border-control px-2.5 text-sm text-muted transition-colors hover:text-fg"
+          >
+            Create
+          </button>
+        )}
         {!appSidebar.collapsed && (
           <button
             type="button"
@@ -211,6 +228,18 @@ export function ClusterManager() {
           )}
         </div>
       </div>
+      {creating && cluster && (
+        <Modal title="Create from YAML" description="Paste one Kubernetes object. KubeiQ validates it with the API server first" onClose={() => setCreating(false)} wide>
+          <CreateFromYaml
+            cluster={cluster}
+            namespace={scope || null}
+            onDone={(message) => {
+              setCreating(false);
+              setCreated(message);
+            }}
+          />
+        </Modal>
+      )}
     </div>
   );
 }

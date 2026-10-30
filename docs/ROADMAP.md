@@ -76,9 +76,11 @@ Update this file in the same commit that completes a task.
 - [x] Logs on Deployments, StatefulSets, DaemonSets, ReplicaSets, Jobs and Services: pick one of their pods, problems first
 - [x] Phase B, opt-in changes: admin switch, scale, restart, delete, cordon/uncordon, editors only, confirmations, activity log
 - [x] Website product page and pricing (free up to 3 users)
-- [ ] Phase C: exec into containers, port-forward, edit YAML with a diff, Helm releases (each behind its own switch and audit)
-- [ ] Node view with usage (metrics-server), namespace overview page
-- [ ] Watch-based live updates instead of polling
+- [x] Phase C: exec into containers, edit YAML with a diff, files, drain, trigger and suspend jobs (behind the switch, audited)
+- [ ] Port-forward; Helm releases (Helm keeps releases in Secrets, which KubeiQ never reads: needs a design)
+- [x] Node view with usage (metrics-server)
+- [ ] Namespace overview page
+- [x] Watch-based live updates instead of polling
 
 ## Phase 5 — Production & distribution
 - [ ] Helm chart
@@ -97,7 +99,7 @@ Full requirements in [docs/requirements](requirements/README.md); items move her
 - [x] Clusters screen: one row per cluster, labels and environments, add/edit dialog with tabs, thresholds (02). The Agent method waits for the KubeiQ Agent (Phase 5)
 - [ ] Settings regrouped; two-factor sign-in; several AI providers; danger zone (03)
 - [x] Multi-cluster dashboard cards with real usage history (04). Drag-and-resize layouts are still open
-- [ ] Resource tables with status and usage columns, live watches, YAML edit with diff, log viewer, terminal (05)
+- [x] Resource tables with status and usage columns, live watches, YAML edit with diff, log viewer, terminal (05). Bottom drawers stay a side panel; column resize is open
 - [ ] Pod Distribution and Timeline; health-first map (06)
 - [ ] AI log analysis and a cluster assistant (07)
 - [ ] Permissions as verbs, a filterable audit log, notifications to Slack, email and webhooks (08)

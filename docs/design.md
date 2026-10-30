@@ -155,6 +155,14 @@ Never hard-code colors; use the Tailwind tokens (`bg-frame`, `bg-surface`, `text
   background (healthy, warning, danger; grey for Completed); containers are 10px squares; restarts
   amber above 0 and bold red above 10; usage is a 48px bar plus the value, or the value alone when no
   limit is set. Failing rows show Investigate on hover. Namespace cells filter on click.
+- **Object panel tabs**: Overview, YAML, Events, Logs, and for pods (when changes are allowed)
+  Terminal and Files. YAML is highlighted in the terminal palette (`--terminal-key`, `-string`,
+  `-number`) with Edit, Copy, Download; Edit is a dark textarea, then "Review changes" shows the dry
+  run as a diff (green added, red removed, unchanged runs folded to ⋯), then Apply. Logs have a
+  controls row (container, lines, before last restart, Live / Resume · N new) and a tools row
+  (search with "1 of 4" and arrows, Wrap, Timestamps, Copy, Download); error lines use
+  `--terminal-error`, warnings `--terminal-warn`. The terminal opens on request (sessions are
+  audited) in xterm with the terminal tokens.
 - **Dialogs** for changes: title as a question ("Restart checkout?"), one sentence on the effect,
   Cancel and the action. Deleting requires typing the name; the delete button uses `bg-danger`.
 - **Sign-in**: one centered white card on the frame tint with the logo; the hint says the admin uses the master key.

@@ -408,10 +408,13 @@ export type ObjectRef = {
 };
 export type ClusterAction = ObjectRef & {
   cluster_id: string;
-  action: "scale" | "restart" | "delete" | "cordon" | "uncordon";
+  action: "scale" | "restart" | "delete" | "cordon" | "uncordon" | "trigger" | "suspend" | "resume" | "drain";
   replicas?: number;
   confirm?: string;
 };
+
+export type ApplyResult = { yaml: string; object: Record<string, unknown>; name: string; namespace: string | null; created: boolean; dry_run: boolean };
+export type FileListing = { path: string; entries: { name: string; directory: boolean }[]; truncated: boolean };
 
 export type Gauge = { used: number; capacity: number };
 export type ClusterHealthState = "healthy" | "degraded" | "unhealthy" | "no-access" | "offline";
@@ -621,6 +624,16 @@ export const api = {
     request<PodLogs>(
       `/api/v1/manager/logs?${query({ cluster_id: clusterId, namespace, pod, ...opts })}`,
     ),
+  applyYaml: (body: {
+    cluster_id: string;
+    yaml: string;
+    namespace?: string | null;
+    existing?: string | null;
+    dry_run: boolean;
+    confirm?: string;
+  }) => request<ApplyResult>("/api/v1/manager/apply", json("POST", body)),
+  files: (clusterId: string, namespace: string, pod: string, container: string, path: string) =>
+    request<FileListing>(`/api/v1/manager/files?${query({ cluster_id: clusterId, namespace, pod, container, path })}`),
   runAction: (body: ClusterAction) =>
     request<{ ok: boolean; message: string }>("/api/v1/manager/actions", json("POST", body)),
   changesSetting: () => request<{ enabled: boolean }>("/api/v1/settings/changes"),
@@ -642,6 +655,16 @@ export function watchUrl(clusterId: string, kind: KindInfo, namespace: string | 
     resource: kind.resource,
     namespace: kind.namespaced ? namespace : null,
   })}`;
+}
+
+export function fileDownloadUrl(clusterId: string, namespace: string, pod: string, container: string, path: string) {
+  return `${API_BASE_URL}/api/v1/manager/files/download?${query({ cluster_id: clusterId, namespace, pod, container, path })}`;
+}
+
+/** The terminal's WebSocket address (same host as the API, ws or wss). */
+export function terminalUrl(clusterId: string, namespace: string, pod: string, container: string, confirm?: string) {
+  const base = (API_BASE_URL || window.location.origin).replace(/^http/, "ws");
+  return `${base}/api/v1/manager/exec?${query({ cluster_id: clusterId, namespace, pod, container, confirm })}`;
 }
 
 /** The address of KubeiQ's API as seen from outside: the page's own origin behind the proxy. */

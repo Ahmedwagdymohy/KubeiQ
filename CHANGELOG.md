@@ -43,9 +43,22 @@ All notable changes to KubeiQ. Versions follow [Semantic Versioning](https://sem
 - **Live lists.** Tables follow the cluster through Kubernetes watches, batched so a crash-looping pod
   does not flicker, with a Live indicator; big lists render only the rows on screen (5,000 rows).
 
+- **Edit YAML with a diff.** Edit an object, review what the API server would store (a dry run),
+  then apply. A few seconds later KubeiQ checks whether something in the cluster set fields back
+  (an autoscaler) and says which. Create objects from YAML the same way.
+- **Terminal and files.** Open a shell in a container (bash, ash or sh, whichever it has; distroless
+  images get the `kubectl debug` command), browse its files and download one. Both need cluster
+  changes on and an editor, and every session and download is recorded.
+- **A better log viewer.** Live or paused (new lines wait), search with next and previous, wrap,
+  timestamps, errors and warnings coloured, copy and download.
+- **More actions.** Drain a node (respects disruption budgets, skips DaemonSet pods), run a CronJob
+  now, suspend and resume CronJobs and Jobs. Production clusters ask for their name first.
+
 ### Changed
 - The read-only role reads metrics and the remaining built-in kinds (still no Secrets). Run the
   connect command again on existing clusters to show usage.
+- The optional changes role adds what the new actions need (update and create on common kinds,
+  pod eviction, pod exec). Apply it again where cluster changes are on.
 
 ## 0.3.0 — 2026-10-30
 
