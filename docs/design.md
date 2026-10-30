@@ -92,7 +92,16 @@ Never hard-code colors; use the Tailwind tokens (`bg-frame`, `bg-surface`, `text
 - **Settings**: one view per area (`/settings#ai`, `#clusters`, ...), an area list beside it. Each
   area is a label column (title, description, a summary such as the model in use or seats used)
   beside a grey panel with the controls.
-- **Add a cluster** (Settings › Clusters, Welcome): two choices, Kubeconfig and Google Cloud.
+- **Clusters** (Settings › Clusters): "Connected Clusters N" with Test All and the primary Add
+  Cluster. One bordered list, a row per cluster: status dot (pulses while testing), mono name, label
+  chips, "Not in a project" in amber when no project holds it; the line under it says Connected ·
+  version, the method, namespace and when it was added; the reason wraps under broken rows. Row
+  actions are text: Test, Fix (login contexts), Edit, Remove (token and added files) or Hide. Each row
+  tests itself, so a slow cluster never holds the page. Sources (server kubeconfig, files, GKE
+  projects) fold under "Where clusters come from". **Edit** is a dialog with tabs General, Connection,
+  Usage; **Add** is a dialog with method cards (Command recommended, Kubeconfig, Token, Google Cloud,
+  Agent planned). Labels are pills in `--label-*` colours (soft background, coloured text).
+- **Add a cluster** (Welcome, and the Command card): two choices, Kubeconfig and Google Cloud.
   Kubeconfig is three steps: where it runs (GKE, EKS, AKS, minikube, kind, Other; clouds show their
   login command and what to replace), one command with the one-time code (Options: name, context,
   project, allow changes), then a live line that waits, shows why it failed, or turns into

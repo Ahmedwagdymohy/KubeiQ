@@ -11,6 +11,7 @@ from kubeiq.clusters.base import ClusterInfo, ClusterNotFoundError, ClusterSourc
 from kubeiq.clusters.errors import describe_error
 from kubeiq.clusters.gke import GkeSource
 from kubeiq.clusters.kubeconfig import KubeconfigSource
+from kubeiq.clusters.token import TokenSource
 from kubeiq.clusters.uploaded import UploadedKubeconfigSource
 from kubeiq.core.config import get_settings
 
@@ -68,6 +69,15 @@ class ClusterRegistry:
         return await probe_read(client, ClusterStatus(reachable=True, version=info.git_version))
 
 
+async def test_client(client: ApiClient, wait: float = PROBE_TIMEOUT_SECONDS) -> ClusterStatus:
+    """Probe a client that is not registered yet (a connection being added)."""
+    try:
+        info = await asyncio.to_thread(VersionApi(client).get_code, _request_timeout=wait)
+    except Exception as exc:
+        return ClusterStatus(reachable=False, error=describe_error(exc, client.configuration.host))
+    return await probe_read(client, ClusterStatus(reachable=True, version=info.git_version))
+
+
 def needs_login(command: str) -> str:
     tool = {"gke-gcloud-auth-plugin": "gcloud", "aws": "aws", "az": "az", "kubelogin": "az"}
     name = tool.get(command, command)
@@ -109,5 +119,12 @@ def get_gke_source() -> GkeSource:
 
 
 @lru_cache
+def get_token_source() -> TokenSource:
+    return TokenSource(get_settings().kubeconfig_localhost_alias)
+
+
+@lru_cache
 def get_registry() -> ClusterRegistry:
-    return ClusterRegistry([get_local_source(), get_uploaded_source(), get_gke_source()])
+    return ClusterRegistry(
+        [get_local_source(), get_uploaded_source(), get_gke_source(), get_token_source()]
+    )

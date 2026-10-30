@@ -17,6 +17,11 @@ export type Cluster = {
   /** the CLI a context logs in with (gke-gcloud-auth-plugin, aws, az), which KubeiQ cannot run */
   login?: string | null;
   hidden?: boolean;
+  /** the name in its source (kubeconfig context); `name` may be a display name */
+  context?: string;
+  labels?: ClusterLabel[];
+  settings?: ClusterMeta;
+  added_at?: string | null;
   status: {
     reachable: boolean;
     version: string | null;
@@ -24,6 +29,27 @@ export type Cluster = {
     /** false: reachable, but KubeiQ's identity may not read it */
     can_read?: boolean | null;
   } | null;
+};
+
+export type LabelColor = "red" | "amber" | "blue" | "green" | "violet" | "cyan" | "pink" | "slate";
+export type ClusterLabel = { name: string; color: LabelColor };
+export type Thresholds = { warning: number; critical: number };
+export type ClusterMeta = {
+  display_name: string | null;
+  labels: ClusterLabel[];
+  namespace: string | null;
+  metrics: boolean;
+  cpu: Thresholds;
+  memory: Thresholds;
+};
+export type ClusterProbe = NonNullable<Cluster["status"]>;
+export type TokenClusterInput = {
+  name: string;
+  server: string;
+  token: string | null;
+  ca: string | null;
+  namespace?: string | null;
+  project_id?: string | null;
 };
 
 export type Severity = "critical" | "warning" | "info";
@@ -354,6 +380,7 @@ export type ClusterAction = ObjectRef & {
   cluster_id: string;
   action: "scale" | "restart" | "delete" | "cordon" | "uncordon";
   replicas?: number;
+  confirm?: string;
 };
 
 export type Gauge = { used: number; capacity: number };
@@ -513,6 +540,18 @@ export const api = {
       "/api/v1/connect/codes",
       json("POST", { project_id: projectId, replaces: replaces ?? null }),
     ),
+  /** Probe one cluster now (Test). */
+  cluster: (clusterId: string) => request<Cluster>(`/api/v1/clusters/${encodeCluster(clusterId)}`),
+  saveClusterMeta: (clusterId: string, body: ClusterMeta) =>
+    request<ClusterMeta>("/api/v1/settings/clusters/meta", json("PUT", { cluster_id: clusterId, ...body })),
+  testTokenCluster: (body: TokenClusterInput) =>
+    request<ClusterProbe>("/api/v1/settings/token-clusters/test", json("POST", body)),
+  addTokenCluster: (body: TokenClusterInput) =>
+    request<ClusterProbe>("/api/v1/settings/token-clusters", json("POST", body)),
+  updateTokenCluster: (body: TokenClusterInput) =>
+    request<ClusterProbe>(`/api/v1/settings/token-clusters/${body.name}`, json("PUT", body)),
+  deleteTokenCluster: (name: string) =>
+    request<void>(`/api/v1/settings/token-clusters/${name}`, json("DELETE")),
   hideCluster: (clusterId: string, hidden: boolean) =>
     request<void>("/api/v1/settings/clusters/hidden", json("PUT", { cluster_id: clusterId, hidden })),
   /** Admins: every connected cluster, without probing them (fast). */

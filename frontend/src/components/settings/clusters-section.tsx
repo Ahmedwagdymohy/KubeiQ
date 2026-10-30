@@ -3,133 +3,297 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 
-import { ClusterRows, SourceCard } from "@/components/settings/cluster-parts";
-import { ConnectPanel, FixPanel } from "@/components/settings/connect-panel";
-import { Section } from "@/components/settings/fields";
-import { GkePanel, GkeProjectCard } from "@/components/settings/gke-connect";
-import { api, type Cluster, type Project } from "@/lib/api";
+import { timeAgo } from "@/components/doctor/history-list";
+import { PlusIcon } from "@/components/icons";
+import { AddClusterDialog, EditClusterDialog, METHOD_LABEL } from "@/components/settings/cluster-dialog";
+import { LabelList } from "@/components/settings/cluster-labels";
+import { SourceCard } from "@/components/settings/cluster-parts";
+import { ConnectPanel } from "@/components/settings/connect-panel";
+import { primaryButton, secondaryButton, Section } from "@/components/settings/fields";
+import { GkeProjectCard } from "@/components/settings/gke-connect";
+import { Dot } from "@/components/ui";
+import { api, type Cluster, type StoredKubeconfig } from "@/lib/api";
+
+type State = { label: string; tone: "healthy" | "warning" | "critical" | "info"; reason: string | null };
+
+function stateOf(cluster: Cluster, probe: Cluster | undefined, testing: boolean, failed: boolean): State {
+  if (testing && !probe) return { label: "Testing", tone: "info", reason: null };
+  const status = probe?.status;
+  if (!status) return { label: failed ? "Not checked" : "Testing", tone: "info", reason: null };
+  if (cluster.login || (!status.reachable && status.can_read === false))
+    return { label: "No access", tone: "warning", reason: status.error };
+  if (!status.reachable) return { label: "Unreachable", tone: "critical", reason: status.error };
+  if (status.can_read === false) return { label: "No access", tone: "warning", reason: status.error };
+  return { label: `Connected`, tone: "healthy", reason: null };
+}
 
 /**
- * Settings › Clusters: what KubeiQ is connected to, then the two ways to add a cluster
- * (a kubeconfig, or the Google Cloud identity of the server KubeiQ runs on).
+ * Settings › Clusters: one row per cluster with its labels, how it connects and whether it works
+ * (each tested on its own, so a slow cluster never holds the page), then where clusters come from.
  */
 export function ClustersSection() {
   const queryClient = useQueryClient();
   const about = useQuery({ queryKey: ["settings", "about"], queryFn: api.about });
   const files = useQuery({ queryKey: ["settings", "kubeconfigs"], queryFn: api.kubeconfigs });
   const gke = useQuery({ queryKey: ["settings", "gke"], queryFn: api.gke });
-  const clusters = useQuery({ queryKey: ["clusters", "all"], queryFn: api.allClusters });
-  const [fixing, setFixing] = useState<string | null>(null);
+  const projects = useQuery({ queryKey: ["projects"], queryFn: api.projects });
+  // The list without probing (fast); each row tests its cluster on its own.
+  const clusters = useQuery({ queryKey: ["clusters", "connected"], queryFn: api.connectedClusters });
+  const [adding, setAdding] = useState(false);
+  const [editing, setEditing] = useState<{ cluster: Cluster; tab?: "general" | "connection" | "usage" } | null>(null);
   const [showHidden, setShowHidden] = useState(false);
   const everything = clusters.data ?? [];
-  const all = everything.filter((c) => !c.hidden);
+  const visible = everything.filter((c) => !c.hidden);
   const hidden = everything.filter((c) => c.hidden);
-  const failed = clusters.isError;
-  // Checking clusters can take seconds (unreachable ones time out); never show "no contexts" then.
-  const loading = clusters.isPending;
+  const held = new Set((projects.data ?? []).flatMap((p) => p.scopes.map((s) => s.cluster_id)));
 
   const refresh = () => {
-    for (const key of [["settings", "kubeconfigs"], ["clusters"], ["projects"], ["plan"]])
+    for (const key of [["settings", "kubeconfigs"], ["clusters"], ["cluster-status"], ["projects"], ["plan"]])
       queryClient.invalidateQueries({ queryKey: key });
   };
-  const remove = useMutation({ mutationFn: api.deleteKubeconfig, onSuccess: refresh });
+  const testAll = () => queryClient.invalidateQueries({ queryKey: ["cluster-status"] });
   const hide = useMutation({
     mutationFn: ({ id, hidden }: { id: string; hidden: boolean }) => api.hideCluster(id, hidden),
     onSuccess: refresh,
   });
-  const local = about.data?.local_kubeconfig;
-  const projectSwitch = (cluster: Cluster) => <ProjectSwitch cluster={cluster} />;
+  const removeFile = useMutation({ mutationFn: api.deleteKubeconfig, onSuccess: refresh });
+  const removeToken = useMutation({ mutationFn: api.deleteTokenCluster, onSuccess: refresh });
+  const gkeAvailable = Boolean(gke.data?.identity.email && !gke.data.identity.error);
+
+  const fileOf = (c: Cluster): StoredKubeconfig | undefined =>
+    files.data?.find((f) => c.id.startsWith(`upload:${f.name}/`));
+
+  const remove = (c: Cluster) => {
+    if (c.method === "token") {
+      if (window.confirm(`Remove ${c.name}? KubeiQ forgets its address and token.`)) removeToken.mutate(c.context ?? c.name);
+      return;
+    }
+    const file = fileOf(c);
+    if (!file) return;
+    const others = file.contexts.length - 1;
+    const what = others > 0 ? `the kubeconfig ${file.name} and its ${others + 1} clusters` : `the kubeconfig ${file.name}`;
+    if (window.confirm(`Remove ${c.name}? This removes ${what} from KubeiQ.`)) removeFile.mutate(file.id);
+  };
+  const error = hide.error ?? removeFile.error ?? removeToken.error;
 
   return (
     <Section
       id="clusters"
       title="Clusters"
-      description="The clusters KubeiQ reads. Add one with a kubeconfig, or let KubeiQ find your GKE clusters with the Google Cloud identity of its server. Access is read-only by default"
+      description="The clusters KubeiQ reads, how each one connects, and whether it works. Access is read-only by default"
     >
-      <div className="flex flex-col gap-8">
-        <div className="flex flex-col gap-3">
-          <div className="flex items-baseline justify-between gap-4">
-            <h2 className="text-sm font-medium">Connected</h2>
-            <button
-              type="button"
-              onClick={() => clusters.refetch()}
-              disabled={clusters.isFetching}
-              className="text-sm text-subtle transition-colors hover:text-fg disabled:opacity-60"
-            >
-              {clusters.isFetching ? "Testing" : "Test Again"}
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-wrap items-center gap-3">
+          <h2 className="text-sm font-medium">
+            Connected Clusters <span className="ml-1 tabular-nums text-subtle">{visible.length}</span>
+          </h2>
+          <div className="ml-auto flex items-center gap-2">
+            <button type="button" className={secondaryButton} onClick={testAll} disabled={!visible.length}>
+              Test All
+            </button>
+            <button type="button" className={primaryButton} onClick={() => setAdding(true)}>
+              <PlusIcon width={14} height={14} />
+              Add Cluster
             </button>
           </div>
-          {local && (
-            <SourceCard title="Server kubeconfig" kind={local.path} mono>
-              {local.error ? (
-                <p className="break-words text-[13px] text-warning">
-                  {local.error}. Add the file below instead, or run the installer again so KubeiQ
-                  runs as the user that owns it
-                </p>
-              ) : (
-                <ClusterRows
-                  clusters={all.filter((c) => c.method === "kubeconfig")}
-                  failed={failed}
-                  loading={loading}
-                  empty={hidden.length ? "Every context here is hidden" : "No contexts in this file"}
-                  actions={(cluster) => (
-                    <>
-                      {cluster.login ? (
-                        <button
-                          type="button"
-                          onClick={() => setFixing(fixing === cluster.id ? null : cluster.id)}
-                          className="text-sm font-medium text-accent hover:underline"
-                        >
-                          {fixing === cluster.id ? "Close" : "Fix"}
-                        </button>
-                      ) : (
-                        projectSwitch(cluster)
-                      )}
-                      <button
-                        type="button"
-                        onClick={() => hide.mutate({ id: cluster.id, hidden: true })}
-                        className="text-sm text-subtle transition-colors hover:text-fg"
-                      >
-                        Hide
-                      </button>
-                    </>
-                  )}
-                  below={(cluster) =>
-                    fixing === cluster.id ? (
-                      <div className="pl-4">
-                        <FixPanel
-                          clusterId={cluster.id}
-                          context={cluster.name}
-                          onDone={() => {
-                            setFixing(null);
-                            refresh();
-                          }}
-                        />
-                      </div>
-                    ) : null
-                  }
-                />
-              )}
+        </div>
+
+        {clusters.isPending && <p className="text-sm text-muted">Loading clusters</p>}
+        {clusters.error && <p className="text-sm text-danger">{(clusters.error as Error).message}</p>}
+        {clusters.data && visible.length === 0 && (
+          <div className="flex flex-col gap-4 rounded-lg border border-border bg-bg p-4">
+            <div className="flex flex-col gap-1">
+              <span className="font-medium">No clusters yet</span>
+              <span className="text-sm text-muted">Run this command where kubectl works to connect the first one</span>
+            </div>
+            <ConnectPanel onConnected={refresh} onClose={() => undefined} />
+          </div>
+        )}
+        {visible.length > 0 && (
+          <ul className="flex flex-col overflow-hidden rounded-lg border border-border bg-bg">
+            {visible.map((c) => (
+              <ClusterRow
+                key={c.id}
+                cluster={c}
+                inProject={held.has(c.id)}
+                removable={c.method === "token" || Boolean(fileOf(c))}
+                onEdit={(tab) => setEditing({ cluster: c, tab })}
+                onHide={() => hide.mutate({ id: c.id, hidden: true })}
+                onRemove={() => remove(c)}
+              />
+            ))}
+          </ul>
+        )}
+        {error && <p className="text-sm text-danger">{(error as Error).message}</p>}
+
+        {hidden.length > 0 && (
+          <div className="flex flex-col gap-2 text-sm">
+            <button
+              type="button"
+              onClick={() => setShowHidden(!showHidden)}
+              aria-expanded={showHidden}
+              className="self-start text-subtle transition-colors hover:text-fg"
+            >
+              {hidden.length} hidden {hidden.length === 1 ? "cluster" : "clusters"} · {showHidden ? "Close" : "Show"}
+            </button>
+            {showHidden && (
+              <ul className="flex flex-col gap-1.5 rounded-lg border border-border bg-bg px-4 py-3">
+                {hidden.map((c) => (
+                  <li key={c.id} className="flex items-center gap-2">
+                    <span className="min-w-0 flex-1 truncate font-mono text-[13px] text-muted">{c.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => hide.mutate({ id: c.id, hidden: false })}
+                      className="shrink-0 text-subtle transition-colors hover:text-fg"
+                    >
+                      Unhide
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        )}
+
+        <Sources
+          files={files.data ?? []}
+          localError={about.data?.local_kubeconfig.error ?? null}
+          localPath={about.data?.local_kubeconfig.path ?? null}
+          onRemoveFile={(f) => {
+            if (window.confirm(`Remove ${f.name}? KubeiQ will stop connecting to its clusters.`)) removeFile.mutate(f.id);
+          }}
+          gkeProjects={
+            gke.data?.projects.map((project) => (
+              <GkeProjectCard
+                key={project.project_id}
+                project={project}
+                settings={gke.data}
+                clusters={visible.filter((c) => c.id.startsWith(`gke:${project.project_id}/`))}
+                failed={false}
+              />
+            )) ?? []
+          }
+        />
+      </div>
+
+      {adding && <AddClusterDialog gkeAvailable={gkeAvailable} onClose={() => setAdding(false)} />}
+      {editing && <EditClusterDialog cluster={editing.cluster} initialTab={editing.tab} onClose={() => setEditing(null)} />}
+    </Section>
+  );
+}
+
+function ClusterRow({
+  cluster,
+  inProject,
+  removable,
+  onEdit,
+  onHide,
+  onRemove,
+}: {
+  cluster: Cluster;
+  inProject: boolean;
+  removable: boolean;
+  onEdit: (tab?: "general" | "connection" | "usage") => void;
+  onHide: () => void;
+  onRemove: () => void;
+}) {
+  const probe = useQuery({
+    queryKey: ["cluster-status", cluster.id],
+    queryFn: () => api.cluster(cluster.id),
+    staleTime: 60_000,
+    retry: false,
+  });
+  const state = stateOf(cluster, probe.data, probe.isFetching, probe.isError);
+  const broken = state.tone === "critical" || state.tone === "warning";
+  const action = "text-sm text-subtle transition-colors hover:text-fg";
+
+  return (
+    <li className="flex flex-col gap-1.5 border-t border-border px-4 py-3 first:border-t-0">
+      <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1.5">
+        <Dot tone={state.tone} pulse={probe.isFetching} />
+        <span className="min-w-0 truncate font-mono text-[13px] font-medium">{cluster.name}</span>
+        <LabelList labels={cluster.labels} />
+        {!inProject && (
+          <button type="button" onClick={() => onEdit("general")} className="text-xs text-warning hover:underline">
+            Not in a project
+          </button>
+        )}
+        <span className="ml-auto flex shrink-0 items-center gap-3">
+          <button type="button" className={action} onClick={() => probe.refetch()} disabled={probe.isFetching}>
+            Test
+          </button>
+          {broken && cluster.login && (
+            <button type="button" onClick={() => onEdit("connection")} className="text-sm font-medium text-accent hover:underline">
+              Fix
+            </button>
+          )}
+          <button type="button" className={action} onClick={() => onEdit()}>
+            Edit
+          </button>
+          {removable ? (
+            <button type="button" className={`${action} hover:!text-danger`} onClick={onRemove}>
+              Remove
+            </button>
+          ) : (
+            <button type="button" className={action} onClick={onHide}>
+              Hide
+            </button>
+          )}
+        </span>
+      </div>
+      <div className="flex flex-wrap gap-x-4 gap-y-0.5 pl-5 text-xs text-subtle">
+        <span className={state.tone === "healthy" ? "text-healthy" : state.tone === "critical" ? "text-danger" : state.tone === "warning" ? "text-warning" : ""}>
+          {state.label}
+          {state.tone === "healthy" && probe.data?.status?.version ? ` · Kubernetes ${probe.data.status.version}` : ""}
+        </span>
+        <span>{METHOD_LABEL[cluster.method]}</span>
+        <span>Namespace {cluster.namespace ?? "all"}</span>
+        {cluster.added_at && <span>Added {timeAgo(cluster.added_at)}</span>}
+      </div>
+      {broken && state.reason && <p className="break-words pl-5 text-xs text-muted">{state.reason}</p>}
+    </li>
+  );
+}
+
+function Sources({
+  files,
+  localPath,
+  localError,
+  onRemoveFile,
+  gkeProjects,
+}: {
+  files: StoredKubeconfig[];
+  localPath: string | null;
+  localError: string | null;
+  onRemoveFile: (f: StoredKubeconfig) => void;
+  gkeProjects: React.ReactNode[];
+}) {
+  const [open, setOpen] = useState(false);
+  const count = files.length + gkeProjects.length + (localPath ? 1 : 0);
+  if (!count) return null;
+  return (
+    <div className="flex flex-col gap-3">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        aria-expanded={open}
+        className="self-start text-sm text-subtle transition-colors hover:text-fg"
+      >
+        Where clusters come from ({count}) · {open ? "Close" : "Show"}
+      </button>
+      {open && (
+        <div className="flex flex-col gap-3">
+          {localPath && (
+            <SourceCard title="Server kubeconfig" kind={localPath} mono>
+              <p className={`break-words text-[13px] ${localError ? "text-warning" : "text-subtle"}`}>
+                {localError
+                  ? `${localError}. Add the file instead, or run the installer again so KubeiQ runs as the user that owns it`
+                  : "Its contexts cannot be removed here; hide the ones KubeiQ should not use"}
+              </p>
             </SourceCard>
           )}
-          {files.data?.map((file) => (
-            <SourceCard
-              key={file.id}
-              title={file.name}
-              kind="Kubeconfig"
-              removing={remove.isPending && remove.variables === file.id}
-              onRemove={() => {
-                if (window.confirm(`Remove ${file.name}? KubeiQ will stop connecting to its clusters.`))
-                  remove.mutate(file.id);
-              }}
-            >
-              <ClusterRows
-                clusters={all.filter((c) => c.id.startsWith(`upload:${file.name}/`))}
-                failed={failed}
-                loading={loading}
-                empty="No contexts in this file"
-                actions={projectSwitch}
-              />
+          {files.map((file) => (
+            <SourceCard key={file.id} title={file.name} kind={`Kubeconfig · ${file.contexts.length} ${file.contexts.length === 1 ? "context" : "contexts"}`} onRemove={() => onRemoveFile(file)}>
               {file.warnings.map((w) => (
                 <p key={w} className="break-words text-xs text-warning">
                   {w}
@@ -137,176 +301,9 @@ export function ClustersSection() {
               ))}
             </SourceCard>
           ))}
-          {gke.data?.projects.map((project) => (
-            <GkeProjectCard
-              key={project.project_id}
-              project={project}
-              settings={gke.data}
-              clusters={all.filter((c) => c.id.startsWith(`gke:${project.project_id}/`))}
-              failed={failed}
-              loading={loading}
-              actions={projectSwitch}
-            />
-          ))}
-          {hidden.length > 0 && (
-            <div className="flex flex-col gap-2 text-sm">
-              <button
-                type="button"
-                onClick={() => setShowHidden(!showHidden)}
-                aria-expanded={showHidden}
-                className="self-start text-subtle transition-colors hover:text-fg"
-              >
-                {hidden.length} hidden {hidden.length === 1 ? "cluster" : "clusters"} ·{" "}
-                {showHidden ? "Close" : "Show"}
-              </button>
-              {showHidden && (
-                <ul className="flex flex-col gap-1.5 rounded-lg border border-border px-4 py-3">
-                  {hidden.map((c) => (
-                    <li key={c.id} className="flex items-center gap-2">
-                      <span className="min-w-0 flex-1 truncate text-muted">{c.name}</span>
-                      <button
-                        type="button"
-                        onClick={() => hide.mutate({ id: c.id, hidden: false })}
-                        className="shrink-0 text-subtle transition-colors hover:text-fg"
-                      >
-                        Unhide
-                      </button>
-                    </li>
-                  ))}
-                </ul>
-              )}
-            </div>
-          )}
-          {hide.error && <p className="text-sm text-danger">{(hide.error as Error).message}</p>}
+          {gkeProjects}
         </div>
-
-        <AddCluster gkeAvailable={Boolean(gke.data?.identity.email && !gke.data.identity.error)} onAdded={refresh} />
-      </div>
-    </Section>
-  );
-}
-
-/**
- * Whether KubeiQ works with this cluster: lists show the clusters in projects (ADR 0012). With
- * one project (the free plan) it is a switch; with more, a link to Projects.
- */
-function ProjectSwitch({ cluster }: { cluster: Cluster }) {
-  const queryClient = useQueryClient();
-  const projects = useQuery({ queryKey: ["projects"], queryFn: api.projects });
-  const plan = useQuery({ queryKey: ["plan"], queryFn: api.plan });
-  const save = useMutation({
-    mutationFn: ({ project, on }: { project: Project; on: boolean }) =>
-      api.updateProject(project.id, {
-        name: project.name,
-        description: project.description,
-        members: project.members,
-        scopes: on
-          ? [...project.scopes, { cluster_id: cluster.id, namespaces: [] }]
-          : project.scopes.filter((s) => s.cluster_id !== cluster.id),
-      }),
-    onSuccess: () => {
-      for (const key of [["projects"], ["plan"], ["clusters"]])
-        queryClient.invalidateQueries({ queryKey: key });
-    },
-  });
-  const list = projects.data ?? [];
-  if (!projects.data) return null;
-  if (list.length !== 1) {
-    const count = list.filter((p) => p.scopes.some((s) => s.cluster_id === cluster.id)).length;
-    return (
-      <a href="#projects" className="text-xs text-subtle hover:text-fg">
-        {list.length === 0 ? "Not in a project" : count ? `In ${count} of ${list.length} projects` : "Not in a project"}
-      </a>
-    );
-  }
-  const project = list[0];
-  const on = project.scopes.some((s) => s.cluster_id === cluster.id);
-  const full = Boolean(plan.data && plan.data.clusters.used >= plan.data.clusters.max);
-  return (
-    <span className="flex items-center gap-2">
-      {save.error && <span className="text-xs text-danger">{(save.error as Error).message}</span>}
-      <label
-        className={`flex items-center gap-1.5 text-xs ${on ? "text-fg" : "text-subtle"} ${
-          !on && full ? "cursor-not-allowed opacity-60" : "cursor-pointer"
-        }`}
-        title={!on && full ? `The ${plan.data?.plan} plan includes ${plan.data?.clusters.max} clusters` : undefined}
-      >
-        <input
-          type="checkbox"
-          className="h-3.5 w-3.5 accent-[var(--accent)]"
-          checked={on}
-          disabled={save.isPending || (!on && full)}
-          onChange={(e) => save.mutate({ project, on: e.target.checked })}
-        />
-        In {project.name}
-      </label>
-    </span>
-  );
-}
-
-function Choice({
-  selected,
-  onSelect,
-  title,
-  text,
-  badge,
-}: {
-  selected: boolean;
-  onSelect: () => void;
-  title: string;
-  text: string;
-  badge?: string;
-}) {
-  return (
-    <button
-      type="button"
-      role="radio"
-      aria-checked={selected}
-      onClick={onSelect}
-      className={`flex flex-col gap-1 rounded-lg border px-4 py-3 text-left transition-colors ${
-        selected ? "border-accent bg-accent/5" : "border-border bg-bg hover:border-subtle"
-      }`}
-    >
-      <span className="flex items-center gap-2 text-sm font-medium">
-        {title}
-        {badge && <span className="rounded-full bg-surface-2 px-2 py-0.5 text-[11px] font-medium text-muted">{badge}</span>}
-      </span>
-      <span className="text-[13px] text-muted">{text}</span>
-    </button>
-  );
-}
-
-/** The two ways to connect a cluster. `onAdded` gets the name of an added kubeconfig. */
-export function AddCluster({
-  gkeAvailable,
-  onAdded,
-  title = "Add a Cluster",
-}: {
-  gkeAvailable: boolean;
-  onAdded: (kubeconfig?: string) => void;
-  title?: string;
-}) {
-  const [method, setMethod] = useState<"kubeconfig" | "gcp" | null>(null);
-  return (
-    <div className="flex flex-col gap-3">
-      <h2 className="text-sm font-medium">{title}</h2>
-      <div role="radiogroup" aria-label="How to connect" className="grid gap-3 sm:grid-cols-2">
-        <Choice
-          selected={method === "kubeconfig"}
-          onSelect={() => setMethod("kubeconfig")}
-          title="Kubeconfig"
-          text="Any cluster: GKE, EKS, AKS, minikube, kind or your own. One command gives KubeiQ read-only access"
-        />
-        <Choice
-          selected={method === "gcp"}
-          onSelect={() => setMethod("gcp")}
-          title="Google Cloud"
-          text="Your GKE clusters, found with this server's Google identity. No key to add or store"
-          badge={gkeAvailable ? "Available here" : undefined}
-        />
-      </div>
-      {method === "kubeconfig" && <ConnectPanel onConnected={onAdded} onClose={() => setMethod(null)} />}
-      {method === "gcp" && <GkePanel />}
+      )}
     </div>
   );
 }

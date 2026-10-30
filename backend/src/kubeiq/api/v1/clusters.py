@@ -1,14 +1,17 @@
 """Cluster discovery endpoints."""
 
 import asyncio
+from datetime import datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from kubernetes.client import CoreV1Api
+from pydantic import Field
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from kubeiq.auth import membership
 from kubeiq.auth.deps import CurrentUser
+from kubeiq.clusters import meta
 from kubeiq.clusters.base import ClusterInfo, ClusterNotFoundError, ClusterStatus
 from kubeiq.clusters.errors import describe_error
 from kubeiq.clusters.registry import ClusterRegistry, get_registry
@@ -23,6 +26,27 @@ Registry = Annotated[ClusterRegistry, Depends(get_registry)]
 
 class ClusterResponse(ClusterInfo):
     status: ClusterStatus | None = None
+    context: str  # the name in its source (kubeconfig context, GKE cluster); `name` may be renamed
+    labels: list[meta.Label] = Field(default_factory=list)
+    settings: meta.ClusterMeta = Field(default_factory=meta.ClusterMeta)
+    added_at: datetime | None = None
+
+
+def respond(
+    cluster: ClusterInfo, row: meta.ClusterSetting | None, status: ClusterStatus | None
+) -> ClusterResponse:
+    settings = meta.to_meta(row)
+    data = cluster.model_dump()
+    data["name"] = settings.display_name or cluster.name
+    data["namespace"] = settings.namespace or cluster.namespace
+    return ClusterResponse(
+        **data,
+        status=status,
+        context=cluster.name,
+        labels=settings.labels,
+        settings=settings,
+        added_at=row.created_at if row else None,
+    )
 
 
 @router.get("", response_model=list[ClusterResponse])
@@ -51,9 +75,8 @@ async def list_clusters(
         if probe
         else [None] * len(clusters)
     )
-    return [
-        ClusterResponse(**c.model_dump(), status=s) for c, s in zip(clusters, statuses, strict=True)
-    ]
+    rows = await meta.seen(session, [c.id for c in clusters])
+    return [respond(c, rows.get(c.id), s) for c, s in zip(clusters, statuses, strict=True)]
 
 
 @router.get("/{cluster_id:path}/namespaces", response_model=list[str])
@@ -100,7 +123,12 @@ async def cluster_summary(cluster_id: str, registry: Registry, user: CurrentUser
 
 # Declared last: the greedy path parameter would otherwise capture ".../namespaces".
 @router.get("/{cluster_id:path}", response_model=ClusterResponse)
-async def get_cluster(cluster_id: str, registry: Registry, user: CurrentUser) -> ClusterResponse:
+async def get_cluster(
+    cluster_id: str,
+    registry: Registry,
+    user: CurrentUser,
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> ClusterResponse:
     allowed = user.access.clusters()
     if not user.is_admin and allowed is not None and cluster_id not in allowed:
         raise HTTPException(status_code=403, detail="Your projects do not include this cluster")
@@ -109,4 +137,5 @@ async def get_cluster(cluster_id: str, registry: Registry, user: CurrentUser) ->
         probe = await registry.check(cluster_id)
     except ClusterNotFoundError as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
-    return ClusterResponse(**cluster.model_dump(), status=probe)
+    rows = await meta.seen(session, [cluster_id])
+    return respond(cluster, rows.get(cluster_id), probe)

@@ -15,6 +15,15 @@ All notable changes to KubeiQ. Versions follow [Semantic Versioning](https://sem
   the cluster in scope and open or investigate them, switch clusters, toggle the theme.
 - **Ctrl+1 to Ctrl+9** switch clusters. KubeiQ remembers your last cluster per user.
 - Breadcrumbs: Cluster Manager / Deployments / checkout.
+- **Clusters screen.** One row per cluster with its labels, how it connects, its default namespace,
+  when it was added and whether it works, each tested on its own (Test, Test All). Edit a cluster in
+  one dialog: General (display name, labels, default namespace, project), Connection (test, replace
+  credentials) and Usage (metrics on or off, CPU and memory warning and critical levels that colour
+  every usage bar).
+- **Labels and environments.** Presets (production, staging, development, ...) and custom labels
+  with colours, shown in the cluster switcher. Changes on a production cluster ask for its name.
+- **Connect with a token.** API server address, ServiceAccount token and CA, tested before saving.
+  TLS is always verified; there is no switch to skip it.
 
 ### Changed
 - The read-only role reads metrics and the remaining built-in kinds (still no Secrets). Run the

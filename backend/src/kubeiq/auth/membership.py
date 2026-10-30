@@ -33,6 +33,16 @@ async def set_hidden(session: AsyncSession, cluster_id: str, hide: bool) -> None
         await session.commit()
 
 
+async def remove(session: AsyncSession, cluster_id: str) -> None:
+    """Take a removed cluster out of every project, which frees its place in the plan."""
+    for project in await repository.list_projects(session):
+        scopes = repository.scopes_of(project)
+        kept = [s for s in scopes if s.get("cluster_id") != cluster_id]
+        if len(kept) != len(scopes):
+            project.scopes = kept
+    await session.commit()
+
+
 async def add_to_project(
     session: AsyncSession, project_id: str | None, cluster_ids: list[str]
 ) -> tuple[str | None, str | None]:

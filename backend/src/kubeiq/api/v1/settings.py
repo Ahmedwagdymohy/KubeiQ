@@ -1,6 +1,7 @@
 """Settings API: AI model and kubeconfig files. Secrets are write-only."""
 
 import asyncio
+from datetime import UTC, datetime
 from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
@@ -13,6 +14,7 @@ from kubeiq import __version__
 from kubeiq.auth import google, membership
 from kubeiq.auth import repository as audit
 from kubeiq.auth.deps import AdminUser, require_admin
+from kubeiq.clusters import meta
 from kubeiq.clusters.base import ClusterStatus
 from kubeiq.clusters.errors import describe_error
 from kubeiq.clusters.gke import (
@@ -26,9 +28,12 @@ from kubeiq.clusters.registry import (
     PROBE_TIMEOUT_SECONDS,
     get_gke_source,
     get_local_source,
+    get_token_source,
     get_uploaded_source,
     probe_read,
+    test_client,
 )
+from kubeiq.clusters.token import TokenClusterIn
 from kubeiq.core.config import Settings, get_settings
 from kubeiq.db.session import get_session
 from kubeiq.settings import kubeconfigs, repository, service
@@ -144,6 +149,118 @@ async def hide_cluster(body: Visibility, session: SessionDep, admin: AdminUser) 
         "settings.cluster.hide" if body.hidden else "settings.cluster.show",
         cluster_id=body.cluster_id,
     )
+
+
+class ClusterMetaIn(meta.ClusterMeta):
+    cluster_id: str = Field(min_length=1, max_length=512)
+
+
+@router.put("/clusters/meta", response_model=meta.ClusterMeta)
+async def put_cluster_meta(
+    body: ClusterMetaIn, session: SessionDep, admin: AdminUser
+) -> meta.ClusterMeta:
+    """A cluster's display name, labels, default namespace and usage thresholds."""
+    settings = meta.ClusterMeta(**body.model_dump(exclude={"cluster_id"}))
+    await meta.save(session, body.cluster_id, settings)
+    await audit.record(
+        session,
+        admin.username,
+        "settings.cluster.edit",
+        cluster_id=body.cluster_id,
+        detail=", ".join(label.name for label in settings.labels) or None,
+    )
+    return settings
+
+
+async def _token_entry(session: AsyncSession, name: str) -> dict[str, Any] | None:
+    return next((e for e in await service.load_token_clusters(session) if e["name"] == name), None)
+
+
+async def _test_token(body: TokenClusterIn, token: str) -> ClusterStatus:
+    client = get_token_source().client_for(body.name, body.server, token, body.ca)
+    return await test_client(client, PROBE_TIMEOUT_SECONDS + 2)
+
+
+@router.post("/token-clusters/test", response_model=ClusterStatus)
+async def test_token_cluster(body: TokenClusterIn, session: SessionDep) -> ClusterStatus:
+    """Test an API server + token before saving: reachable, trusted and readable."""
+    saved = await _token_entry(session, body.name)
+    token = body.token or (decrypt(saved["token"]) if saved else None)
+    if not token:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "Paste the token to test it")
+    return await _test_token(body, token)
+
+
+def _usable(result: ClusterStatus) -> None:
+    if not result.reachable:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, result.error or "Unreachable")
+    if result.can_read is False:
+        raise HTTPException(
+            status.HTTP_422_UNPROCESSABLE_CONTENT,
+            "The token works but cannot read the cluster. Bind it to the kubeiq-readonly role",
+        )
+
+
+@router.post("/token-clusters", response_model=ClusterStatus, status_code=status.HTTP_201_CREATED)
+async def add_token_cluster(
+    body: TokenClusterIn, session: SessionDep, admin: AdminUser
+) -> ClusterStatus:
+    """Connect with an API server address and a ServiceAccount token, tested before saving."""
+    if await _token_entry(session, body.name):
+        raise HTTPException(status.HTTP_409_CONFLICT, f"'{body.name}' already exists")
+    if not body.token:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "Paste the token")
+    result = await _test_token(body, body.token)
+    _usable(result)
+    entries = await service.load_token_clusters(session)
+    entries.append(
+        {
+            "name": body.name,
+            "server": body.server,
+            "token": encrypt(body.token),
+            "ca": body.ca,
+            "namespace": body.namespace,
+            "created_at": datetime.now(UTC).isoformat(),
+        }
+    )
+    await service.save_token_clusters(session, entries)
+    cluster_id = get_token_source().make_id(body.name)
+    await membership.add_to_project(session, body.project_id, [cluster_id])
+    await audit.record(session, admin.username, "settings.cluster.add", cluster_id=cluster_id)
+    return result
+
+
+@router.put("/token-clusters/{name}", response_model=ClusterStatus)
+async def update_token_cluster(
+    name: str, body: TokenClusterIn, session: SessionDep, admin: AdminUser
+) -> ClusterStatus:
+    """Replace the address, token or CA. A missing token keeps the saved one."""
+    saved = await _token_entry(session, name)
+    if saved is None or body.name != name:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Cluster not found")
+    token = body.token or decrypt(saved["token"])
+    result = await _test_token(body, token)
+    _usable(result)
+    saved.update(server=body.server, token=encrypt(token), ca=body.ca, namespace=body.namespace)
+    entries = [
+        saved if e["name"] == name else e for e in await service.load_token_clusters(session)
+    ]
+    await service.save_token_clusters(session, entries)
+    await audit.record(session, admin.username, "settings.cluster.edit", cluster_id=f"token:{name}")
+    return result
+
+
+@router.delete("/token-clusters/{name}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_token_cluster(name: str, session: SessionDep, admin: AdminUser) -> None:
+    entries = await service.load_token_clusters(session)
+    kept = [e for e in entries if e["name"] != name]
+    if len(kept) == len(entries):
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Cluster not found")
+    await service.save_token_clusters(session, kept)
+    cluster_id = get_token_source().make_id(name)
+    await membership.remove(session, cluster_id)
+    await meta.forget(session, cluster_id)
+    await audit.record(session, admin.username, "settings.cluster.remove", cluster_id=cluster_id)
 
 
 @router.get("/changes", response_model=ChangesSettings)

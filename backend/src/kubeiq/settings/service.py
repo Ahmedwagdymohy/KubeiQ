@@ -10,7 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from kubeiq.agent.llm import LiteLLMClient, LLMError
 from kubeiq.clusters.gke import GkeProject
-from kubeiq.clusters.registry import get_gke_source, get_uploaded_source
+from kubeiq.clusters.registry import get_gke_source, get_token_source, get_uploaded_source
 from kubeiq.core.config import Settings
 from kubeiq.settings import repository
 from kubeiq.settings.crypto import decrypt, encrypt
@@ -114,6 +114,21 @@ async def sync_uploaded_clusters(session: AsyncSession) -> None:
         for row in await repository.list_kubeconfigs(session)
     }
     get_uploaded_source().set_files(files)
+
+
+async def load_token_clusters(session: AsyncSession) -> list[dict[str, Any]]:
+    value = await repository.get_value(session, repository.TOKEN_KEY) or {}
+    return list(value.get("clusters") or [])
+
+
+async def save_token_clusters(session: AsyncSession, entries: list[dict[str, Any]]) -> None:
+    await repository.put_value(session, repository.TOKEN_KEY, {"clusters": entries})
+    get_token_source().set_entries(entries)
+
+
+async def sync_token_clusters(session: AsyncSession) -> None:
+    """Load token clusters into the cluster registry (startup and after changes)."""
+    get_token_source().set_entries(await load_token_clusters(session))
 
 
 async def load_gke_projects(session: AsyncSession) -> list[GkeProject]:

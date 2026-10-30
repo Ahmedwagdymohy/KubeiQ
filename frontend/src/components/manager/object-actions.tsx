@@ -1,7 +1,7 @@
 "use client";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useState, type FormEvent, type ReactNode } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { createContext, useContext, useState, type FormEvent, type ReactNode } from "react";
 
 import { RESTARTABLE, SCALABLE } from "@/components/manager/kinds";
 import { input, primaryButton, secondaryButton } from "@/components/settings/fields";
@@ -12,6 +12,10 @@ const button =
   "rounded-md border border-border px-3 py-1.5 text-sm text-fg transition-colors hover:bg-surface-2";
 
 type Dialog = "scale" | "restart" | "delete" | "cordon" | null;
+
+/** On a cluster labelled production every change needs the cluster's name typed (ADR 0009). */
+type Guard = { name: string; typed: string; setTyped: (value: string) => void } | null;
+const ProductionGuard = createContext<Guard>(null);
 
 export function ObjectActions({
   cluster,
@@ -30,15 +34,20 @@ export function ObjectActions({
   const queryClient = useQueryClient();
   const [dialog, setDialog] = useState<Dialog>(null);
   const [message, setMessage] = useState<string | null>(null);
+  const [typed, setTyped] = useState("");
+  const clusters = useQuery({ queryKey: ["clusters"], queryFn: api.clusters });
+  const info = clusters.data?.find((c) => c.id === cluster);
+  const production = info?.labels?.some((l) => l.name === "production") ? info.name : null;
   const key = `${kind.group}/${kind.resource}`;
   const spec = (object?.spec ?? {}) as { replicas?: number; unschedulable?: boolean };
 
   const run = useMutation({
     mutationFn: (body: Pick<ClusterAction, "action" | "replicas">) =>
-      api.runAction({ ...objectRef, cluster_id: cluster, ...body }),
+      api.runAction({ ...objectRef, cluster_id: cluster, ...body, confirm: production ? typed : undefined }),
     onSuccess: (result, body) => {
       setMessage(result.message);
       setDialog(null);
+      setTyped("");
       queryClient.invalidateQueries({ queryKey: ["manager"] });
       if (body.action === "delete") onDeleted();
     },
@@ -49,7 +58,7 @@ export function ObjectActions({
   const canDelete = kind.verbs.includes("delete") && !isNode;
 
   return (
-    <>
+    <ProductionGuard.Provider value={production ? { name: production, typed, setTyped } : null}>
       <span className="mx-1 h-5 w-px bg-border" aria-hidden="true" />
       {SCALABLE.has(key) && (
         <button type="button" className={button} onClick={() => setDialog("scale")}>
@@ -123,7 +132,7 @@ export function ObjectActions({
           onConfirm={() => run.mutate({ action: "delete" })}
         />
       )}
-    </>
+    </ProductionGuard.Provider>
   );
 }
 
@@ -158,8 +167,25 @@ function Footer({
   error?: string;
   onCancel: () => void;
 }) {
+  const guard = useContext(ProductionGuard);
+  const blocked = Boolean(guard && guard.typed.trim() !== guard.name);
   return (
     <>
+      {guard && (
+        <label className="flex flex-col gap-1.5 rounded-lg bg-danger-soft p-3 text-sm">
+          <span className="text-fg">
+            This is a production cluster. Type <span className="font-mono">{guard.name}</span> to continue
+          </span>
+          <input
+            className={input}
+            value={guard.typed}
+            onChange={(e) => guard.setTyped(e.target.value)}
+            spellCheck={false}
+            autoCapitalize="none"
+            aria-label="Cluster name"
+          />
+        </label>
+      )}
       {error && <p className="text-sm text-danger">{error}</p>}
       <div className="flex justify-end gap-2">
         <button type="button" className={secondaryButton} onClick={onCancel}>
@@ -167,7 +193,7 @@ function Footer({
         </button>
         <button
           type="submit"
-          disabled={pending || disabled}
+          disabled={pending || disabled || blocked}
           className={
             danger
               ? "rounded-md bg-danger px-4 py-2 text-sm font-medium text-bg transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
