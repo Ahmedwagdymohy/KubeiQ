@@ -29,7 +29,7 @@ import {
   type ResourceGroup,
   type ResourceItem,
 } from "@/lib/navigation";
-import { GITHUB_URL, PRODUCTS } from "@/lib/products";
+import { GITHUB_URL, INSIGHTS, PRODUCTS } from "@/lib/products";
 import { resolveCluster, useClusterScope } from "@/lib/scope";
 
 export type Entry = { href: string; label: string; icon: ReactNode };
@@ -44,8 +44,10 @@ function isActive(pathname: string, href: string) {
 }
 
 /** Every entry that can be pinned, by href, so pins keep their label and icon. */
+const INSIGHT_ENTRIES: Entry[] = INSIGHTS.map((p) => ({ href: p.href, label: p.name, icon: <p.icon width={16} height={16} /> }));
+
 export function entryFor(href: string): Entry | null {
-  const product = PRODUCT_ENTRIES.find((e) => e.href === href);
+  const product = [...PRODUCT_ENTRIES, ...INSIGHT_ENTRIES].find((e) => e.href === href);
   if (product) return product;
   const kind = new URLSearchParams(href.split("?")[1] ?? "").get("kind");
   const found = findResource(kind);
@@ -143,7 +145,7 @@ export function Sidebar({
             <RailLink key={`pin-${e.href}`} entry={e} active={pinActive(e.href)} />
           ))}
           {pinned.length > 0 && <hr className="my-1.5 w-6 border-border" />}
-          {PRODUCT_ENTRIES.map((e) => (
+          {[...PRODUCT_ENTRIES, ...INSIGHT_ENTRIES].map((e) => (
             <RailLink key={e.href} entry={e} active={isActive(pathname, e.href)} />
           ))}
           <hr className="my-1.5 w-6 border-border" />
@@ -218,6 +220,18 @@ export function Sidebar({
         )}
         <Group title="Products">
           {PRODUCT_ENTRIES.map((e) => (
+            <NavRow
+              key={e.href}
+              entry={e}
+              active={isActive(pathname, e.href)}
+              pinned={pins.includes(e.href)}
+              onPin={() => togglePin(e.href)}
+              onNavigate={onNavigate}
+            />
+          ))}
+        </Group>
+        <Group title="Insights">
+          {INSIGHT_ENTRIES.map((e) => (
             <NavRow
               key={e.href}
               entry={e}

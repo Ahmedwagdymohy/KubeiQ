@@ -429,6 +429,51 @@ export type AnalyzedLogs = { pod: string; namespace: string; container: string; 
 export type Conversation = { id: string; cluster_id: string; title: string; created_at: string; updated_at: string };
 export type AssistantMessage = { id: number; role: "user" | "assistant"; content: string; steps: string[]; created_at: string };
 
+export type TimelineItem = {
+  id: string;
+  source: "kubernetes" | "kubeiq";
+  type: "Normal" | "Warning";
+  reason: string;
+  message: string;
+  kind: string | null;
+  name: string | null;
+  namespace: string | null;
+  count: number;
+  first_seen: string | null;
+  last_seen: string | null;
+  component: string | null;
+  link: string | null;
+};
+export type PodDot = { name: string; namespace: string; phase: string; tone: "ok" | "warning" | "bad" | "done" };
+export type NodeLoad = {
+  name: string;
+  ready: boolean;
+  unschedulable: boolean;
+  roles: string[];
+  taints: string[];
+  pods: PodDot[];
+  running: number;
+  pending: number;
+  failed: number;
+  pods_capacity: number;
+  cpu_used: number | null;
+  cpu_capacity: number;
+  cpu_requested: number;
+  memory_used: number | null;
+  memory_capacity: number;
+  memory_requested: number;
+  candidate: string | null;
+};
+export type Distribution = {
+  score: number;
+  verdict: "Well balanced" | "Moderate" | "Imbalanced";
+  average: number;
+  nodes: NodeLoad[];
+  pending: PodDot[];
+  issues: string[];
+  metrics: boolean;
+};
+
 export type Gauge = { used: number; capacity: number };
 export type ClusterHealthState = "healthy" | "degraded" | "unhealthy" | "no-access" | "offline";
 export type ClusterSummary = {
@@ -556,6 +601,10 @@ export const api = {
     request<Conversation>(`/api/v1/ai/conversations/${id}`, json("PATCH", { title })),
   deleteConversation: (id: string) => request<void>(`/api/v1/ai/conversations/${id}`, json("DELETE")),
   suggestions: (clusterId: string) => request<string[]>(`/api/v1/ai/suggestions?${query({ cluster_id: clusterId })}`),
+  timeline: (clusterId: string, namespace: string | null) =>
+    request<TimelineItem[]>(`/api/v1/insights/timeline?${query({ cluster_id: clusterId, namespace })}`),
+  distribution: (clusterId: string, namespace: string | null) =>
+    request<Distribution>(`/api/v1/insights/distribution?${query({ cluster_id: clusterId, namespace })}`),
   preferences: () => request<Preferences>("/api/v1/me/preferences"),
   savePreference: (key: string, value: unknown) =>
     request<void>(`/api/v1/me/preferences/${key}`, json("PUT", value)),

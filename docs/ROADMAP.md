@@ -100,7 +100,7 @@ Full requirements in [docs/requirements](requirements/README.md); items move her
 - [ ] Settings regrouped; two-factor sign-in; several AI providers; danger zone (03)
 - [x] Multi-cluster dashboard cards with real usage history (04). Drag-and-resize layouts are still open
 - [x] Resource tables with status and usage columns, live watches, YAML edit with diff, log viewer, terminal (05). Bottom drawers stay a side panel; column resize is open
-- [ ] Pod Distribution and Timeline; health-first map (06)
+- [x] Pod Distribution and Timeline; health-first map (06). Pod dots per app in the map overview are open
 - [x] AI log analysis and a cluster assistant (07). Several AI providers with a default is still open (03)
 - [ ] Permissions as verbs, a filterable audit log, notifications to Slack, email and webhooks (08)
 

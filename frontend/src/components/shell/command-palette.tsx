@@ -23,7 +23,7 @@ import { useMe } from "@/hooks/use-me";
 import { api, type SearchHit } from "@/lib/api";
 import { clusterTone, TONE_DOT } from "@/lib/clusters";
 import { RESOURCE_GROUPS, resourceHref } from "@/lib/navigation";
-import { PRODUCTS } from "@/lib/products";
+import { INSIGHTS, PRODUCTS } from "@/lib/products";
 import { setClusterScope } from "@/lib/scope";
 import { settingsAreas } from "@/lib/settings-nav";
 
@@ -129,7 +129,7 @@ function Palette({ onClose, onToggleSidebar }: { onClose: () => void; onToggleSi
   const base = useMemo<Command[]>(() => {
     const pages: Command[] = [
       { id: "page:/", group: "Pages", label: "Overview", icon: <OverviewIcon />, href: "/" },
-      ...PRODUCTS.map((p) => ({
+      ...[...PRODUCTS, ...INSIGHTS].map((p) => ({
         id: `page:${p.href}`,
         group: "Pages" as const,
         label: p.name,
