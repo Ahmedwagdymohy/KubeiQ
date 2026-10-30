@@ -2,6 +2,7 @@
 
 import json
 import re
+from collections.abc import Iterator
 from typing import Any
 from urllib.parse import quote
 
@@ -78,3 +79,40 @@ def request(
     if raw:
         return data.decode("utf-8", errors="replace")
     return json.loads(data) if data else None
+
+
+def open_stream(
+    api: ApiClient,
+    path: str,
+    *,
+    query: list[tuple[str, Any]] | None = None,
+    accept: str = "application/json",
+    read_timeout: float = 330,
+) -> Any:
+    """An open streaming response (a watch, followed logs). Call ``.release_conn()`` when done."""
+    method, url, headers, _body, _ = api.param_serialize(
+        method="GET",
+        resource_path=path,
+        query_params=query or [],
+        header_params={"Accept": accept},
+        auth_settings=["BearerToken"],
+    )
+    response = api.call_api(method, url, header_params=headers, _request_timeout=(10, read_timeout))
+    raw = response.response  # urllib3, not read yet
+    if not 200 <= response.status < 300:
+        body = raw.read().decode(errors="replace")
+        raise ApiException(status=response.status, reason=response.reason, body=body)
+    return raw
+
+
+def lines(raw: Any) -> Iterator[bytes]:
+    """Newline-separated chunks of a streaming response, as they arrive."""
+    buffer = b""
+    for chunk in raw.stream(4096, decode_content=True):
+        buffer += chunk
+        while b"\n" in buffer:
+            line, buffer = buffer.split(b"\n", 1)
+            if line.strip():
+                yield line
+    if buffer.strip():
+        yield buffer

@@ -334,11 +334,35 @@ export type KindInfo = {
   verbs: string[];
 };
 export type KindCategory = { name: string; kinds: KindInfo[] };
+export type ContainerState = { name: string; state: "running" | "waiting" | "terminated"; reason: string | null; ready: boolean; restarts: number };
+export type RowExtra = {
+  tone?: "ok" | "warning" | "bad" | "done";
+  status?: string;
+  containers?: ContainerState[];
+  restarts?: number;
+  node?: string | null;
+  ip?: string | null;
+  cpu?: number | null;
+  memory?: number | null;
+  cpu_limit?: number | null;
+  memory_limit?: number | null;
+  cpu_capacity?: number;
+  memory_capacity?: number;
+  pods?: number;
+  pods_capacity?: number;
+  roles?: string[];
+  taints?: string[];
+  unschedulable?: boolean;
+  strategy?: string | null;
+  images?: string[];
+  owner?: string | null;
+};
 export type ResourceRow = {
   name: string;
   namespace: string | null;
   created: string | null;
   cells: (string | number | boolean | null)[];
+  extra?: RowExtra | null;
 };
 export type ResourceList = {
   columns: { name: string; type: string; description: string }[];
@@ -608,6 +632,17 @@ export const api = {
         (namespace ? `&namespace=${encodeURIComponent(namespace)}` : ""),
     ),
 };
+
+/** Server-sent "change" events while objects of a kind change (lists refetch on each batch). */
+export function watchUrl(clusterId: string, kind: KindInfo, namespace: string | null): string {
+  return `${API_BASE_URL}/api/v1/manager/watch?${query({
+    cluster_id: clusterId,
+    group: kind.group,
+    version: kind.version,
+    resource: kind.resource,
+    namespace: kind.namespaced ? namespace : null,
+  })}`;
+}
 
 /** The address of KubeiQ's API as seen from outside: the page's own origin behind the proxy. */
 export function apiOrigin(): string {

@@ -15,6 +15,7 @@ export function usageTone(value: number, t: Thresholds = DEFAULT_THRESHOLDS): "o
 export const USAGE_BAR = { ok: "bg-healthy", warning: "bg-warning", critical: "bg-danger" } as const;
 
 export function cores(n: number): string {
+  if (n > 0 && n < 0.001) return "<1m";
   if (n < 1) return `${Math.round(n * 1000)}m`;
   return `${n >= 10 ? Math.round(n) : n.toFixed(1)}`;
 }

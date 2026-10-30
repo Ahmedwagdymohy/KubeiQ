@@ -34,6 +34,15 @@ All notable changes to KubeiQ. Versions follow [Semantic Versioning](https://sem
   minutes and a week of 10-minute averages, so trend lines show measured data only. Disk usage comes
   from the kubelet when KubeiQ's identity may read it, and is never guessed.
 
+- **Resource tables that read like kubectl and more.** Pods show their real reason as a coloured
+  pill (CrashLoopBackOff, ImagePullBackOff, Init:Error), a dot per container, restarts highlighted,
+  CPU and memory against their limits, node and IP; workloads their images and strategy; nodes their
+  usage, pods of allocatable and taints. Sort by any column, show, hide and reorder columns (saved per
+  user and kind), compact rows, a searchable namespace picker, and click a namespace to filter.
+  Failing rows offer Investigate.
+- **Live lists.** Tables follow the cluster through Kubernetes watches, batched so a crash-looping pod
+  does not flicker, with a Live indicator; big lists render only the rows on screen (5,000 rows).
+
 ### Changed
 - The read-only role reads metrics and the remaining built-in kinds (still no Secrets). Run the
   connect command again on existing clusters to show usage.
