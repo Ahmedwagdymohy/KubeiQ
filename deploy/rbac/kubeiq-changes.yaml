@@ -1,5 +1,5 @@
 # Optional: lets KubeiQ make the changes it offers in Cluster Manager (scale, restart, delete,
-# cordon). Apply this only if an admin turns on cluster changes in Settings. Every change also
+# cordon, drain, trigger and suspend jobs, edit YAML, create objects, open a terminal). Apply this only if an admin turns on cluster changes in Settings. Every change also
 # needs a KubeiQ admin or project editor, and is recorded in the activity log.
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -8,19 +8,33 @@ metadata:
 rules:
   - apiGroups: [apps]
     resources: [deployments, statefulsets, daemonsets, replicasets]
-    verbs: [patch, delete]
+    verbs: [create, update, patch, delete]
   - apiGroups: [apps]
     resources: [deployments/scale, statefulsets/scale, replicasets/scale]
     verbs: [patch]
   - apiGroups: [""]
-    resources: [pods, services, configmaps, persistentvolumeclaims]
-    verbs: [delete]
+    resources: [pods, services, configmaps, persistentvolumeclaims, serviceaccounts]
+    verbs: [create, update, patch, delete]
+  # Drain evicts through the eviction API, which respects disruption budgets.
+  - apiGroups: [""]
+    resources: [pods/eviction]
+    verbs: [create]
+  # Terminal and file downloads (each session is recorded in the activity log).
+  - apiGroups: [""]
+    resources: [pods/exec]
+    verbs: [create, get]
+  - apiGroups: [networking.k8s.io]
+    resources: [ingresses, networkpolicies]
+    verbs: [create, update, patch, delete]
+  - apiGroups: [autoscaling]
+    resources: [horizontalpodautoscalers]
+    verbs: [create, update, patch, delete]
   - apiGroups: [""]
     resources: [nodes]
     verbs: [patch]
   - apiGroups: [batch]
     resources: [jobs, cronjobs]
-    verbs: [delete]
+    verbs: [create, update, patch, delete]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding

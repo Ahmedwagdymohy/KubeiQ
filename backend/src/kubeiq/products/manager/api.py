@@ -4,9 +4,10 @@ import asyncio
 from collections.abc import Callable
 from typing import Annotated, Any, TypeVar
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, Response
 from kubernetes.client import ApiClient
 from kubernetes.client.exceptions import ApiException
+from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sse_starlette.sse import EventSourceResponse
 
@@ -17,7 +18,7 @@ from kubeiq.clusters.base import ClusterNotFoundError
 from kubeiq.clusters.errors import describe_error
 from kubeiq.clusters.registry import ClusterRegistry, get_registry
 from kubeiq.db.session import get_session
-from kubeiq.products.manager import actions, resources, watch
+from kubeiq.products.manager import actions, edit, resources, shell, watch
 from kubeiq.products.manager.discovery import discover
 from kubeiq.products.manager.kube import InvalidPathError, resource_path
 from kubeiq.products.manager.models import (
@@ -216,6 +217,165 @@ async def pods_of(
     return await _call(resources.workload_pods, api, group, version, resource, namespace, name)
 
 
+async def allow_change(
+    session: AsyncSession,
+    registry: ClusterRegistry,
+    user: Principal,
+    cluster_id: str,
+    namespace: str | None,
+    confirm: str | None,
+) -> None:
+    """ADR 0009: changes are on, the user may edit here, and production names are typed."""
+    if not await changes_enabled(session):
+        raise HTTPException(
+            status_code=403,
+            detail="Cluster changes are turned off. An admin can turn them on in Settings",
+        )
+    check(user, "edit", cluster_id, namespace)
+    settings = await meta.get(session, cluster_id)
+    if settings.production:
+        try:
+            name = settings.display_name or registry.get_cluster(cluster_id).name
+        except ClusterNotFoundError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        if (confirm or "").strip() != name:
+            raise HTTPException(
+                status_code=422,
+                detail=f"{name} is a production cluster. Type its name to confirm this change",
+            )
+
+
+class ApplyIn(BaseModel):
+    cluster_id: str
+    yaml: str
+    namespace: str | None = None
+    # The object being edited; None creates a new one.
+    existing: str | None = None
+    dry_run: bool = True
+    confirm: str | None = None
+
+
+@router.post("/apply", response_model=edit.ApplyResult)
+async def apply_yaml(
+    body: ApplyIn,
+    registry: Registry,
+    user: CurrentUser,
+    session: Annotated[AsyncSession, Depends(get_session)],
+) -> edit.ApplyResult:
+    """Edit an object or create one from YAML. A dry run validates first and changes nothing."""
+    try:
+        obj = edit.parse(body.yaml)
+    except edit.EditError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    namespace = (obj.get("metadata") or {}).get("namespace") or body.namespace
+    await allow_change(session, registry, user, body.cluster_id, namespace, body.confirm)
+    api = _client(registry, body.cluster_id)
+    try:
+        kinds = [k for c in await discover(body.cluster_id, api) for k in c.kinds]
+        kind = edit.kind_of(obj, kinds)
+    except edit.EditError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=describe_error(exc)) from exc
+    target = f"{kind.resource}/{obj['metadata']['name']}"
+    action = "k8s.edit" if body.existing else "k8s.create"
+    try:
+        result = await _call(edit.apply, api, kind, obj, namespace, body.existing, body.dry_run)
+    except edit.EditError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except HTTPException as exc:
+        if not body.dry_run:
+            await audit.record(
+                session,
+                user.username,
+                action,
+                target=target,
+                cluster_id=body.cluster_id,
+                namespace=namespace,
+                detail=str(exc.detail),
+                ok=False,
+            )
+        if exc.status_code == 502 and "409" in str(exc.detail):
+            raise HTTPException(
+                status_code=409, detail="It changed since you opened it. Reload and edit again"
+            ) from exc
+        raise
+    if not body.dry_run:
+        await audit.record(
+            session,
+            user.username,
+            action,
+            target=target,
+            cluster_id=body.cluster_id,
+            namespace=result.namespace,
+        )
+    return result
+
+
+@router.get("/files", response_model=shell.Listing)
+async def list_files(
+    registry: Registry,
+    user: CurrentUser,
+    session: Annotated[AsyncSession, Depends(get_session)],
+    cluster_id: ClusterId,
+    namespace: str,
+    pod: str,
+    container: str,
+    path: str = "/",
+) -> shell.Listing:
+    """Browse a container's files: the same permission as the terminal."""
+    await allow_change(session, registry, user, cluster_id, namespace, None)
+    api = _client(registry, cluster_id)
+    try:
+        return await _call(shell.list_dir, api, namespace, pod, container, path)
+    except shell.ShellError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+@router.get("/files/download")
+async def download_file(
+    registry: Registry,
+    user: CurrentUser,
+    session: Annotated[AsyncSession, Depends(get_session)],
+    cluster_id: ClusterId,
+    namespace: str,
+    pod: str,
+    container: str,
+    path: str,
+) -> Response:
+    await allow_change(session, registry, user, cluster_id, namespace, None)
+    api = _client(registry, cluster_id)
+    target = f"pods/{pod}:{path}"
+    try:
+        data = await _call(shell.read_file, api, namespace, pod, container, path)
+    except shell.ShellError as exc:
+        await audit.record(
+            session,
+            user.username,
+            "k8s.download",
+            target=target,
+            cluster_id=cluster_id,
+            namespace=namespace,
+            detail=str(exc),
+            ok=False,
+        )
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    await audit.record(
+        session,
+        user.username,
+        "k8s.download",
+        target=target,
+        cluster_id=cluster_id,
+        namespace=namespace,
+    )
+    filename = path.rstrip("/").rsplit("/", 1)[-1] or "file"
+    return Response(
+        data,
+        media_type="application/octet-stream",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
 @router.post("/actions", response_model=ActionResult)
 async def run_action(
     body: Action,
@@ -223,23 +383,7 @@ async def run_action(
     user: CurrentUser,
     session: Annotated[AsyncSession, Depends(get_session)],
 ) -> ActionResult:
-    if not await changes_enabled(session):
-        raise HTTPException(
-            status_code=403,
-            detail="Cluster changes are turned off. An admin can turn them on in Settings",
-        )
-    check(user, "edit", body.cluster_id, body.namespace)
-    settings = await meta.get(session, body.cluster_id)
-    if settings.production:
-        try:
-            name = settings.display_name or registry.get_cluster(body.cluster_id).name
-        except ClusterNotFoundError as exc:
-            raise HTTPException(status_code=404, detail=str(exc)) from exc
-        if (body.confirm or "").strip() != name:
-            raise HTTPException(
-                status_code=422,
-                detail=f"{name} is a production cluster. Type its name to confirm this change",
-            )
+    await allow_change(session, registry, user, body.cluster_id, body.namespace, body.confirm)
     try:
         actions.validate(body)
     except actions.UnsupportedActionError as exc:

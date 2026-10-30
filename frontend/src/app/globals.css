@@ -26,6 +26,10 @@
   --terminal: #0f1418;
   --terminal-text: #e3e9ee;
   --terminal-warn: #fbbf24;
+  --terminal-error: #f2706d;
+  --terminal-key: #7fd4e6;
+  --terminal-string: #9fd8a8;
+  --terminal-number: #f0c46c;
   --label-red: #c4242a;
   --label-amber: #a8590a;
   --label-blue: #2563c9;
@@ -61,6 +65,10 @@
     --terminal: #0b0e11;
     --terminal-text: #e3e9ee;
     --terminal-warn: #fbbf24;
+  --terminal-error: #f2706d;
+  --terminal-key: #7fd4e6;
+  --terminal-string: #9fd8a8;
+  --terminal-number: #f0c46c;
     --label-red: #f2706d;
     --label-amber: #f0b43c;
     --label-blue: #79a8f5;
@@ -96,6 +104,10 @@
   --terminal: #0b0e11;
   --terminal-text: #e3e9ee;
   --terminal-warn: #fbbf24;
+  --terminal-error: #f2706d;
+  --terminal-key: #7fd4e6;
+  --terminal-string: #9fd8a8;
+  --terminal-number: #f0c46c;
   --label-red: #f2706d;
   --label-amber: #f0b43c;
   --label-blue: #79a8f5;
@@ -128,6 +140,10 @@
   --color-terminal: var(--terminal);
   --color-terminal-fg: var(--terminal-text);
   --color-terminal-warn: var(--terminal-warn);
+  --color-terminal-error: var(--terminal-error);
+  --color-terminal-key: var(--terminal-key);
+  --color-terminal-string: var(--terminal-string);
+  --color-terminal-number: var(--terminal-number);
   --color-label-red: var(--label-red);
   --color-label-amber: var(--label-amber);
   --color-label-blue: var(--label-blue);

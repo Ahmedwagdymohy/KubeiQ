@@ -11,7 +11,7 @@ import { api, type ClusterAction, type KindInfo, type KubeObject, type ObjectRef
 const button =
   "rounded-md border border-border px-3 py-1.5 text-sm text-fg transition-colors hover:bg-surface-2";
 
-type Dialog = "scale" | "restart" | "delete" | "cordon" | null;
+type Dialog = "scale" | "restart" | "delete" | "cordon" | "drain" | "trigger" | "suspend" | null;
 
 /** On a cluster labelled production every change needs the cluster's name typed (ADR 0009). */
 type Guard = { name: string; typed: string; setTyped: (value: string) => void } | null;
@@ -39,7 +39,7 @@ export function ObjectActions({
   const info = clusters.data?.find((c) => c.id === cluster);
   const production = info?.labels?.some((l) => l.name === "production") ? info.name : null;
   const key = `${kind.group}/${kind.resource}`;
-  const spec = (object?.spec ?? {}) as { replicas?: number; unschedulable?: boolean };
+  const spec = (object?.spec ?? {}) as { replicas?: number; unschedulable?: boolean; suspend?: boolean };
 
   const run = useMutation({
     mutationFn: (body: Pick<ClusterAction, "action" | "replicas">) =>
@@ -73,6 +73,21 @@ export function ObjectActions({
       {isNode && (
         <button type="button" className={button} onClick={() => setDialog("cordon")}>
           {spec.unschedulable ? "Uncordon" : "Cordon"}
+        </button>
+      )}
+      {isNode && (
+        <button type="button" className={button} onClick={() => setDialog("drain")}>
+          Drain
+        </button>
+      )}
+      {key === "batch/cronjobs" && (
+        <button type="button" className={button} onClick={() => setDialog("trigger")}>
+          Run now
+        </button>
+      )}
+      {(key === "batch/cronjobs" || key === "batch/jobs") && (
+        <button type="button" className={button} onClick={() => setDialog("suspend")}>
+          {spec.suspend ? "Resume" : "Suspend"}
         </button>
       )}
       {canDelete && (
@@ -120,6 +135,45 @@ export function ObjectActions({
           error={run.error?.message}
           onCancel={() => setDialog(null)}
           onConfirm={() => run.mutate({ action: spec.unschedulable ? "uncordon" : "cordon" })}
+        />
+      )}
+      {dialog === "drain" && (
+        <Confirm
+          title={`Drain ${objectRef.name}?`}
+          body="The node is cordoned, then its pods are evicted so they move to other nodes. Disruption budgets are respected; DaemonSet and static pods stay. This is recorded in the activity log."
+          action="Drain"
+          pending={run.isPending}
+          error={run.error?.message}
+          onCancel={() => setDialog(null)}
+          onConfirm={() => run.mutate({ action: "drain" })}
+        />
+      )}
+      {dialog === "trigger" && (
+        <Confirm
+          title={`Run ${objectRef.name} now?`}
+          body="KubeiQ creates a Job from this CronJob's template, like kubectl create job --from. Its schedule does not change."
+          action="Run now"
+          pending={run.isPending}
+          error={run.error?.message}
+          onCancel={() => setDialog(null)}
+          onConfirm={() => run.mutate({ action: "trigger" })}
+        />
+      )}
+      {dialog === "suspend" && (
+        <Confirm
+          title={`${spec.suspend ? "Resume" : "Suspend"} ${objectRef.name}?`}
+          body={
+            spec.suspend
+              ? "It runs again: CronJobs on their schedule, Jobs start their pods."
+              : key === "batch/cronjobs"
+                ? "No new Jobs start on its schedule until it is resumed. Running Jobs continue."
+                : "Its running pods stop and no new ones start until it is resumed."
+          }
+          action={spec.suspend ? "Resume" : "Suspend"}
+          pending={run.isPending}
+          error={run.error?.message}
+          onCancel={() => setDialog(null)}
+          onConfirm={() => run.mutate({ action: spec.suspend ? "resume" : "suspend" })}
         />
       )}
       {dialog === "delete" && (
