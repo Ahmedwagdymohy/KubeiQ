@@ -72,7 +72,15 @@ function Panel({ onClose, pending, onPendingUsed }: { onClose: () => void; pendi
   });
   const [active, setActive] = useState<string | null>(null);
   const [showList, setShowList] = useState(false);
+  // Changes only when the user opens another thread. Creating the conversation for a first
+  // question must not remount the thread, or the question in flight and its answer are lost.
+  const [view, setView] = useState(0);
   const conversationId = active;
+  const open = (id: string | null) => {
+    setActive(id);
+    setView((v) => v + 1);
+    setShowList(false);
+  };
 
   const create = useMutation({
     mutationFn: () => api.createConversation(cluster!),
@@ -85,7 +93,7 @@ function Panel({ onClose, pending, onPendingUsed }: { onClose: () => void; pendi
     mutationFn: (id: string) => api.deleteConversation(id),
     onSuccess: (_, id) => {
       queryClient.invalidateQueries({ queryKey: ["conversations", cluster] });
-      if (id === active) setActive(null);
+      if (id === active) open(null);
     },
   });
 
@@ -106,10 +114,7 @@ function Panel({ onClose, pending, onPendingUsed }: { onClose: () => void; pendi
         </button>
         <button
           type="button"
-          onClick={() => {
-            setActive(null);
-            setShowList(false);
-          }}
+          onClick={() => open(null)}
           aria-label="New conversation"
           title="New conversation"
           className="rounded-md p-1.5 text-muted hover:bg-surface hover:text-fg"
@@ -142,17 +147,14 @@ function Panel({ onClose, pending, onPendingUsed }: { onClose: () => void; pendi
               id={c.id}
               title={c.title}
               active={c.id === active}
-              onOpen={() => {
-                setActive(c.id);
-                setShowList(false);
-              }}
+              onOpen={() => open(c.id)}
               onDelete={() => remove.mutate(c.id)}
             />
           ))}
         </ul>
       ) : (
         <Thread
-          key={conversationId ?? "new"}
+          key={view}
           cluster={cluster}
           conversationId={conversationId}
           ensure={async () => conversationId ?? (await create.mutateAsync()).id}
@@ -236,7 +238,8 @@ function Thread({
   const [asking, setAsking] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const bottom = useRef<HTMLDivElement>(null);
-  const shown = [...(thread.data?.messages ?? []), ...messages];
+  const saved = thread.data?.messages ?? [];
+  const shown = [...saved, ...messages.filter((m) => !saved.some((s) => s.id === m.id))];
 
   const ask = async (question: string) => {
     if (!question.trim() || asking) return;
