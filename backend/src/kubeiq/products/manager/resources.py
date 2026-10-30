@@ -7,6 +7,7 @@ from typing import Any
 import yaml
 from kubernetes.client import ApiClient
 
+from kubeiq.products.manager import enrich
 from kubeiq.products.manager.kube import (
     METADATA_LIST,
     METADATA_ONLY,
@@ -25,7 +26,7 @@ from kubeiq.products.manager.models import (
     WorkloadPod,
 )
 
-LIST_LIMIT = 500
+LIST_LIMIT = 5000
 EVENT_LIMIT = 50
 MAX_LOG_LINES = 2000
 MAX_LOG_BYTES = 1_000_000
@@ -40,7 +41,11 @@ def list_resources(
     api: ApiClient, group: str, version: str, resource: str, namespace: str | None
 ) -> ResourceList:
     path = resource_path(group, version, resource, namespace)
-    table = request(api, "GET", path, query=[("limit", LIST_LIMIT)], accept=TABLE)
+    enriched = (group, resource) in enrich.ENRICHED
+    query: list[tuple[str, Any]] = [("limit", LIST_LIMIT)]
+    if enriched:
+        query.append(("includeObject", "Object"))  # the full object, for status details
+    table = request(api, "GET", path, query=query, accept=TABLE)
     definitions = table.get("columnDefinitions") or []
     keep = [i for i, c in enumerate(definitions) if c.get("priority", 0) == 0]
     columns = [
@@ -51,8 +56,14 @@ def list_resources(
         )
         for i in keep
     ]
+    table_rows = table.get("rows") or []
+    details = (
+        enrich.extras(api, group, resource, namespace, [r.get("object") or {} for r in table_rows])
+        if enriched
+        else [None] * len(table_rows)
+    )
     rows = []
-    for row in table.get("rows") or []:
+    for row, extra in zip(table_rows, details, strict=True):
         meta = (row.get("object") or {}).get("metadata") or {}
         cells = row.get("cells") or []
         rows.append(
@@ -61,6 +72,7 @@ def list_resources(
                 namespace=meta.get("namespace"),
                 created=meta.get("creationTimestamp"),
                 cells=[cells[i] if i < len(cells) else None for i in keep],
+                extra=extra,
             )
         )
     truncated = bool((table.get("metadata") or {}).get("continue"))

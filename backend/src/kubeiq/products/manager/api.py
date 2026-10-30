@@ -4,10 +4,11 @@ import asyncio
 from collections.abc import Callable
 from typing import Annotated, Any, TypeVar
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from kubernetes.client import ApiClient
 from kubernetes.client.exceptions import ApiException
 from sqlalchemy.ext.asyncio import AsyncSession
+from sse_starlette.sse import EventSourceResponse
 
 from kubeiq.auth import repository as audit
 from kubeiq.auth.deps import CurrentUser, Principal, check
@@ -16,9 +17,9 @@ from kubeiq.clusters.base import ClusterNotFoundError
 from kubeiq.clusters.errors import describe_error
 from kubeiq.clusters.registry import ClusterRegistry, get_registry
 from kubeiq.db.session import get_session
-from kubeiq.products.manager import actions, resources
+from kubeiq.products.manager import actions, resources, watch
 from kubeiq.products.manager.discovery import discover
-from kubeiq.products.manager.kube import InvalidPathError
+from kubeiq.products.manager.kube import InvalidPathError, resource_path
 from kubeiq.products.manager.models import (
     Action,
     ActionResult,
@@ -105,6 +106,30 @@ async def list_objects(
     check(user, "read", cluster_id, namespace or None)
     api = _client(registry, cluster_id)
     return await _call(resources.list_resources, api, group, version, resource, namespace or None)
+
+
+@router.get("/watch")
+async def watch_objects(
+    request: Request,
+    registry: Registry,
+    user: CurrentUser,
+    cluster_id: ClusterId,
+    version: str,
+    resource: str,
+    group: str = "",
+    namespace: str | None = None,
+) -> EventSourceResponse:
+    """Server-sent events when objects of a kind change, batched, so lists update live."""
+    check(user, "read", cluster_id, namespace or None)
+    api = _client(registry, cluster_id)
+    try:
+        resource_path(group, version, resource, namespace or None)
+    except InvalidPathError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    stream = watch.changes(
+        api, group, version, resource, namespace or None, request.is_disconnected
+    )
+    return EventSourceResponse(stream, ping=15)
 
 
 @router.get("/object", response_model=ObjectDetail)

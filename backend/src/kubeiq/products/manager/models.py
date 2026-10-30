@@ -31,6 +31,8 @@ class Row(BaseModel):
     namespace: str | None
     created: str | None
     cells: list[Any]
+    # Status details for pods, workloads and nodes (see enrich.py); None for other kinds.
+    extra: dict[str, Any] | None = None
 
 
 class ResourceList(BaseModel):

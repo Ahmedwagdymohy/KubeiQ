@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 
 import { DEFAULT_KIND, kindKey } from "@/components/manager/kinds";
 import { KindSidebar } from "@/components/manager/kind-sidebar";
+import { NamespacePicker } from "@/components/manager/namespace-picker";
 import { ObjectPanel } from "@/components/manager/object-panel";
 import { ResourceTable } from "@/components/manager/resource-table";
 import { useAllNamespaces } from "@/hooks/use-me";
@@ -106,6 +107,12 @@ export function ClusterManager() {
     sync({ cluster: id, namespace: "", selected: null });
   });
 
+  const pickNamespace = (ns: string) => {
+    setNamespace(ns);
+    setSelected(null);
+    sync({ namespace: ns, selected: null });
+  };
+
   const select = (next: Selected | null) => {
     setSelected(next);
     sync({ selected: next });
@@ -114,24 +121,13 @@ export function ClusterManager() {
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col">
       <div className="flex flex-wrap items-center gap-2 border-b border-border px-4 py-2.5 sm:px-5">
-        <select
-          aria-label="Namespace"
+        <NamespacePicker
           value={scope}
+          namespaces={namespaces.data ?? []}
+          allowAll={allNamespaces}
           disabled={kind ? !kind.namespaced : false}
-          onChange={(e) => {
-            setNamespace(e.target.value);
-            setSelected(null);
-            sync({ namespace: e.target.value, selected: null });
-          }}
-          className={`${control} disabled:opacity-50`}
-        >
-          {allNamespaces && <option value="">All namespaces</option>}
-          {namespaces.data?.map((ns) => (
-            <option key={ns} value={ns}>
-              {ns}
-            </option>
-          ))}
-        </select>
+          onChange={pickNamespace}
+        />
         <select
           aria-label="Kind"
           value={kindId}
@@ -194,6 +190,7 @@ export function ClusterManager() {
                 namespace={kind.namespaced ? scope || null : null}
                 selected={selected}
                 onSelect={select}
+                onNamespace={pickNamespace}
               />
             )}
             {kinds.data && !kind && (

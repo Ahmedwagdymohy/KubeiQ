@@ -149,6 +149,12 @@ Never hard-code colors; use the Tailwind tokens (`bg-frame`, `bg-surface`, `text
   Logs tabs. Actions sit in the panel header next to Investigate and Show on map, only when the
   user may change things. Text that is not a command (YAML, logs) uses the code block, not the
   `$` terminal.
+- **Resource tables**: the header row has the kind, "N" (or "N of M" while filtering), a Live dot
+  when the watch is connected, then Columns (show, hide, reorder, compact rows, Reset) and the name
+  filter. Headers sort (click again for descending, a third time to clear). Status is a pill with soft
+  background (healthy, warning, danger; grey for Completed); containers are 10px squares; restarts
+  amber above 0 and bold red above 10; usage is a 48px bar plus the value, or the value alone when no
+  limit is set. Failing rows show Investigate on hover. Namespace cells filter on click.
 - **Dialogs** for changes: title as a question ("Restart checkout?"), one sentence on the effect,
   Cancel and the action. Deleting requires typing the name; the delete button uses `bg-danger`.
 - **Sign-in**: one centered white card on the frame tint with the logo; the hint says the admin uses the master key.
