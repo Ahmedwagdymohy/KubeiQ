@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
 
 import { Logo } from "@/components/logo";
-import { AddCluster } from "@/components/settings/clusters-section";
+import { AddCluster } from "@/components/settings/add-cluster";
 import { Field, input, primaryButton } from "@/components/settings/fields";
 import { Dot } from "@/components/ui";
 import { api, type Cluster, type Project } from "@/lib/api";

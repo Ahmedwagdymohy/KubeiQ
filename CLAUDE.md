@@ -48,7 +48,8 @@ backend/            FastAPI service (Python 3.12, uv). Package: backend/src/kube
   src/kubeiq/
     api/            HTTP routes (versioned under /api/v1)
     core/           config, logging, shared utilities
-    clusters/       ClusterSource abstraction: kubeconfig, uploaded kubeconfigs, GKE (cloud identity)
+    clusters/       ClusterSource abstraction: kubeconfig, uploaded kubeconfigs, GKE (cloud identity), token;
+                    meta.py = per-cluster settings (display name, labels, default namespace, thresholds)
     connect/        one-command connect: one-time codes, served copy of deploy/connect.sh + rbac (make sync-connect)
     usage/          cluster summary for the status bar and dashboard: node readiness, metrics-server usage
     collectors/     read-only evidence collectors (pods, events, logs, deployments, network)

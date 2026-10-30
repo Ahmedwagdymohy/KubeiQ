@@ -85,6 +85,8 @@ class Action(BaseModel):
     namespace: str | None = None
     name: str
     replicas: int | None = Field(default=None, ge=0, le=1000)
+    # The cluster's name, typed by the user: required for changes on production clusters.
+    confirm: str | None = Field(default=None, max_length=128)
 
 
 class ActionResult(BaseModel):

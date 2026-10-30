@@ -339,7 +339,7 @@ function Progress({
 }
 
 /** For machines that cannot reach KubeiQ: create the file with connect.sh, then paste it here. */
-function PasteKubeconfig({
+export function PasteKubeconfig({
   onAdded,
   onBack,
 }: {

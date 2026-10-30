@@ -18,7 +18,12 @@ from kubeiq.db.migrate import upgrade_database
 from kubeiq.db.session import get_sessionmaker
 from kubeiq.investigations import repository
 from kubeiq.investigations.runner import get_runner
-from kubeiq.settings.service import refresh_gke_forever, sync_gke, sync_uploaded_clusters
+from kubeiq.settings.service import (
+    refresh_gke_forever,
+    sync_gke,
+    sync_token_clusters,
+    sync_uploaded_clusters,
+)
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -34,6 +39,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             interrupted = await repository.fail_interrupted(session)
             await sync_uploaded_clusters(session)
             await sync_gke(session)
+            await sync_token_clusters(session)
         if interrupted:
             logger.warning("Marked {} interrupted investigation(s) as failed", interrupted)
         gke_refresh = asyncio.create_task(refresh_gke_forever())

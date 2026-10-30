@@ -94,7 +94,7 @@ Update this file in the same commit that completes a task.
 ## Product requirements (planned)
 Full requirements in [docs/requirements](requirements/README.md); items move here when scheduled.
 - [x] App shell: grouped sidebar, pinning, cluster status bar, Ctrl+1..9, a command palette that finds resources (01)
-- [ ] Clusters screen: one row per cluster, labels and environments, add/edit dialog with tabs, thresholds (02)
+- [x] Clusters screen: one row per cluster, labels and environments, add/edit dialog with tabs, thresholds (02). The Agent method waits for the KubeiQ Agent (Phase 5)
 - [ ] Settings regrouped; two-factor sign-in; several AI providers; danger zone (03)
 - [ ] Multi-cluster dashboard cards with real usage history (04)
 - [ ] Resource tables with status and usage columns, live watches, YAML edit with diff, log viewer, terminal (05)

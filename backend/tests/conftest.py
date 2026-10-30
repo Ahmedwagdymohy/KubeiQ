@@ -48,6 +48,7 @@ def client(  # an app with a real registry and a temporary database
         registry_module.get_registry,
         registry_module.get_local_source,
         registry_module.get_uploaded_source,
+        registry_module.get_token_source,
         crypto._fernet,
     )
     for fn in caches:

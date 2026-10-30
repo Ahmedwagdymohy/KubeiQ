@@ -23,7 +23,8 @@ export function ClusterManager() {
   const router = useRouter();
   const clusters = useQuery({ queryKey: ["clusters"], queryFn: api.clusters });
   const [chosen, setChosen] = useState<string | null>(() => params.get("cluster"));
-  const [namespace, setNamespace] = useState(() => params.get("namespace") ?? "");
+  // null: not chosen yet, so the cluster's default namespace applies ("" is All namespaces).
+  const [picked, setNamespace] = useState<string | null>(() => params.get("namespace"));
   const [kindId, setKindId] = useState(() => params.get("kind") ?? DEFAULT_KIND);
   const [selected, setSelected] = useState<Selected | null>(() => {
     const name = params.get("name");
@@ -43,8 +44,8 @@ export function ClusterManager() {
     if (nextSelected?.name !== selected?.name || nextSelected?.namespace !== selected?.namespace)
       setSelected(nextSelected);
     if (params.get("cluster") && params.get("cluster") !== chosen) setChosen(params.get("cluster"));
-    if (params.get("namespace") !== null && params.get("namespace") !== namespace)
-      setNamespace(params.get("namespace") ?? "");
+    if (params.get("namespace") !== null && params.get("namespace") !== picked)
+      setNamespace(params.get("namespace"));
   }
 
   // The app sidebar lists the built-in kinds; this full list (custom resources too) is opt-in
@@ -73,6 +74,7 @@ export function ClusterManager() {
     enabled: Boolean(cluster),
     staleTime: 5 * 60_000,
   });
+  const namespace = picked ?? clusters.data?.find((c) => c.id === cluster)?.namespace ?? "";
   const scope = allNamespaces ? namespace : namespace || (namespaces.data?.[0] ?? "");
   const kind = kinds.data?.flatMap((c) => c.kinds).find((k) => kindKey(k) === kindId) ?? null;
 
@@ -99,7 +101,7 @@ export function ClusterManager() {
 
   useClusterPicked((id) => {
     setChosen(id);
-    setNamespace("");
+    setNamespace(null);
     setSelected(null);
     sync({ cluster: id, namespace: "", selected: null });
   });

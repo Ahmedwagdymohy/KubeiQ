@@ -5,7 +5,17 @@ from datetime import UTC, datetime
 from enum import StrEnum
 from typing import Any, ClassVar
 
-from sqlalchemy import JSON, DateTime, ForeignKey, Index, Integer, String, Text, UniqueConstraint
+from sqlalchemy import (
+    JSON,
+    Boolean,
+    DateTime,
+    ForeignKey,
+    Index,
+    Integer,
+    String,
+    Text,
+    UniqueConstraint,
+)
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 DEFAULT_ORG = "default"
@@ -139,6 +149,29 @@ class UserPreference(Base):
     key: Mapped[str] = mapped_column(String(64), primary_key=True)
     value: Mapped[Any] = mapped_column(JSON)
     updated_at: Mapped[datetime] = mapped_column(default=_now, onupdate=_now)
+
+
+class ClusterSetting(Base):
+    """What admins set per cluster: a display name, labels, default namespace, usage thresholds.
+
+    A row is created the first time KubeiQ lists the cluster, which records when it was added.
+    """
+
+    __tablename__ = "cluster_settings"
+
+    org_id: Mapped[str] = mapped_column(String(64), primary_key=True, default=DEFAULT_ORG)
+    cluster_id: Mapped[str] = mapped_column(String(512), primary_key=True)
+    display_name: Mapped[str | None] = mapped_column(String(64))
+    labels: Mapped[list[dict[str, Any]]] = mapped_column(JSON, default=list)  # [{name, color}]
+    namespace: Mapped[str | None] = mapped_column(String(253))
+    metrics: Mapped[bool] = mapped_column(Boolean, default=True)
+    cpu_warning: Mapped[int] = mapped_column(Integer, default=60)
+    cpu_critical: Mapped[int] = mapped_column(Integer, default=80)
+    memory_warning: Mapped[int] = mapped_column(Integer, default=60)
+    memory_critical: Mapped[int] = mapped_column(Integer, default=80)
+    # Notification routing for this cluster (channels and events), see 08.
+    alerts: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+    created_at: Mapped[datetime] = mapped_column(default=_now)
 
 
 class StoredKubeconfig(Base):

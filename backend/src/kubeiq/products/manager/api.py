@@ -11,6 +11,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from kubeiq.auth import repository as audit
 from kubeiq.auth.deps import CurrentUser, Principal, check
+from kubeiq.clusters import meta
 from kubeiq.clusters.base import ClusterNotFoundError
 from kubeiq.clusters.errors import describe_error
 from kubeiq.clusters.registry import ClusterRegistry, get_registry
@@ -182,6 +183,17 @@ async def run_action(
             detail="Cluster changes are turned off. An admin can turn them on in Settings",
         )
     check(user, "edit", body.cluster_id, body.namespace)
+    settings = await meta.get(session, body.cluster_id)
+    if settings.production:
+        try:
+            name = settings.display_name or registry.get_cluster(body.cluster_id).name
+        except ClusterNotFoundError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        if (body.confirm or "").strip() != name:
+            raise HTTPException(
+                status_code=422,
+                detail=f"{name} is a production cluster. Type its name to confirm this change",
+            )
     try:
         actions.validate(body)
     except actions.UnsupportedActionError as exc:
