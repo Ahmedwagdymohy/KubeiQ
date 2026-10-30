@@ -10,6 +10,7 @@ import { INVESTIGABLE } from "@/components/manager/kinds";
 import { Spinner } from "@/components/ui";
 import { useLiveList } from "@/hooks/use-live-list";
 import { usePreference } from "@/hooks/use-preferences";
+import { useWorkspace } from "@/hooks/use-workspace";
 import { api, watchUrl, type KindInfo, type ResourceRow } from "@/lib/api";
 
 const POLL_MS = 15_000;
@@ -36,7 +37,9 @@ export function ResourceTable({
 }) {
   const [filter, setFilter] = useState("");
   const [sort, setSort] = useState<Sort>(null);
-  const [compact, setCompact] = usePreference<boolean>("table.compact", false);
+  const workspace = useWorkspace();
+  const [compactPref, setCompact] = usePreference<boolean | null>("table.compact", null);
+  const compact = compactPref ?? workspace.compact_rows;
   const [prefs, setPrefs] = usePreference<ColumnPrefs>("columns", {});
   const kindId = `${kind.group || "core"}/${kind.resource}`;
   const queryKey = ["manager", "list", cluster, kind.group, kind.resource, namespace];
@@ -67,7 +70,10 @@ export function ResourceTable({
       return (ia < 0 ? 999 : ia) - (ib < 0 ? 999 : ib);
     });
   }, [all, saved]);
-  const visibleColumns = ordered.filter((c) => (saved?.hidden ? !saved.hidden.includes(c.id) : !c.hidden));
+  // Without saved choices: the column's own default and the workspace settings (General).
+  const offByDefault = (c: Column) =>
+    c.hidden || (!workspace.show_usage && (c.id === "CPU" || c.id === "Memory")) || (!workspace.namespace_badges && c.id === "Namespace");
+  const visibleColumns = ordered.filter((c) => (saved?.hidden ? !saved.hidden.includes(c.id) : !offByDefault(c)));
 
   const q = filter.trim().toLowerCase();
   const total = list.data?.rows.length ?? 0;

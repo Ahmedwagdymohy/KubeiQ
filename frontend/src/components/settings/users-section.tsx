@@ -6,6 +6,7 @@ import { useState, type FormEvent } from "react";
 import { PlanUsage } from "@/components/settings/plan-usage";
 import { Field, input, primaryButton, Section } from "@/components/settings/fields";
 import { SecretOnce } from "@/components/settings/secret-once";
+import { timeAgo } from "@/components/doctor/history-list";
 import { useMe } from "@/hooks/use-me";
 import { api, type InviteRole, type Role, type User } from "@/lib/api";
 
@@ -96,8 +97,14 @@ function UserRow({ user, onChanged }: { user: User; onChanged: (user: User) => v
             {user.role === "admin" ? "Admin" : "User"}
             {user.auth_provider === "google" && " · Google"}
           </span>
+          {user.status === "invited" && (
+            <span className="ml-2 rounded-full bg-warning/10 px-2 py-0.5 text-[11px] font-medium text-warning">Invited</span>
+          )}
         </span>
-        <span className="text-xs text-subtle">{access}</span>
+        <span className="text-xs text-subtle">
+          {access}
+          {user.last_sign_in ? ` · Last signed in ${timeAgo(user.last_sign_in)}` : user.status === "invited" ? " · Has not signed in yet" : ""}
+        </span>
       </div>
       {!user.builtin && (
         <div className="flex items-center gap-4 text-sm">
@@ -109,17 +116,28 @@ function UserRow({ user, onChanged }: { user: User; onChanged: (user: User) => v
           >
             {user.role === "admin" ? "Make user" : "Make admin"}
           </button>
-          <button
-            type="button"
-            className="text-subtle transition-colors hover:text-fg"
-            disabled={update.isPending}
-            onClick={() => {
-              if (window.confirm(`Reset the password for ${user.username}? They will be signed out.`))
-                update.mutate({ reset_password: true });
-            }}
-          >
-            Reset password
-          </button>
+          {user.status === "invited" && user.auth_provider === "google" ? (
+            <button
+              type="button"
+              className="text-subtle transition-colors hover:text-fg"
+              onClick={() => navigator.clipboard?.writeText(`${window.location.origin}/login`).catch(() => undefined)}
+              title="They sign in with Google at this address"
+            >
+              Copy sign-in link
+            </button>
+          ) : (
+            <button
+              type="button"
+              className="text-subtle transition-colors hover:text-fg"
+              disabled={update.isPending}
+              onClick={() => {
+                if (window.confirm(`${user.status === "invited" ? "Send a new password to" : "Reset the password for"} ${user.username}? ${user.status === "invited" ? "The old one stops working." : "They will be signed out."}`))
+                  update.mutate({ reset_password: true });
+              }}
+            >
+              {user.status === "invited" ? "New password" : "Reset password"}
+            </button>
+          )}
           {!isMe && (
             <button
               type="button"
@@ -130,7 +148,7 @@ function UserRow({ user, onChanged }: { user: User; onChanged: (user: User) => v
                   remove.mutate();
               }}
             >
-              Remove
+              {user.status === "invited" ? "Revoke invitation" : "Remove"}
             </button>
           )}
         </div>

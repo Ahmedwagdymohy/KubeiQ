@@ -72,6 +72,14 @@ All notable changes to KubeiQ. Versions follow [Semantic Versioning](https://sem
   nodes that look safe to remove, with why.
 - **Health-first map.** Cluster Map's overview shows failing apps first, then degraded, then healthy.
 
+- **Settings, regrouped.** Areas grouped as Workspace, People, Intelligence, Operations and System.
+  New: General (show usage, namespaces in lists, compact rows, typing the name to delete, for the
+  whole workspace), Appearance (theme, row density, code font, for you), License (plan, limits and
+  usage), a fuller About with Copy diagnostics, and a Danger Zone (clear activity, remove all
+  clusters, reset the workspace), each with a typed confirmation and recorded.
+- **Users show their status.** Invited until the first sign-in, then the last sign-in time; revoke an
+  invitation, send a new password, or copy the sign-in link for Google users.
+
 ### Changed
 - The read-only role reads metrics and the remaining built-in kinds (still no Secrets). Run the
   connect command again on existing clusters to show usage.

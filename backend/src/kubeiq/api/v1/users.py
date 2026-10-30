@@ -1,9 +1,10 @@
 """User management (admins only). The free plan allows up to 3 users."""
 
+from datetime import datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import delete
+from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from kubeiq.auth import google, plan, repository
@@ -22,7 +23,7 @@ from kubeiq.auth.models import (
 )
 from kubeiq.auth.passwords import generate_password, hash_password
 from kubeiq.core.config import Settings, get_settings
-from kubeiq.db.models import ProjectMember, User
+from kubeiq.db.models import AuditEvent, ProjectMember, User
 from kubeiq.db.session import get_session
 
 router = APIRouter(tags=["users"])
@@ -35,7 +36,19 @@ def _builtin(user: User, base: Settings) -> bool:
     return user.username == base.admin_username and user.password_hash is None
 
 
-async def _out(session: AsyncSession, user: User, base: Settings) -> UserOut:
+async def _sign_ins(session: AsyncSession) -> dict[str, datetime]:
+    """The newest successful sign-in per username."""
+    rows = await session.execute(
+        select(AuditEvent.username, func.max(AuditEvent.created_at))
+        .where(AuditEvent.action == "auth.login", AuditEvent.ok.is_(True))
+        .group_by(AuditEvent.username)
+    )
+    return {name: at for name, at in rows.all()}
+
+
+async def _out(
+    session: AsyncSession, user: User, base: Settings, sign_ins: dict[str, datetime] | None = None
+) -> UserOut:
     projects = [
         ProjectAccess(project_id=p.id, project=p.name, role=m.role)
         for m, p in await repository.memberships(session, user.id)
@@ -48,6 +61,8 @@ async def _out(session: AsyncSession, user: User, base: Settings) -> UserOut:
         auth_provider="google" if user.auth_provider == "google" else "password",
         created_at=user.created_at,
         projects=projects,
+        status="active" if _builtin(user, base) or user.username in (sign_ins or {}) else "invited",
+        last_sign_in=(sign_ins or {}).get(user.username),
     )
 
 
@@ -73,7 +88,8 @@ async def plan_usage(admin: AdminUser, session: SessionDep) -> PlanOut:
 @router.get("/users", response_model=UsersOut)
 async def list_users(admin: AdminUser, session: SessionDep, base: SettingsDep) -> UsersOut:
     await repository.ensure_admin(session, base.admin_username)
-    users = [await _out(session, u, base) for u in await repository.list_users(session)]
+    sign_ins = await _sign_ins(session)
+    users = [await _out(session, u, base, sign_ins) for u in await repository.list_users(session)]
     return UsersOut(users=users, max_users=plan.max_users(), plan=plan.plan_name())
 
 

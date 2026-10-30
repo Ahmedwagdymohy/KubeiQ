@@ -14,6 +14,7 @@ import { secondaryButton } from "@/components/settings/fields";
 import { Sparkline } from "@/components/sparkline";
 import { Dot } from "@/components/ui";
 import { useMe } from "@/hooks/use-me";
+import { useWorkspace } from "@/hooks/use-workspace";
 import { api, type ClusterHealthState, type ClusterSummary, type Gauge, type Thresholds } from "@/lib/api";
 import { investigateHref, managerHref } from "@/lib/fleet";
 import { bytes, cores, DEFAULT_THRESHOLDS, percent, USAGE_BAR, usageTone } from "@/lib/usage";
@@ -140,6 +141,7 @@ function ClusterCard({ health, size, dim, onOpen }: { health: ClusterHealth; siz
 function CardBody({ health, size, large = false }: { health: ClusterHealth; size: CardSize; large?: boolean }) {
   const { cluster } = health;
   const admin = useMe().data?.role === "admin";
+  const workspace = useWorkspace();
   const summary = useSummary(cluster.id, true);
   const s = summary.data;
   const detailed = size === "detailed" || size === "full";
@@ -169,7 +171,7 @@ function CardBody({ health, size, large = false }: { health: ClusterHealth; size
       </div>
     );
 
-  const metricsOff = cluster.settings?.metrics === false;
+  const metricsOff = cluster.settings?.metrics === false || !workspace.show_usage;
   const thresholds = cluster.settings ?? { cpu: DEFAULT_THRESHOLDS, memory: DEFAULT_THRESHOLDS };
   const failing = health.workloads.filter((w) => w.status !== "healthy");
 

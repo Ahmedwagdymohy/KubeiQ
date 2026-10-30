@@ -10,6 +10,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from kubeiq.auth.deps import CurrentUser
 from kubeiq.db.models import DEFAULT_ORG, UserPreference
 from kubeiq.db.session import get_session
+from kubeiq.settings.models import WorkspaceSettings
+from kubeiq.settings.repository import GENERAL_KEY, get_value
 
 router = APIRouter(prefix="/me", tags=["me"])
 
@@ -17,6 +19,12 @@ SessionDep = Annotated[AsyncSession, Depends(get_session)]
 Key = Annotated[str, Path(pattern=r"^[a-z][a-z0-9_.-]{0,63}$")]
 MAX_BYTES = 16_000
 MAX_KEYS = 50
+
+
+@router.get("/workspace", response_model=WorkspaceSettings)
+async def workspace(session: SessionDep) -> WorkspaceSettings:
+    """The workspace's display settings, which every signed-in user's app follows."""
+    return WorkspaceSettings(**(await get_value(session, GENERAL_KEY) or {}))
 
 
 @router.get("/preferences")

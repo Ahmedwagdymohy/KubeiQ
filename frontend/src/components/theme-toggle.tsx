@@ -8,6 +8,30 @@ function currentTheme(): "light" | "dark" {
   return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
 }
 
+/** "system" follows the operating system; light and dark are remembered in this browser. */
+export function setTheme(theme: "light" | "dark" | "system") {
+  try {
+    if (theme === "system") {
+      delete document.documentElement.dataset.theme;
+      localStorage.removeItem("kubeiq-theme");
+    } else {
+      document.documentElement.dataset.theme = theme;
+      localStorage.setItem("kubeiq-theme", theme);
+    }
+  } catch {
+    // storage unavailable; the theme still applies for this page
+  }
+}
+
+export function savedTheme(): "light" | "dark" | "system" {
+  try {
+    const t = localStorage.getItem("kubeiq-theme");
+    return t === "light" || t === "dark" ? t : "system";
+  } catch {
+    return "system";
+  }
+}
+
 export function toggleTheme() {
   const next = currentTheme() === "dark" ? "light" : "dark";
   document.documentElement.dataset.theme = next;

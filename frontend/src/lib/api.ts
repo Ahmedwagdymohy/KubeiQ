@@ -213,6 +213,11 @@ export type About = {
   database: string;
   secrets: string;
   local_kubeconfig: { path: string; contexts: number; error: string | null };
+  build: string | null;
+  started_at: string | null;
+  python: string | null;
+  clusters: number;
+  users: number;
 };
 
 export type GkeProject = { project_id: string; internal_ip: boolean };
@@ -294,7 +299,10 @@ export type User = {
   created_at: string;
   projects: ProjectAccess[];
   password?: string | null; // only right after it was generated
+  status?: "invited" | "active";
+  last_sign_in?: string | null;
 };
+export type WorkspaceSettings = { show_usage: boolean; namespace_badges: boolean; compact_rows: boolean; confirm_delete: boolean };
 
 export type Users = { users: User[]; max_users: number; plan: string };
 
@@ -605,6 +613,10 @@ export const api = {
     request<TimelineItem[]>(`/api/v1/insights/timeline?${query({ cluster_id: clusterId, namespace })}`),
   distribution: (clusterId: string, namespace: string | null) =>
     request<Distribution>(`/api/v1/insights/distribution?${query({ cluster_id: clusterId, namespace })}`),
+  workspace: () => request<WorkspaceSettings>("/api/v1/me/workspace"),
+  saveWorkspace: (body: WorkspaceSettings) => request<WorkspaceSettings>("/api/v1/settings/general", json("PUT", body)),
+  danger: (action: "clear-activity" | "remove-clusters" | "reset", confirm: string) =>
+    request<void>(`/api/v1/settings/danger/${action}`, json("POST", { confirm })),
   preferences: () => request<Preferences>("/api/v1/me/preferences"),
   savePreference: (key: string, value: unknown) =>
     request<void>(`/api/v1/me/preferences/${key}`, json("PUT", value)),

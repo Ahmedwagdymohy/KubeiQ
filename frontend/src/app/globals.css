@@ -153,7 +153,7 @@
   --color-label-pink: var(--label-pink);
   --color-label-slate: var(--label-slate);
   --font-sans: var(--font-manrope);
-  --font-mono: var(--font-jetbrains-mono);
+  --font-mono: var(--font-code, var(--font-jetbrains-mono));
 }
 
 body {
@@ -200,3 +200,8 @@ body {
 .kube-map .react-flow__controls-button:hover { background: var(--surface-2); color: var(--text); }
 .kube-map .react-flow__controls-button svg { fill: currentColor; }
 .kube-map .react-flow__node { cursor: default; }
+
+/* Appearance › Code font: the system's monospace instead of JetBrains Mono. */
+:root[data-mono="system"] {
+  --font-code: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}

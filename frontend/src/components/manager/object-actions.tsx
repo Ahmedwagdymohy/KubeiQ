@@ -6,6 +6,7 @@ import { createContext, useContext, useState, type FormEvent, type ReactNode } f
 import { RESTARTABLE, SCALABLE } from "@/components/manager/kinds";
 import { input, primaryButton, secondaryButton } from "@/components/settings/fields";
 import { useCanEdit } from "@/hooks/use-can-edit";
+import { useWorkspace } from "@/hooks/use-workspace";
 import { api, type ClusterAction, type KindInfo, type KubeObject, type ObjectRef } from "@/lib/api";
 
 const button =
@@ -359,9 +360,12 @@ function DeleteDialog({
   onConfirm: () => void;
 }) {
   const [typed, setTyped] = useState("");
+  // Settings › General can turn off typing the name; production clusters still ask (the guard).
+  const mustType = useWorkspace().confirm_delete;
+  const ok = !mustType || typed === name;
   const submit = (e: FormEvent) => {
     e.preventDefault();
-    if (typed === name) onConfirm();
+    if (ok) onConfirm();
   };
   return (
     <Modal onCancel={onCancel}>
@@ -372,6 +376,7 @@ function DeleteDialog({
         <p className="text-sm text-muted">
           This cannot be undone. If a controller owns it, Kubernetes may create it again.
         </p>
+        {mustType && (
         <label className="flex flex-col gap-1.5 text-sm">
           <span className="text-muted">
             Type <span className="font-mono text-fg">{name}</span> to confirm
@@ -385,11 +390,12 @@ function DeleteDialog({
             autoCapitalize="none"
           />
         </label>
+        )}
         <Footer
           action="Delete"
           danger
           pending={pending}
-          disabled={typed !== name}
+          disabled={!ok}
           error={error}
           onCancel={onCancel}
         />

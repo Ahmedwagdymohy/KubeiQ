@@ -94,3 +94,21 @@ class AboutOut(BaseModel):
     database: str
     secrets: str
     local_kubeconfig: LocalKubeconfig
+    build: str | None = None
+    started_at: datetime | None = None
+    python: str | None = None
+    clusters: int = 0
+    users: int = 0
+
+
+class WorkspaceSettings(BaseModel):
+    """Display preferences for everyone in the workspace (Settings, General)."""
+
+    show_usage: bool = True  # usage bars from metrics-server
+    namespace_badges: bool = True  # the Namespace column in all-namespace lists
+    compact_rows: bool = False  # the default; each user can change it under Appearance
+    confirm_delete: bool = True  # type the name to delete; always on for production clusters
+
+
+class DangerIn(BaseModel):
+    confirm: str = Field(max_length=64)
