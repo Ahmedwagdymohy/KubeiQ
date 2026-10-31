@@ -256,6 +256,30 @@ export type ConnectStatus = {
   note: string | null;
 };
 
+/** A cluster connected through the KubeiQ Agent (ADR 0017). */
+export type AgentCluster = {
+  name: string;
+  cluster_id: string;
+  state: "waiting" | "connected" | "offline" | "revoked";
+  connected_since: string | null;
+  last_seen_at: string | null;
+  agent_version: string | null;
+  kubernetes_version: string | null;
+  registered_at: string | null;
+  revoked_at: string | null;
+  code_expires_at: string | null;
+};
+
+/** A one-time install code, shown once inside the install command. */
+export type AgentCode = {
+  name: string;
+  cluster_id: string;
+  code: string;
+  expires_at: string;
+  project: string | null;
+  note: string | null;
+};
+
 export type GoogleSettings = {
   enabled: boolean;
   client_id: string;
@@ -706,6 +730,12 @@ export const api = {
   /** Admins: every connected cluster, without probing them (fast). */
   connectedClusters: () => request<Cluster[]>("/api/v1/clusters?all=true&check=false"),
   connectStatus: (id: string) => request<ConnectStatus>(`/api/v1/connect/codes/${id}`),
+  agentClusters: () => request<AgentCluster[]>("/api/v1/agent/clusters"),
+  addAgentCluster: (name: string, projectId: string | null) =>
+    request<AgentCode>("/api/v1/agent/clusters", json("POST", { name, project_id: projectId })),
+  agentCode: (name: string) => request<AgentCode>(`/api/v1/agent/clusters/${name}/code`, json("POST", {})),
+  revokeAgent: (name: string) => request<AgentCluster>(`/api/v1/agent/clusters/${name}/revoke`, json("POST", {})),
+  deleteAgentCluster: (name: string) => request<void>(`/api/v1/agent/clusters/${name}`, json("DELETE")),
   kinds: (clusterId: string) =>
     request<KindCategory[]>(`/api/v1/manager/resources?${query({ cluster_id: clusterId })}`),
   resources: (clusterId: string, kind: KindInfo, namespace: string | null) =>

@@ -58,6 +58,7 @@ export function ClustersSection() {
   });
   const removeFile = useMutation({ mutationFn: api.deleteKubeconfig, onSuccess: refresh });
   const removeToken = useMutation({ mutationFn: api.deleteTokenCluster, onSuccess: refresh });
+  const removeAgent = useMutation({ mutationFn: api.deleteAgentCluster, onSuccess: refresh });
   const gkeAvailable = Boolean(gke.data?.identity.email && !gke.data.identity.error);
 
   const fileOf = (c: Cluster): StoredKubeconfig | undefined =>
@@ -68,13 +69,18 @@ export function ClustersSection() {
       if (window.confirm(`Remove ${c.name}? KubeiQ forgets its address and token.`)) removeToken.mutate(c.context ?? c.name);
       return;
     }
+    if (c.method === "agent") {
+      if (window.confirm(`Remove ${c.name}? Its agent stops working; uninstall it from the cluster too.`))
+        removeAgent.mutate(c.context ?? c.name);
+      return;
+    }
     const file = fileOf(c);
     if (!file) return;
     const others = file.contexts.length - 1;
     const what = others > 0 ? `the kubeconfig ${file.name} and its ${others + 1} clusters` : `the kubeconfig ${file.name}`;
     if (window.confirm(`Remove ${c.name}? This removes ${what} from KubeiQ.`)) removeFile.mutate(file.id);
   };
-  const error = hide.error ?? removeFile.error ?? removeToken.error;
+  const error = hide.error ?? removeFile.error ?? removeToken.error ?? removeAgent.error;
 
   return (
     <Section
@@ -116,7 +122,7 @@ export function ClustersSection() {
                 key={c.id}
                 cluster={c}
                 inProject={held.has(c.id)}
-                removable={c.method === "token" || Boolean(fileOf(c))}
+                removable={c.method === "token" || c.method === "agent" || Boolean(fileOf(c))}
                 onEdit={(tab) => setEditing({ cluster: c, tab })}
                 onHide={() => hide.mutate({ id: c.id, hidden: true })}
                 onRemove={() => remove(c)}

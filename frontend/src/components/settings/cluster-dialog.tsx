@@ -4,6 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type ReactNode } from "react";
 
 import { Modal, Tabs } from "@/components/modal";
+import { AgentConnection, AgentPanel } from "@/components/settings/agent-panel";
 import { LabelEditor } from "@/components/settings/cluster-labels";
 import { connectUrl } from "@/components/settings/cluster-parts";
 import { ConnectPanel, FixPanel, PasteKubeconfig } from "@/components/settings/connect-panel";
@@ -218,8 +219,12 @@ function ConnectionTab({ cluster, onFixed }: { cluster: Cluster; onFixed: () => 
     ["Method", METHOD_LABEL[cluster.method]],
     ...(file ? ([["File", file]] as [string, ReactNode][]) : []),
     ...(cluster.method === "gke" ? ([["Project", cluster.id.slice(4).split("/")[0]]] as [string, ReactNode][]) : []),
-    ["Context", <span key="c" className="font-mono text-[13px]">{context}</span>],
-    ["API server", <span key="s" className="break-all font-mono text-[13px]">{cluster.server ?? "Unknown"}</span>],
+    ...(cluster.method === "agent"
+      ? []
+      : ([
+          ["Context", <span key="c" className="font-mono text-[13px]">{context}</span>],
+          ["API server", <span key="s" className="break-all font-mono text-[13px]">{cluster.server ?? "Unknown"}</span>],
+        ] as [string, ReactNode][])),
   ];
   return (
     <>
@@ -239,6 +244,7 @@ function ConnectionTab({ cluster, onFixed }: { cluster: Cluster; onFixed: () => 
         {test.error && <span className="text-sm text-danger">{(test.error as Error).message}</span>}
       </div>
       {cluster.method === "token" && <TokenForm existing={cluster} onDone={onFixed} />}
+      {cluster.method === "agent" && <AgentConnection name={context} onRemoved={onFixed} />}
       {(cluster.method === "upload" || cluster.method === "kubeconfig") && (
         <div className="flex flex-col gap-3 border-t border-border pt-5">
           <div className="flex flex-col gap-1">
@@ -498,7 +504,7 @@ const METHODS: { id: Method; title: string; text: string; badge?: string; disabl
   { id: "kubeconfig", title: "Kubeconfig", text: "Paste or upload a kubeconfig file, or create one with connect.sh" },
   { id: "token", title: "Token", text: "An API server address and a ServiceAccount token, with its CA" },
   { id: "gcp", title: "Google Cloud", text: "GKE clusters found with this server's Google identity. No key stored" },
-  { id: "agent", title: "Agent", text: "For private clusters: an agent connects out to KubeiQ", badge: "Planned", disabled: true },
+  { id: "agent", title: "Agent", text: "For private clusters: an agent in the cluster connects out to KubeiQ" },
 ];
 
 /** Add a cluster: choose how, then the matching flow. Every method tests before saving. */
@@ -541,6 +547,7 @@ export function AddClusterDialog({ gkeAvailable, onClose }: { gkeAvailable: bool
         {method === "kubeconfig" && <PasteKubeconfig onAdded={done} onBack={() => setMethod("command")} />}
         {method === "token" && <TokenForm onDone={done} />}
         {method === "gcp" && <GkePanel />}
+        {method === "agent" && <AgentPanel onDone={done} />}
       </div>
     </Modal>
   );
