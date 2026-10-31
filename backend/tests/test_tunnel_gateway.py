@@ -16,6 +16,8 @@ from typing import Any
 import pytest
 from kubernetes.client import CoreV1Api, VersionApi
 from kubernetes.client.exceptions import ApiException
+from kubernetes.stream import stream as kube_stream
+from websockets.asyncio.server import ServerConnection, serve
 
 from kubeiq.clusters.agent import AgentSource
 from kubeiq.clusters.base import ClusterNotFoundError
@@ -234,3 +236,30 @@ async def test_the_source_knows_only_its_clusters(hub: AgentHub) -> None:
     source.set_entries([])
     with pytest.raises(ClusterNotFoundError):
         source.api_client("agent:edge")
+
+
+async def test_exec_upgrades_pass_through_the_tunnel(hub: AgentHub) -> None:
+    """The terminal's WebSocket exec is just more bytes on a stream."""
+
+    async def exec_handler(ws: ServerConnection) -> None:
+        assert ws.request is not None and "/pods/web/exec" in ws.request.path
+        await ws.send(b"\x01hello from the pod\n")  # channel 1: stdout
+        await ws.close()
+
+    async with serve(exec_handler, "127.0.0.1", 0, subprotocols=["v4.channel.k8s.io"]) as server:
+        port = next(iter(server.sockets)).getsockname()[1]
+        source = source_for(hub, "edge")
+        await connect_agent(hub, "edge", port)
+        api = CoreV1Api(source.api_client("agent:edge"))
+        output = await asyncio.to_thread(
+            kube_stream,
+            api.connect_get_namespaced_pod_exec,
+            "web",
+            "default",
+            command=["echo"],
+            stdout=True,
+            stderr=False,
+            stdin=False,
+            tty=False,
+        )
+    assert output == "hello from the pod\n"
