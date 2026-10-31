@@ -78,6 +78,8 @@ from kubeiq.settings.models import (
     WorkspaceSettings,
 )
 from kubeiq.settings.providers import PROVIDERS, Provider
+from kubeiq.tunnel import service as agents
+from kubeiq.tunnel.hub import get_hub
 
 STARTED_AT = datetime.now(UTC)
 
@@ -528,7 +530,7 @@ async def clear_activity(body: DangerIn, session: SessionDep, admin: AdminUser) 
 
 
 async def _remove_clusters(session: AsyncSession) -> int:
-    """Remove every cluster added in Settings (files, tokens, GKE projects) and take all
+    """Remove every cluster added in Settings (files, tokens, GKE projects, agents) and take all
     clusters out of the projects. The server's own kubeconfig cannot be removed here."""
     removed = 0
     for row in await repository.list_kubeconfigs(session):
@@ -541,6 +543,10 @@ async def _remove_clusters(session: AsyncSession) -> int:
     await service.save_token_clusters(session, [])
     await repository.put_value(session, repository.GKE_KEY, {"projects": []})
     get_gke_source().set_projects([])
+    for agent in await agents.list_rows(session):
+        await get_hub().disconnect(agent.name, "removed")
+        await agents.delete(session, agent)
+        removed += 1
     for project in await auth_repository.list_projects(session):
         project.scopes = []
     await session.execute(delete(ClusterSetting).where(ClusterSetting.org_id == DEFAULT_ORG))

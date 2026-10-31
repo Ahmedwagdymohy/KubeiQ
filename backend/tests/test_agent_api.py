@@ -171,3 +171,12 @@ def test_an_offline_agent_cluster_reports_why(client: TestClient) -> None:
     body = response.json()["status"]
     assert body["reachable"] is False
     assert "agent" in body["error"].lower()
+
+
+def test_removing_every_cluster_removes_agent_clusters(client: TestClient) -> None:
+    add(client)
+    response = client.post(
+        "/api/v1/settings/danger/remove-clusters", json={"confirm": "Remove clusters"}
+    )
+    assert response.status_code == 204
+    assert states(client) == {}
