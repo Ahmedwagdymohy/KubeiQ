@@ -5,6 +5,12 @@ All notable changes to KubeiQ. Versions follow [Semantic Versioning](https://sem
 ## Unreleased
 
 ### Added
+- **KubeiQ Agent for private clusters.** Settings, Clusters, Add, Agent gives one `kubectl apply`
+  command with a one-time code. The agent runs in the cluster with read-only access (no Secrets),
+  connects out to KubeiQ over one WebSocket and reconnects on its own; the cluster opens no port
+  and KubeiQ stores no credentials for it, only hashes. Live status (connected, last seen, agent
+  and Kubernetes versions), new install commands and revoke in the cluster's Connection tab. Log
+  follows, watches and the terminal work through it (ADR 0017).
 - **A sidebar that knows Kubernetes.** Products, then the resources grouped the way people think
   (Workloads, Network, Config, Storage, Access, Cluster), one group open at a time. Pin up to five
   items to the top, or collapse the sidebar to an icon rail; both follow you to any browser.

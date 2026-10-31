@@ -84,10 +84,10 @@ Update this file in the same commit that completes a task.
 
 ## Phase 5 — Production & distribution
 - [ ] Helm chart
-- [ ] KubeiQ Agent: in-cluster agent that connects out over WebSocket, for private and firewalled clusters (design: [docs/agent.md](agent.md))
-  - [ ] Tunnel protocol and `AgentSource` (`ClusterSource`): concurrent and streamed requests, reconnects
-  - [ ] Agent image (GHCR, multi-arch), install manifest served by KubeiQ, Helm chart
-  - [ ] Settings › Clusters › Agent: install command with a one-time code, live status, revoke
+- [ ] KubeiQ Agent: in-cluster agent that connects out over WebSocket, for private and firewalled clusters (ADR 0017, [docs/agent.md](agent.md))
+  - [x] Tunnel protocol and `AgentSource` (`ClusterSource`): concurrent and streamed requests, exec, reconnects
+  - [ ] Agent image (GHCR, multi-arch), install manifest served by KubeiQ, Helm chart. Done: Go agent, Dockerfile, publish job, served manifest. Open: first image build and publish, Helm chart
+  - [x] Settings › Clusters › Agent: install command with a one-time code, live status, revoke
   - [ ] End-to-end test on kind with the API server unreachable from KubeiQ
 - [x] Production Compose stack: one-origin proxy with automatic HTTPS, Postgres, generated secrets, readiness on the database
 - [x] Versioned multi-arch images to GHCR (`main`, `x.y.z`, `latest`); the installer pulls them
@@ -96,7 +96,7 @@ Update this file in the same commit that completes a task.
 ## Product requirements (planned)
 Full requirements in [docs/requirements](requirements/README.md); items move here when scheduled.
 - [x] App shell: grouped sidebar, pinning, cluster status bar, Ctrl+1..9, a command palette that finds resources (01)
-- [x] Clusters screen: one row per cluster, labels and environments, add/edit dialog with tabs, thresholds (02). The Agent method waits for the KubeiQ Agent (Phase 5)
+- [x] Clusters screen: one row per cluster, labels and environments, add/edit dialog with tabs, thresholds (02). The Agent method connects through the KubeiQ Agent (ADR 0017)
 - [x] Settings regrouped; General, Appearance, License, About, danger zone; user status (03)
 - [ ] Two-factor sign-in (TOTP and backup codes); several AI providers with a default (03)
 - [x] Multi-cluster dashboard cards with real usage history (04). Drag-and-resize layouts are still open

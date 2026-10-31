@@ -39,6 +39,7 @@ features (teams, SSO, RBAC, audit, more clusters), never core usefulness.
 | 0013 | Sign in with Google is free core (OIDC + PKCE on the server, invite only: admins allow emails with a role); generic OIDC/LDAP/SAML stay `ee/` |
 | 0014 | One command connects a cluster: a one-time code, KubeiQ serves `connect.sh`, tests the cluster before saving, links local Docker networks (minikube) |
 | 0015 | Usage history: a sample per cluster per minute in our own database, 10-minute averages after a day, 7 days; disk only from the kubelet, never guessed |
+| 0017 | KubeiQ Agent: in-cluster Go agent dials out over one WebSocket; byte streams multiplexed with flow control; a local gateway keeps `ApiClient` unchanged; the agent adds its own read-only token; one-time install codes, hashed revocable tokens |
 
 Do not reverse an ADR silently — write a new ADR that supersedes it.
 
@@ -49,9 +50,11 @@ backend/            FastAPI service (Python 3.12, uv). Package: backend/src/kube
   src/kubeiq/
     api/            HTTP routes (versioned under /api/v1)
     core/           config, logging, shared utilities
-    clusters/       ClusterSource abstraction: kubeconfig, uploaded kubeconfigs, GKE (cloud identity), token;
+    clusters/       ClusterSource abstraction: kubeconfig, uploaded kubeconfigs, GKE (cloud identity), token, agent (tunnel);
                     meta.py = per-cluster settings (display name, labels, default namespace, thresholds)
     connect/        one-command connect: one-time codes, served copy of deploy/connect.sh + rbac (make sync-connect)
+    tunnel/         KubeiQ Agent (ADR 0017): tunnel protocol + mux, live agents and the local gateway (hub.py),
+                    install codes/tokens (service.py), served install manifest (assets/)
     usage/          cluster summary for the status bar and dashboard (node readiness, metrics-server usage),
                     history.py = usage samples for trend lines (ADR 0015)
     collectors/     read-only evidence collectors (pods, events, logs, deployments, network)
@@ -84,11 +87,13 @@ frontend/           The self-hosted app: Next.js (TypeScript, Tailwind, App Rout
   src/lib/api.ts      typed API client and SSE helper; lib/scope.ts = cluster in scope (status bar), lib/fleet.ts = workload health,
                       lib/navigation.ts = sidebar groups (also used by the palette and breadcrumb)
 website/            Marketing site (live at kubeiq.pages.dev): landing, product pages, pricing, install. Static export
+agent/              KubeiQ Agent (Go, standard library only): tunnel client, mux, reverse proxy to the API server.
+                    Dockerfile = multi-arch distroless image. `make check-agent` (skipped without Go)
 ee/                 Commercial features (separate license)
 deploy/             install.sh (the one-line installer), uninstall.sh (removes only what it set up), connect.sh (read-only cluster access; edit here, then
                     `make sync-connect`), Caddyfile, rbac/
 examples/           Intentionally broken workloads for testing diagnoses
-docs/               Architecture, roadmap, ADRs, agent.md (planned in-cluster agent),
+docs/               Architecture, roadmap, ADRs, agent.md (the KubeiQ Agent: how it works, install, troubleshooting),
                     requirements/ (planned product work, one file per area)
 ```
 
@@ -115,6 +120,10 @@ pnpm lint && pnpm build                 # static export to website/out
 # Full stack
 docker compose up --build             # proxy, app, API and Postgres; everything on :3000
 make check                            # everything CI runs; run before every commit
+
+# KubeiQ Agent (Go; CI runs these, make check skips them without Go)
+cd agent && gofmt -l . && go vet ./... && go test ./...
+docker build --build-arg VERSION=0.4.0 -t kubeiq-agent:dev agent   # then KUBEIQ_AGENT_IMAGE=kubeiq-agent:dev
 make fmt                              # auto-format backend
 make sync-connect                     # after editing deploy/connect.sh or deploy/rbac (KubeiQ serves copies)
 cd backend && uv run alembic revision --autogenerate -m "..."   # new DB migration
