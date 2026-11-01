@@ -41,6 +41,7 @@ want, what exists today, and how we know it is done.
 | 06 | [Insights](06-insights.md) | Pod distribution across nodes, events timeline, health-first map |
 | 07 | [AI features](07-ai.md) | Log analysis, the cluster assistant, how they connect to Cluster Doctor |
 | 08 | [Access, audit and notifications](08-access-audit-notifications.md) | Roles and permissions per cluster, audit log, alerts to Slack, email and webhooks |
+| 09 | [Cluster Security](09-cluster-security.md) | Trivy and Kubescape scans, merged and ranked findings, image CVEs, compliance, AI fixes |
 
 ## Suggested order
 

@@ -5,6 +5,15 @@ All notable changes to KubeiQ. Versions follow [Semantic Versioning](https://sem
 ## Unreleased
 
 ### Added
+- **Cluster Security.** A new product that scans a cluster with Trivy and Kubescape and turns the
+  results into one ranked list: misconfigurations, risky RBAC and image vulnerabilities, with NSA-CISA,
+  MITRE ATT&CK and CIS compliance. The same problem found by both scanners shows once. Findings on
+  workloads that are reachable from outside, run as root or ship critical CVEs with a fix rank first;
+  Kubernetes' own objects are hidden unless you ask. Fix with AI writes a patch and a complete
+  `kubectl patch` command for the live object; KubeiQ never applies it. Scanners only read: a local
+  proxy refuses every write, every Secret and exec, even with an admin kubeconfig, and the scan shows
+  what it refused. Trivy and Kubescape are installed on first use at pinned versions checked against
+  their checksums (ADR 0016).
 - **A sidebar that knows Kubernetes.** Products, then the resources grouped the way people think
   (Workloads, Network, Config, Storage, Access, Cluster), one group open at a time. Pin up to five
   items to the top, or collapse the sidebar to an icon rail; both follow you to any browser.

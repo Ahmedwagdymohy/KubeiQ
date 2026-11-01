@@ -105,6 +105,9 @@ Full requirements in [docs/requirements](requirements/README.md); items move her
 - [x] AI log analysis and a cluster assistant (07). Several AI providers with a default is still open (03)
 - [x] A filterable audit log, notifications to Slack, Teams, Discord, Telegram, email and webhooks, viewer limits tested (08)
 - [ ] Permissions as verbs and custom roles (`ee/`); AI summaries in alerts; a live audit stream
+- [x] Cluster Security phase 1: Trivy and Kubescape through a read-only proxy, merged and ranked findings, image CVEs, NSA/MITRE/CIS compliance, AI summary and fixes (09, ADR 0016)
+- [ ] Cluster Security phase 2: manifest and IaC scans (KubeLinter, Checkov), network policy and mTLS coverage, Gatekeeper, private registries (09)
+- [ ] Cluster Security phase 3: kube-bench and node CIS checks, Falco runtime alerts, scheduled scans (09)
 
 ## Later — Cluster Doctor features
 - [x] "Explain" chat on each incident: ask follow-up questions with the incident's evidence as context

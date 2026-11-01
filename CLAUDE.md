@@ -39,6 +39,7 @@ features (teams, SSO, RBAC, audit, more clusters), never core usefulness.
 | 0013 | Sign in with Google is free core (OIDC + PKCE on the server, invite only: admins allow emails with a role); generic OIDC/LDAP/SAML stay `ee/` |
 | 0014 | One command connects a cluster: a one-time code, KubeiQ serves `connect.sh`, tests the cluster before saving, links local Docker networks (minikube) |
 | 0015 | Usage history: a sample per cluster per minute in our own database, 10-minute averages after a day, 7 days; disk only from the kubelet, never guessed |
+| 0016 | Cluster Security runs Trivy and Kubescape as pinned, checksum-verified subprocesses through a local read-only proxy (no writes, no Secrets, no exec); results merged and ranked; AI explains and drafts fixes |
 
 Do not reverse an ADR silently — write a new ADR that supersedes it.
 
@@ -67,12 +68,15 @@ backend/            FastAPI service (Python 3.12, uv). Package: backend/src/kube
     products/map/   Cluster Map: extra collectors, relations (ported from Headlamp), health, /api/v1/map
     products/manager/ Cluster Manager: kind discovery, Table API lists, YAML, events, logs, actions
     products/insights/ Timeline (events + KubeiQ activity) and Pod Distribution, /api/v1/insights
+    products/security/ Cluster Security (ADR 0016): scanner installs (tools.py), the read-only scan proxy,
+                    Trivy/Kubescape parsers, merge + risk ranking, AI summary and fixes, /api/v1/security
   tests/
 frontend/           The self-hosted app: Next.js (TypeScript, Tailwind, App Router, React Query)
   src/app/page.tsx    Overview: cluster ledger (workload health per cluster), failing workloads, recent investigations
   src/app/doctor/     Cluster Doctor (/doctor?id=<investigation>; ?cluster=&namespace=&focus=<ref> starts a scan)
   src/app/map/        Cluster Map (React Flow + ELK); graph logic in src/lib/map (adapted from Headlamp)
   src/app/manager/    Cluster Manager (?cluster&namespace&kind&name&in are shareable)
+  src/app/security/   Cluster Security: overview, findings, vulnerabilities, compliance (components/security)
   src/app/timeline/, src/app/distribution/  Insights: the event timeline and pod distribution
   src/app/login/      Sign-in page; AuthGate (components/auth) sends signed-out users here
   src/app/welcome/    First sign-in: create the project, then add clusters (AuthGate sends new admins)
@@ -149,7 +153,8 @@ kind create cluster --name kubeiq-dev # adds context kind-kubeiq-dev
 - **Fix commands must be complete.** Users copy them as-is. Build them with `detectors/commands.py`:
   fill values from evidence, named placeholders only for unknowable values, verify on the workload.
 - Products live in the app sidebar (the shell in `components/shell/app-shell.tsx`, mounted by
-  `providers.tsx`): Cluster Doctor (`/doctor`), Cluster Map (`/map`), Cluster Manager (`/manager`).
+  `providers.tsx`): Cluster Doctor (`/doctor`), Cluster Map (`/map`), Cluster Manager (`/manager`),
+  Cluster Security (`/security`).
   A new product = a new module: its own route, API router and enable flag, using only shared
   platform code (never importing another product). Add it to the website too (product page).
 - Code adapted from Headlamp (Apache-2.0) keeps its copyright header plus a "Modified by the KubeiQ
