@@ -1,0 +1,90 @@
+{
+ "name": "NSA",
+ "controls": [
+  {
+   "controlID": "C-0002",
+   "description": "Attackers with relevant permissions can run malicious commands in the context of legitimate containers in the cluster using \u201ckubectl exec\u201d command. This control determines which subjects have permissions to use this command.",
+   "remediation": "It is recommended to prohibit \u201ckubectl exec\u201d command in production environments. It is also recommended not to use subjects with this permission for daily cluster operations."
+  },
+  {
+   "controlID": "C-0012",
+   "description": "Attackers who have access to configuration files can steal the stored secrets and use them. This control checks if ConfigMaps or pod specifications have sensitive information in their configuration.",
+   "remediation": "Use Kubernetes secrets or Key Management Systems to store credentials."
+  },
+  {
+   "controlID": "C-0013",
+   "description": "Potential attackers may gain access to a container and leverage its existing privileges to conduct an attack. Therefore, it is not recommended to deploy containers with root privileges unless it is absolutely necessary. This control identifies all the pods running as root or can escalate to root.",
+   "remediation": "If your application does not need root privileges, make sure to define runAsNonRoot as true or explicitly set the runAsUser using ID 1000 or higher under the PodSecurityContext or container securityContext. In addition, set an explicit value for runAsGroup using ID 1000 or higher."
+  },
+  {
+   "controlID": "C-0016",
+   "description": "Attackers may gain access to a container and uplift its privilege to enable excessive capabilities.",
+   "remediation": "If your application does not need it, make sure the allowPrivilegeEscalation field of the securityContext is set to false."
+  },
+  {
+   "controlID": "C-0017",
+   "description": "Mutable container filesystem can be abused to inject malicious code or data into containers. Use immutable (read-only) filesystem to limit potential attacks.",
+   "remediation": "Set the filesystem of the container to read-only when possible (pod securityContext, readOnlyRootFilesystem: true). If containers application needs to write into the filesystem, it is recommended to mount secondary filesystems for specific directories where application require write access."
+  },
+  {
+   "controlID": "C-0030",
+   "description": "Disable Ingress and Egress traffic on all pods wherever possible. It is recommended to define restrictive network policy on all new pods, and then enable sources/destinations that this pod must communicate with.",
+   "remediation": "Define a NetworkPolicy, CiliumNetworkPolicy, or CiliumClusterwideNetworkPolicy that restricts ingress and egress connections."
+  },
+  {
+   "controlID": "C-0034",
+   "description": "Potential attacker may gain access to a pod and steal its service account token. Therefore, it is recommended to disable automatic mapping of the service account tokens in service account configuration and enable it only for pods that need to use them.",
+   "remediation": "Disable automatic mounting of service account tokens to pods either at the service account level or at the individual pod level, by specifying the automountServiceAccountToken: false. Note that pod level takes precedence."
+  },
+  {
+   "controlID": "C-0035",
+   "description": "Attackers who have cluster admin permissions (can perform any action on any resource), can take advantage of their privileges for malicious activities. This control determines which subjects have cluster admin permissions.",
+   "remediation": "You should apply least privilege principle. Make sure cluster admin permissions are granted only when it is absolutely necessary. Don't use subjects with such high permissions for daily operations."
+  },
+  {
+   "controlID": "C-0038",
+   "description": "Containers should be isolated from the host machine as much as possible. The hostPID and hostIPC fields in deployment yaml may allow cross-container influence and may expose the host itself to potentially malicious or destructive actions. This control identifies all pods using hostPID or hostIPC privileges.",
+   "remediation": "Remove hostPID and hostIPC from the yaml file(s) privileges unless they are absolutely necessary."
+  },
+  {
+   "controlID": "C-0041",
+   "description": "Potential attackers may gain access to a pod and inherit access to the entire host network. For example, in AWS case, they will have access to the entire VPC. This control identifies all the pods with host network access enabled.",
+   "remediation": "Only connect pods to host network when it is necessary. If not, set the hostNetwork field of the pod spec to false, or completely remove it (false is the default). Whitelist only those pods that must have access to host network by design."
+  },
+  {
+   "controlID": "C-0044",
+   "description": "Configuring hostPort requires a particular port number. If two objects specify the same HostPort, they could not be deployed to the same node. It may prevent the second object from starting, even if Kubernetes will try reschedule it on another node, provided there are available nodes with sufficient amount of resources. Also, if the number of replicas of such workload is higher than the number of nodes, the deployment will consistently fail.",
+   "remediation": "Avoid usage of hostPort unless it is absolutely necessary, in which case define appropriate exception. Use NodePort / ClusterIP instead."
+  },
+  {
+   "controlID": "C-0046",
+   "description": "Giving insecure or excessive capabilities to a container can increase the impact of the container compromise. This control identifies all the pods with dangerous capabilities (see documentation pages for details).",
+   "remediation": "Remove all insecure capabilities which are not necessary for the container."
+  },
+  {
+   "controlID": "C-0055",
+   "description": "Containers may be given more privileges than they actually need. This can increase the potential impact of a container compromise.",
+   "remediation": "You can use AppArmor, Seccomp, SELinux and Linux Capabilities mechanisms to restrict containers abilities to utilize unwanted privileges."
+  },
+  {
+   "controlID": "C-0057",
+   "description": "Potential attackers may gain access to privileged containers and inherit access to the host resources. Therefore, it is not recommended to deploy privileged containers unless it is absolutely necessary. This control identifies all the privileged Pods.",
+   "remediation": "Remove privileged capabilities by setting the securityContext.privileged to false. If you must deploy a Pod as privileged, add other restriction to it, such as network policy, Seccomp etc and still remove all unnecessary capabilities. Use the exception mechanism to remove unnecessary notifications."
+  },
+  {
+   "controlID": "C-0270",
+   "description": "This control identifies all Pods for which the CPU limits are not set.",
+   "remediation": "Set the CPU limits or use exception mechanism to avoid unnecessary notifications."
+  },
+  {
+   "controlID": "C-0271",
+   "description": "This control identifies all Pods for which the memory limits are not set.",
+   "remediation": "Set the memory limits or use exception mechanism to avoid unnecessary notifications."
+  },
+  {
+   "controlID": "C-0292",
+   "description": "The nginx ingress controller project reaches End of Life (EOL) in March 2026. After this date, no security patches or functional updates will be provided. This control identifies workloads using nginx ingress controllers to help users plan migration to supported alternatives.",
+   "remediation": "Migrate to a supported ingress controller solution: 1) F5 NGINX Ingress Controller (https://docs.nginx.com/nginx-ingress-controller/) for a supported NGINX-based option, 2) Kubernetes Gateway API for a cloud-native approach, 3) HAProxy Ingress, 4) Traefik, 5) Cloud-native solutions (AWS ALB Ingress Controller, GKE Ingress, Azure Application Gateway Ingress Controller). Plan your migration before the EOL date to ensure continued security and support."
+  }
+ ]
+}

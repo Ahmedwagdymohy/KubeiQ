@@ -24,6 +24,7 @@ from kubeiq.products.insights import api as insights_api
 from kubeiq.products.manager import api as manager_api
 from kubeiq.products.manager import terminal
 from kubeiq.products.map import api as map_api
+from kubeiq.products.security import api as security_api
 
 router = APIRouter(prefix="/api/v1")
 router.include_router(auth.router)
@@ -46,4 +47,5 @@ protected.include_router(projects.router)
 protected.include_router(map_api.router)
 protected.include_router(manager_api.router)
 protected.include_router(insights_api.router)
+protected.include_router(security_api.router)
 router.include_router(protected)

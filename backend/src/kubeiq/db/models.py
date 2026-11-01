@@ -311,3 +311,41 @@ class AuditEvent(Base):
     namespace: Mapped[str | None] = mapped_column(String(255))
     detail: Mapped[str | None] = mapped_column(Text)
     ok: Mapped[bool] = mapped_column(default=True)
+
+
+class SecurityScan(Base):
+    """One Cluster Security scan of a cluster (ADR 0016). ``summary`` holds the score inputs,
+    counts, frameworks and how each scanner ran; the rows are in ``security_items``."""
+
+    __tablename__ = "security_scans"
+    __table_args__ = (Index("ix_security_scans_cluster", "cluster_id", "started_at"),)
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
+    org_id: Mapped[str] = mapped_column(String(64), default=DEFAULT_ORG)
+    cluster_id: Mapped[str] = mapped_column(String(512))
+    status: Mapped[str] = mapped_column(String(16), default="running")  # running|completed|failed
+    step: Mapped[str | None] = mapped_column(String(200))
+    started_by: Mapped[str] = mapped_column(String(254))
+    started_at: Mapped[datetime] = mapped_column(default=_now)
+    finished_at: Mapped[datetime | None] = mapped_column()
+    score: Mapped[int | None] = mapped_column(Integer)
+    summary: Mapped[dict[str, Any]] = mapped_column(JSON, default=dict)
+    error: Mapped[str | None] = mapped_column(Text)
+    ai_summary: Mapped[dict[str, Any] | None] = mapped_column(JSON)
+
+
+class SecurityItem(Base):
+    """A finding, vulnerability or framework control of a scan, in ranked order. ``namespace``
+    is kept as a column so lists can be limited to the namespaces a user may see."""
+
+    __tablename__ = "security_items"
+    __table_args__ = (Index("ix_security_items_scan", "scan_id", "type", "position"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    org_id: Mapped[str] = mapped_column(String(64), default=DEFAULT_ORG)
+    scan_id: Mapped[str] = mapped_column(ForeignKey("security_scans.id", ondelete="CASCADE"))
+    type: Mapped[str] = mapped_column(String(16))  # finding|vulnerability|control
+    position: Mapped[int] = mapped_column(Integer)
+    namespace: Mapped[str | None] = mapped_column(String(253))
+    severity: Mapped[str] = mapped_column(String(16))
+    data: Mapped[dict[str, Any]] = mapped_column(JSON)

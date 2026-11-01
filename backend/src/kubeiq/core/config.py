@@ -40,6 +40,12 @@ class Settings(BaseSettings):
     # How often the alert engine checks clusters for notifications. 0 turns it off.
     alert_seconds: int = 60
 
+    # Cluster Security scanners (ADR 0016). Unset: KubeiQ installs pinned, verified versions into
+    # <data_dir>/scanners on first use. Set to use binaries you provide (air-gapped installs).
+    trivy_path: str | None = None
+    kubescape_path: str | None = None
+    security_scan_minutes: int = 20  # a scan that takes longer is stopped
+
     kubeconfig: str | None = None
     # Set to host.docker.internal when running in Docker against kind/minikube/k3d clusters.
     kubeconfig_localhost_alias: str | None = None

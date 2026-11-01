@@ -1,0 +1,5381 @@
+{
+ "summaryDetails": {
+  "complianceScore": 40.574512,
+  "controls": {
+   "C-0002": {
+    "statusInfo": {
+     "status": "failed",
+     "subStatus": "w/exceptions"
+    },
+    "controlID": "C-0002",
+    "name": "Prevent containers from allowing command execution",
+    "status": "failed",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 80,
+     "failedResources": 2,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 1
+    },
+    "score": 2.4390244,
+    "complianceScore": 97.560974,
+    "scoreFactor": 5,
+    "category": {
+     "name": "Access control",
+     "id": "Cat-2"
+    },
+    "severity": "Medium"
+   },
+   "C-0007": {
+    "statusInfo": {
+     "status": "failed",
+     "subStatus": "w/exceptions"
+    },
+    "controlID": "C-0007",
+    "name": "Roles with delete capabilities",
+    "status": "failed",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 61,
+     "failedResources": 21,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 17
+    },
+    "score": 25.609756,
+    "complianceScore": 74.39024,
+    "scoreFactor": 5,
+    "category": {
+     "name": "Access control",
+     "id": "Cat-2"
+    },
+    "severity": "Medium"
+   },
+   "C-0012": {
+    "statusInfo": {
+     "status": "passed"
+    },
+    "controlID": "C-0012",
+    "name": "Applications credentials in configuration files",
+    "status": "passed",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 33,
+     "failedResources": 0,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 0
+    },
+    "score": 0,
+    "complianceScore": 100,
+    "scoreFactor": 8,
+    "category": {
+     "name": "Secrets",
+     "id": "Cat-3"
+    },
+    "severity": "High"
+   },
+   "C-0013": {
+    "statusInfo": {
+     "status": "failed",
+     "subStatus": "w/exceptions"
+    },
+    "controlID": "C-0013",
+    "name": "Non-root containers",
+    "status": "failed",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 0,
+     "failedResources": 18,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 6
+    },
+    "score": 100,
+    "complianceScore": 0,
+    "scoreFactor": 6,
+    "category": {
+     "name": "Workload",
+     "id": "Cat-5",
+     "subCategory": {
+      "name": "Node escape",
+      "id": "Cat-9"
+     }
+    },
+    "severity": "Medium"
+   },
+   "C-0014": {
+    "statusInfo": {
+     "status": "passed"
+    },
+    "controlID": "C-0014",
+    "name": "Access Kubernetes dashboard",
+    "status": "passed",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 100,
+     "failedResources": 0,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 0
+    },
+    "score": 0,
+    "complianceScore": 100,
+    "scoreFactor": 2,
+    "category": {
+     "name": "Access control",
+     "id": "Cat-2"
+    },
+    "severity": "Low"
+   },
+   "C-0015": {
+    "statusInfo": {
+     "status": "failed",
+     "subStatus": "w/exceptions"
+    },
+    "controlID": "C-0015",
+    "name": "List Kubernetes secrets",
+    "status": "failed",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 73,
+     "failedResources": 9,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 7
+    },
+    "score": 10.97561,
+    "complianceScore": 89.02439,
+    "scoreFactor": 7,
+    "category": {
+     "name": "Access control",
+     "id": "Cat-2"
+    },
+    "severity": "High"
+   },
+   "C-0016": {
+    "statusInfo": {
+     "status": "failed",
+     "subStatus": "w/exceptions"
+    },
+    "controlID": "C-0016",
+    "name": "Allow privilege escalation",
+    "status": "failed",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 1,
+     "failedResources": 17,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 5
+    },
+    "score": 89.21569,
+    "complianceScore": 5.555556,
+    "scoreFactor": 6,
+    "category": {
+     "name": "Workload",
+     "id": "Cat-5",
+     "subCategory": {
+      "name": "Node escape",
+      "id": "Cat-9"
+     }
+    },
+    "severity": "Medium"
+   },
+   "C-0017": {
+    "statusInfo": {
+     "status": "failed",
+     "subStatus": "w/exceptions"
+    },
+    "controlID": "C-0017",
+    "name": "Immutable container filesystem",
+    "status": "failed",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 1,
+     "failedResources": 17,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 5
+    },
+    "score": 89.21569,
+    "complianceScore": 5.555556,
+    "scoreFactor": 3,
+    "category": {
+     "name": "Workload",
+     "id": "Cat-5",
+     "subCategory": {
+      "name": "Node escape",
+      "id": "Cat-9"
+     }
+    },
+    "severity": "Low"
+   },
+   "C-0020": {
+    "statusInfo": {
+     "status": "passed"
+    },
+    "controlID": "C-0020",
+    "name": "Mount service principal",
+    "status": "passed",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 18,
+     "failedResources": 0,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 0
+    },
+    "score": 0,
+    "complianceScore": 100,
+    "scoreFactor": 4,
+    "category": {
+     "name": "Workload",
+     "id": "Cat-5"
+    },
+    "severity": "Medium"
+   },
+   "C-0030": {
+    "statusInfo": {
+     "status": "failed",
+     "subStatus": "w/exceptions"
+    },
+    "controlID": "C-0030",
+    "name": "Ingress and Egress blocked",
+    "status": "failed",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 0,
+     "failedResources": 18,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 6
+    },
+    "score": 99.999985,
+    "complianceScore": 0,
+    "scoreFactor": 6,
+    "category": {
+     "name": "Network",
+     "id": "Cat-4"
+    },
+    "severity": "Medium"
+   },
+   "C-0031": {
+    "statusInfo": {
+     "status": "failed",
+     "subStatus": "w/exceptions"
+    },
+    "controlID": "C-0031",
+    "name": "Delete Kubernetes events",
+    "status": "failed",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 78,
+     "failedResources": 4,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 3
+    },
+    "score": 4.878049,
+    "complianceScore": 95.12195,
+    "scoreFactor": 4,
+    "category": {
+     "name": "Access control",
+     "id": "Cat-2"
+    },
+    "severity": "Medium"
+   },
+   "C-0034": {
+    "statusInfo": {
+     "status": "failed",
+     "subStatus": "w/exceptions"
+    },
+    "controlID": "C-0034",
+    "name": "Automatic mapping of service account",
+    "status": "failed",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 50,
+     "failedResources": 18,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 6
+    },
+    "score": 28.977268,
+    "complianceScore": 73.52941,
+    "scoreFactor": 6,
+    "category": {
+     "name": "Secrets",
+     "id": "Cat-3"
+    },
+    "severity": "Medium"
+   },
+   "C-0035": {
+    "statusInfo": {
+     "status": "failed",
+     "subStatus": "w/exceptions"
+    },
+    "controlID": "C-0035",
+    "name": "Administrative Roles",
+    "status": "failed",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 80,
+     "failedResources": 2,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 1
+    },
+    "score": 2.4390244,
+    "complianceScore": 97.560974,
+    "scoreFactor": 6,
+    "category": {
+     "name": "Access control",
+     "id": "Cat-2"
+    },
+    "severity": "Medium"
+   },
+   "C-0037": {
+    "statusInfo": {
+     "status": "failed",
+     "subStatus": "w/exceptions"
+    },
+    "controlID": "C-0037",
+    "name": "CoreDNS poisoning",
+    "status": "failed",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 77,
+     "failedResources": 5,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 3
+    },
+    "score": 6.097561,
+    "complianceScore": 93.902435,
+    "scoreFactor": 4,
+    "category": {
+     "name": "Access control",
+     "id": "Cat-2"
+    },
+    "severity": "Medium"
+   },
+   "C-0038": {
+    "statusInfo": {
+     "status": "passed"
+    },
+    "controlID": "C-0038",
+    "name": "Host PID/IPC privileges",
+    "status": "passed",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 18,
+     "failedResources": 0,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 0
+    },
+    "score": 0,
+    "complianceScore": 100,
+    "scoreFactor": 7,
+    "category": {
+     "name": "Workload",
+     "id": "Cat-5",
+     "subCategory": {
+      "name": "Node escape",
+      "id": "Cat-9"
+     }
+    },
+    "severity": "High"
+   },
+   "C-0041": {
+    "statusInfo": {
+     "status": "failed",
+     "subStatus": "w/exceptions"
+    },
+    "controlID": "C-0041",
+    "name": "CIS-5.2.5 Minimize the admission of containers wishing to share the host network namespace",
+    "status": "failed",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 12,
+     "failedResources": 6,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 5
+    },
+    "score": 29.411764,
+    "complianceScore": 66.66667,
+    "scoreFactor": 7,
+    "category": {
+     "name": "Workload",
+     "id": "Cat-5",
+     "subCategory": {
+      "name": "Network",
+      "id": "Cat-4"
+     }
+    },
+    "severity": "High"
+   },
+   "C-0044": {
+    "statusInfo": {
+     "status": "failed",
+     "subStatus": "w/exceptions"
+    },
+    "controlID": "C-0044",
+    "name": "Container hostPort",
+    "status": "failed",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 14,
+     "failedResources": 4,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 3
+    },
+    "score": 19.607843,
+    "complianceScore": 77.77778,
+    "scoreFactor": 4,
+    "category": {
+     "name": "Network",
+     "id": "Cat-4"
+    },
+    "severity": "Medium"
+   },
+   "C-0045": {
+    "statusInfo": {
+     "status": "failed",
+     "subStatus": "w/exceptions"
+    },
+    "controlID": "C-0045",
+    "name": "Writable hostPath mount",
+    "status": "failed",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 15,
+     "failedResources": 3,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 2
+    },
+    "score": 14.705883,
+    "complianceScore": 83.33333,
+    "scoreFactor": 8,
+    "category": {
+     "name": "Workload",
+     "id": "Cat-5",
+     "subCategory": {
+      "name": "Storage",
+      "id": "Cat-8"
+     }
+    },
+    "severity": "High"
+   },
+   "C-0046": {
+    "statusInfo": {
+     "status": "failed"
+    },
+    "controlID": "C-0046",
+    "name": "Insecure capabilities",
+    "status": "failed",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 17,
+     "failedResources": 1,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 0
+    },
+    "score": 4.901961,
+    "complianceScore": 94.44444,
+    "scoreFactor": 7,
+    "category": {
+     "name": "Workload",
+     "id": "Cat-5",
+     "subCategory": {
+      "name": "Node escape",
+      "id": "Cat-9"
+     }
+    },
+    "severity": "High"
+   },
+   "C-0048": {
+    "statusInfo": {
+     "status": "failed",
+     "subStatus": "w/exceptions"
+    },
+    "controlID": "C-0048",
+    "name": "HostPath mount",
+    "status": "failed",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 12,
+     "failedResources": 6,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 5
+    },
+    "score": 29.411764,
+    "complianceScore": 66.66667,
+    "scoreFactor": 7,
+    "category": {
+     "name": "Workload",
+     "id": "Cat-5",
+     "subCategory": {
+      "name": "Storage",
+      "id": "Cat-8"
+     }
+    },
+    "severity": "High"
+   },
+   "C-0053": {
+    "statusInfo": {
+     "status": "failed",
+     "subStatus": "w/exceptions"
+    },
+    "controlID": "C-0053",
+    "name": "Access container service account",
+    "status": "failed",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 0,
+     "failedResources": 54,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 40
+    },
+    "score": 100,
+    "complianceScore": 0,
+    "scoreFactor": 6,
+    "category": {
+     "name": "Access control",
+     "id": "Cat-2"
+    },
+    "severity": "Medium"
+   },
+   "C-0055": {
+    "statusInfo": {
+     "status": "failed",
+     "subStatus": "w/exceptions"
+    },
+    "controlID": "C-0055",
+    "name": "Linux hardening",
+    "status": "failed",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 4,
+     "failedResources": 14,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 2
+    },
+    "score": 80.39216,
+    "complianceScore": 22.222223,
+    "scoreFactor": 4,
+    "category": {
+     "name": "Workload",
+     "id": "Cat-5",
+     "subCategory": {
+      "name": "Node escape",
+      "id": "Cat-9"
+     }
+    },
+    "severity": "Medium"
+   },
+   "C-0057": {
+    "statusInfo": {
+     "status": "failed",
+     "subStatus": "w/exceptions"
+    },
+    "controlID": "C-0057",
+    "name": "Privileged container",
+    "status": "failed",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 17,
+     "failedResources": 1,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 1
+    },
+    "score": 4.9019604,
+    "complianceScore": 94.44444,
+    "scoreFactor": 8,
+    "category": {
+     "name": "Workload",
+     "id": "Cat-5",
+     "subCategory": {
+      "name": "Node escape",
+      "id": "Cat-9"
+     }
+    },
+    "severity": "High"
+   },
+   "C-0069": {
+    "statusInfo": {
+     "status": "skipped",
+     "subStatus": "notEvaluated",
+     "info": "missing: hostdata.kubescape.cloud/v1beta0/KubeletInfo"
+    },
+    "controlID": "C-0069",
+    "name": "Disable anonymous access to Kubelet service",
+    "status": "skipped",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 0,
+     "failedResources": 0,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 0
+    },
+    "score": 0,
+    "complianceScore": 0,
+    "scoreFactor": 10,
+    "category": {
+     "name": "Control plane",
+     "id": "Cat-1"
+    },
+    "severity": "Critical"
+   },
+   "C-0070": {
+    "statusInfo": {
+     "status": "skipped",
+     "subStatus": "notEvaluated",
+     "info": "missing: hostdata.kubescape.cloud/v1beta0/KubeletInfo"
+    },
+    "controlID": "C-0070",
+    "name": "Enforce Kubelet client TLS authentication",
+    "status": "skipped",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 0,
+     "failedResources": 0,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 0
+    },
+    "score": 0,
+    "complianceScore": 0,
+    "scoreFactor": 9,
+    "category": {
+     "name": "Control plane",
+     "id": "Cat-1"
+    },
+    "severity": "Critical"
+   },
+   "C-0092": {
+    "statusInfo": {
+     "status": "skipped",
+     "subStatus": "notEvaluated",
+     "info": "missing: hostdata.kubescape.cloud/v1beta0/ControlPlaneInfo"
+    },
+    "controlID": "C-0092",
+    "name": "CIS-1.1.1 Ensure that the API server pod specification file permissions are set to 600 or more restrictive",
+    "status": "skipped",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 0,
+     "failedResources": 0,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 0
+    },
+    "score": 0,
+    "complianceScore": 0,
+    "scoreFactor": 6,
+    "category": {
+     "name": "Control plane",
+     "id": "Cat-1"
+    },
+    "severity": "Medium"
+   },
+   "C-0093": {
+    "statusInfo": {
+     "status": "skipped",
+     "subStatus": "notEvaluated",
+     "info": "missing: hostdata.kubescape.cloud/v1beta0/ControlPlaneInfo"
+    },
+    "controlID": "C-0093",
+    "name": "CIS-1.1.2 Ensure that the API server pod specification file ownership is set to root:root",
+    "status": "skipped",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 0,
+     "failedResources": 0,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 0
+    },
+    "score": 0,
+    "complianceScore": 0,
+    "scoreFactor": 6,
+    "category": {
+     "name": "Control plane",
+     "id": "Cat-1"
+    },
+    "severity": "Medium"
+   },
+   "C-0094": {
+    "statusInfo": {
+     "status": "skipped",
+     "subStatus": "notEvaluated",
+     "info": "missing: hostdata.kubescape.cloud/v1beta0/ControlPlaneInfo"
+    },
+    "controlID": "C-0094",
+    "name": "CIS-1.1.3 Ensure that the controller manager pod specification file permissions are set to 600 or more restrictive",
+    "status": "skipped",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 0,
+     "failedResources": 0,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 0
+    },
+    "score": 0,
+    "complianceScore": 0,
+    "scoreFactor": 6,
+    "category": {
+     "name": "Control plane",
+     "id": "Cat-1"
+    },
+    "severity": "Medium"
+   },
+   "C-0095": {
+    "statusInfo": {
+     "status": "skipped",
+     "subStatus": "notEvaluated",
+     "info": "missing: hostdata.kubescape.cloud/v1beta0/ControlPlaneInfo"
+    },
+    "controlID": "C-0095",
+    "name": "CIS-1.1.4 Ensure that the controller manager pod specification file ownership is set to root:root",
+    "status": "skipped",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 0,
+     "failedResources": 0,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 0
+    },
+    "score": 0,
+    "complianceScore": 0,
+    "scoreFactor": 6,
+    "category": {
+     "name": "Control plane",
+     "id": "Cat-1"
+    },
+    "severity": "Medium"
+   },
+   "C-0096": {
+    "statusInfo": {
+     "status": "skipped",
+     "subStatus": "notEvaluated",
+     "info": "missing: hostdata.kubescape.cloud/v1beta0/ControlPlaneInfo"
+    },
+    "controlID": "C-0096",
+    "name": "CIS-1.1.5 Ensure that the scheduler pod specification file permissions are set to 600 or more restrictive",
+    "status": "skipped",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 0,
+     "failedResources": 0,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 0
+    },
+    "score": 0,
+    "complianceScore": 0,
+    "scoreFactor": 6,
+    "category": {
+     "name": "Control plane",
+     "id": "Cat-1"
+    },
+    "severity": "Medium"
+   },
+   "C-0097": {
+    "statusInfo": {
+     "status": "skipped",
+     "subStatus": "notEvaluated",
+     "info": "missing: hostdata.kubescape.cloud/v1beta0/ControlPlaneInfo"
+    },
+    "controlID": "C-0097",
+    "name": "CIS-1.1.6 Ensure that the scheduler pod specification file ownership is set to root:root",
+    "status": "skipped",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 0,
+     "failedResources": 0,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 0
+    },
+    "score": 0,
+    "complianceScore": 0,
+    "scoreFactor": 6,
+    "category": {
+     "name": "Control plane",
+     "id": "Cat-1"
+    },
+    "severity": "Medium"
+   },
+   "C-0098": {
+    "statusInfo": {
+     "status": "skipped",
+     "subStatus": "notEvaluated",
+     "info": "missing: hostdata.kubescape.cloud/v1beta0/ControlPlaneInfo"
+    },
+    "controlID": "C-0098",
+    "name": "CIS-1.1.7 Ensure that the etcd pod specification file permissions are set to 600 or more restrictive",
+    "status": "skipped",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 0,
+     "failedResources": 0,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 0
+    },
+    "score": 0,
+    "complianceScore": 0,
+    "scoreFactor": 6,
+    "category": {
+     "name": "Control plane",
+     "id": "Cat-1"
+    },
+    "severity": "Medium"
+   },
+   "C-0099": {
+    "statusInfo": {
+     "status": "skipped",
+     "subStatus": "notEvaluated",
+     "info": "missing: hostdata.kubescape.cloud/v1beta0/ControlPlaneInfo"
+    },
+    "controlID": "C-0099",
+    "name": "CIS-1.1.8 Ensure that the etcd pod specification file ownership is set to root:root",
+    "status": "skipped",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 0,
+     "failedResources": 0,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 0
+    },
+    "score": 0,
+    "complianceScore": 0,
+    "scoreFactor": 6,
+    "category": {
+     "name": "Control plane",
+     "id": "Cat-1"
+    },
+    "severity": "Medium"
+   },
+   "C-0100": {
+    "statusInfo": {
+     "status": "skipped",
+     "subStatus": "notEvaluated",
+     "info": "missing: hostdata.kubescape.cloud/v1beta0/CNIInfo"
+    },
+    "controlID": "C-0100",
+    "name": "CIS-1.1.9 Ensure that the Container Network Interface file permissions are set to 600 or more restrictive",
+    "status": "skipped",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 0,
+     "failedResources": 0,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 0
+    },
+    "score": 0,
+    "complianceScore": 0,
+    "scoreFactor": 6,
+    "category": {
+     "name": "Network",
+     "id": "Cat-4"
+    },
+    "severity": "Medium"
+   },
+   "C-0101": {
+    "statusInfo": {
+     "status": "skipped",
+     "subStatus": "notEvaluated",
+     "info": "missing: hostdata.kubescape.cloud/v1beta0/CNIInfo"
+    },
+    "controlID": "C-0101",
+    "name": "CIS-1.1.10 Ensure that the Container Network Interface file ownership is set to root:root",
+    "status": "skipped",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 0,
+     "failedResources": 0,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 0
+    },
+    "score": 0,
+    "complianceScore": 0,
+    "scoreFactor": 6,
+    "category": {
+     "name": "Network",
+     "id": "Cat-4"
+    },
+    "severity": "Medium"
+   },
+   "C-0102": {
+    "statusInfo": {
+     "status": "skipped",
+     "subStatus": "notEvaluated",
+     "info": "missing: hostdata.kubescape.cloud/v1beta0/ControlPlaneInfo"
+    },
+    "controlID": "C-0102",
+    "name": "CIS-1.1.11 Ensure that the etcd data directory permissions are set to 700 or more restrictive",
+    "status": "skipped",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 0,
+     "failedResources": 0,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 0
+    },
+    "score": 0,
+    "complianceScore": 0,
+    "scoreFactor": 7,
+    "category": {
+     "name": "Control plane",
+     "id": "Cat-1"
+    },
+    "severity": "High"
+   },
+   "C-0103": {
+    "statusInfo": {
+     "status": "skipped",
+     "subStatus": "notEvaluated",
+     "info": "missing: hostdata.kubescape.cloud/v1beta0/ControlPlaneInfo"
+    },
+    "controlID": "C-0103",
+    "name": "CIS-1.1.12 Ensure that the etcd data directory ownership is set to etcd:etcd",
+    "status": "skipped",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 0,
+     "failedResources": 0,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 0
+    },
+    "score": 0,
+    "complianceScore": 0,
+    "scoreFactor": 7,
+    "category": {
+     "name": "Control plane",
+     "id": "Cat-1"
+    },
+    "severity": "High"
+   },
+   "C-0104": {
+    "statusInfo": {
+     "status": "skipped",
+     "subStatus": "notEvaluated",
+     "info": "missing: hostdata.kubescape.cloud/v1beta0/ControlPlaneInfo"
+    },
+    "controlID": "C-0104",
+    "name": "CIS-1.1.13 Ensure that the default administrative credential file permissions are set to 600",
+    "status": "skipped",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 0,
+     "failedResources": 0,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 0
+    },
+    "score": 0,
+    "complianceScore": 0,
+    "scoreFactor": 7,
+    "category": {
+     "name": "Control plane",
+     "id": "Cat-1"
+    },
+    "severity": "High"
+   },
+   "C-0105": {
+    "statusInfo": {
+     "status": "skipped",
+     "subStatus": "notEvaluated",
+     "info": "missing: hostdata.kubescape.cloud/v1beta0/ControlPlaneInfo"
+    },
+    "controlID": "C-0105",
+    "name": "CIS-1.1.14 Ensure that the default administrative credential file ownership is set to root:root",
+    "status": "skipped",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 0,
+     "failedResources": 0,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 0
+    },
+    "score": 0,
+    "complianceScore": 0,
+    "scoreFactor": 7,
+    "category": {
+     "name": "Control plane",
+     "id": "Cat-1"
+    },
+    "severity": "High"
+   },
+   "C-0106": {
+    "statusInfo": {
+     "status": "skipped",
+     "subStatus": "notEvaluated",
+     "info": "missing: hostdata.kubescape.cloud/v1beta0/ControlPlaneInfo"
+    },
+    "controlID": "C-0106",
+    "name": "CIS-1.1.15 Ensure that the scheduler.conf file permissions are set to 600 or more restrictive",
+    "status": "skipped",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 0,
+     "failedResources": 0,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 0
+    },
+    "score": 0,
+    "complianceScore": 0,
+    "scoreFactor": 6,
+    "category": {
+     "name": "Control plane",
+     "id": "Cat-1"
+    },
+    "severity": "Medium"
+   },
+   "C-0107": {
+    "statusInfo": {
+     "status": "skipped",
+     "subStatus": "notEvaluated",
+     "info": "missing: hostdata.kubescape.cloud/v1beta0/ControlPlaneInfo"
+    },
+    "controlID": "C-0107",
+    "name": "CIS-1.1.16 Ensure that the scheduler.conf file ownership is set to root:root",
+    "status": "skipped",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 0,
+     "failedResources": 0,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 0
+    },
+    "score": 0,
+    "complianceScore": 0,
+    "scoreFactor": 6,
+    "category": {
+     "name": "Control plane",
+     "id": "Cat-1"
+    },
+    "severity": "Medium"
+   },
+   "C-0108": {
+    "statusInfo": {
+     "status": "skipped",
+     "subStatus": "notEvaluated",
+     "info": "missing: hostdata.kubescape.cloud/v1beta0/ControlPlaneInfo"
+    },
+    "controlID": "C-0108",
+    "name": "CIS-1.1.17 Ensure that the controller-manager.conf file permissions are set to 600 or more restrictive",
+    "status": "skipped",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 0,
+     "failedResources": 0,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 0
+    },
+    "score": 0,
+    "complianceScore": 0,
+    "scoreFactor": 6,
+    "category": {
+     "name": "Control plane",
+     "id": "Cat-1"
+    },
+    "severity": "Medium"
+   },
+   "C-0109": {
+    "statusInfo": {
+     "status": "skipped",
+     "subStatus": "notEvaluated",
+     "info": "missing: hostdata.kubescape.cloud/v1beta0/ControlPlaneInfo"
+    },
+    "controlID": "C-0109",
+    "name": "CIS-1.1.18 Ensure that the controller-manager.conf file ownership is set to root:root",
+    "status": "skipped",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 0,
+     "failedResources": 0,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 0
+    },
+    "score": 0,
+    "complianceScore": 0,
+    "scoreFactor": 6,
+    "category": {
+     "name": "Control plane",
+     "id": "Cat-1"
+    },
+    "severity": "Medium"
+   },
+   "C-0110": {
+    "statusInfo": {
+     "status": "skipped",
+     "subStatus": "notEvaluated",
+     "info": "missing: hostdata.kubescape.cloud/v1beta0/ControlPlaneInfo"
+    },
+    "controlID": "C-0110",
+    "name": "CIS-1.1.19 Ensure that the Kubernetes PKI directory and file ownership is set to root:root",
+    "status": "skipped",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 0,
+     "failedResources": 0,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 0
+    },
+    "score": 0,
+    "complianceScore": 0,
+    "scoreFactor": 8,
+    "category": {
+     "name": "Control plane",
+     "id": "Cat-1"
+    },
+    "severity": "High"
+   },
+   "C-0111": {
+    "statusInfo": {
+     "status": "skipped",
+     "subStatus": "notEvaluated",
+     "info": "missing: hostdata.kubescape.cloud/v1beta0/ControlPlaneInfo"
+    },
+    "controlID": "C-0111",
+    "name": "CIS-1.1.20 Ensure that the Kubernetes PKI certificate file permissions are set to 644 or more restrictive",
+    "status": "skipped",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 0,
+     "failedResources": 0,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 0
+    },
+    "score": 0,
+    "complianceScore": 0,
+    "scoreFactor": 8,
+    "category": {
+     "name": "Control plane",
+     "id": "Cat-1"
+    },
+    "severity": "High"
+   },
+   "C-0112": {
+    "statusInfo": {
+     "status": "skipped",
+     "subStatus": "notEvaluated",
+     "info": "missing: hostdata.kubescape.cloud/v1beta0/ControlPlaneInfo"
+    },
+    "controlID": "C-0112",
+    "name": "CIS-1.1.21 Ensure that the Kubernetes PKI key file permissions are set to 600",
+    "status": "skipped",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 0,
+     "failedResources": 0,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 0
+    },
+    "score": 0,
+    "complianceScore": 0,
+    "scoreFactor": 8,
+    "category": {
+     "name": "Control plane",
+     "id": "Cat-1"
+    },
+    "severity": "High"
+   },
+   "C-0142": {
+    "statusInfo": {
+     "status": "skipped",
+     "subStatus": "notEvaluated",
+     "info": "missing: hostdata.kubescape.cloud/v1beta0/ControlPlaneInfo"
+    },
+    "controlID": "C-0142",
+    "name": "CIS-1.2.28 Ensure that encryption providers are appropriately configured",
+    "status": "skipped",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 0,
+     "failedResources": 0,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 0
+    },
+    "score": 0,
+    "complianceScore": 0,
+    "scoreFactor": 7,
+    "category": {
+     "name": "Control plane",
+     "id": "Cat-1"
+    },
+    "severity": "High"
+   },
+   "C-0162": {
+    "statusInfo": {
+     "status": "skipped",
+     "subStatus": "notEvaluated",
+     "info": "missing: hostdata.kubescape.cloud/v1beta0/KubeletInfo"
+    },
+    "controlID": "C-0162",
+    "name": "CIS-4.1.1 Ensure that the kubelet service file permissions are set to 600 or more restrictive",
+    "status": "skipped",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 0,
+     "failedResources": 0,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 0
+    },
+    "score": 0,
+    "complianceScore": 0,
+    "scoreFactor": 6,
+    "category": {
+     "name": "Control plane",
+     "id": "Cat-1"
+    },
+    "severity": "Medium"
+   },
+   "C-0163": {
+    "statusInfo": {
+     "status": "skipped",
+     "subStatus": "notEvaluated",
+     "info": "missing: hostdata.kubescape.cloud/v1beta0/KubeletInfo"
+    },
+    "controlID": "C-0163",
+    "name": "CIS-4.1.2 Ensure that the kubelet service file ownership is set to root:root",
+    "status": "skipped",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 0,
+     "failedResources": 0,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 0
+    },
+    "score": 0,
+    "complianceScore": 0,
+    "scoreFactor": 6,
+    "category": {
+     "name": "Control plane",
+     "id": "Cat-1"
+    },
+    "severity": "Medium"
+   },
+   "C-0164": {
+    "statusInfo": {
+     "status": "skipped",
+     "subStatus": "notEvaluated",
+     "info": "missing: hostdata.kubescape.cloud/v1beta0/KubeProxyInfo"
+    },
+    "controlID": "C-0164",
+    "name": "CIS-4.1.3 If proxy kubeconfig file exists ensure permissions are set to 600 or more restrictive",
+    "status": "skipped",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 0,
+     "failedResources": 0,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 0
+    },
+    "score": 0,
+    "complianceScore": 0,
+    "scoreFactor": 6,
+    "category": {
+     "name": "Control plane",
+     "id": "Cat-1"
+    },
+    "severity": "Medium"
+   },
+   "C-0165": {
+    "statusInfo": {
+     "status": "skipped",
+     "subStatus": "notEvaluated",
+     "info": "missing: hostdata.kubescape.cloud/v1beta0/KubeProxyInfo"
+    },
+    "controlID": "C-0165",
+    "name": "CIS-4.1.4 If proxy kubeconfig file exists ensure ownership is set to root:root",
+    "status": "skipped",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 0,
+     "failedResources": 0,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 0
+    },
+    "score": 0,
+    "complianceScore": 0,
+    "scoreFactor": 6,
+    "category": {
+     "name": "Control plane",
+     "id": "Cat-1"
+    },
+    "severity": "Medium"
+   },
+   "C-0166": {
+    "statusInfo": {
+     "status": "skipped",
+     "subStatus": "notEvaluated",
+     "info": "missing: hostdata.kubescape.cloud/v1beta0/KubeletInfo"
+    },
+    "controlID": "C-0166",
+    "name": "CIS-4.1.5 Ensure that the --kubeconfig kubelet.conf file permissions are set to 600 or more restrictive",
+    "status": "skipped",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 0,
+     "failedResources": 0,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 0
+    },
+    "score": 0,
+    "complianceScore": 0,
+    "scoreFactor": 6,
+    "category": {
+     "name": "Control plane",
+     "id": "Cat-1"
+    },
+    "severity": "Medium"
+   },
+   "C-0167": {
+    "statusInfo": {
+     "status": "skipped",
+     "subStatus": "notEvaluated",
+     "info": "missing: hostdata.kubescape.cloud/v1beta0/KubeletInfo"
+    },
+    "controlID": "C-0167",
+    "name": "CIS-4.1.6 Ensure that the --kubeconfig kubelet.conf file ownership is set to root:root",
+    "status": "skipped",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 0,
+     "failedResources": 0,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 0
+    },
+    "score": 0,
+    "complianceScore": 0,
+    "scoreFactor": 6,
+    "category": {
+     "name": "Control plane",
+     "id": "Cat-1"
+    },
+    "severity": "Medium"
+   },
+   "C-0168": {
+    "statusInfo": {
+     "status": "skipped",
+     "subStatus": "notEvaluated",
+     "info": "missing: hostdata.kubescape.cloud/v1beta0/KubeletInfo"
+    },
+    "controlID": "C-0168",
+    "name": "CIS-4.1.7 Ensure that the certificate authorities file permissions are set to 644 or more restrictive",
+    "status": "skipped",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 0,
+     "failedResources": 0,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 0
+    },
+    "score": 0,
+    "complianceScore": 0,
+    "scoreFactor": 7,
+    "category": {
+     "name": "Control plane",
+     "id": "Cat-1"
+    },
+    "severity": "High"
+   },
+   "C-0169": {
+    "statusInfo": {
+     "status": "skipped",
+     "subStatus": "notEvaluated",
+     "info": "missing: hostdata.kubescape.cloud/v1beta0/KubeletInfo"
+    },
+    "controlID": "C-0169",
+    "name": "CIS-4.1.8 Ensure that the client certificate authorities file ownership is set to root:root",
+    "status": "skipped",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 0,
+     "failedResources": 0,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 0
+    },
+    "score": 0,
+    "complianceScore": 0,
+    "scoreFactor": 7,
+    "category": {
+     "name": "Control plane",
+     "id": "Cat-1"
+    },
+    "severity": "High"
+   },
+   "C-0170": {
+    "statusInfo": {
+     "status": "skipped",
+     "subStatus": "notEvaluated",
+     "info": "missing: hostdata.kubescape.cloud/v1beta0/KubeletInfo"
+    },
+    "controlID": "C-0170",
+    "name": "CIS-4.1.9 If the kubelet config.yaml configuration file is being used validate permissions set to 600 or more restrictive",
+    "status": "skipped",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 0,
+     "failedResources": 0,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 0
+    },
+    "score": 0,
+    "complianceScore": 0,
+    "scoreFactor": 7,
+    "category": {
+     "name": "Control plane",
+     "id": "Cat-1"
+    },
+    "severity": "High"
+   },
+   "C-0171": {
+    "statusInfo": {
+     "status": "skipped",
+     "subStatus": "notEvaluated",
+     "info": "missing: hostdata.kubescape.cloud/v1beta0/KubeletInfo"
+    },
+    "controlID": "C-0171",
+    "name": "CIS-4.1.10 If the kubelet config.yaml configuration file is being used validate file ownership is set to root:root",
+    "status": "skipped",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 0,
+     "failedResources": 0,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 0
+    },
+    "score": 0,
+    "complianceScore": 0,
+    "scoreFactor": 7,
+    "category": {
+     "name": "Control plane",
+     "id": "Cat-1"
+    },
+    "severity": "High"
+   },
+   "C-0172": {
+    "statusInfo": {
+     "status": "skipped",
+     "subStatus": "notEvaluated",
+     "info": "missing: hostdata.kubescape.cloud/v1beta0/KubeletInfo"
+    },
+    "controlID": "C-0172",
+    "name": "CIS-4.2.1 Ensure that the --anonymous-auth argument is set to false",
+    "status": "skipped",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 0,
+     "failedResources": 0,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 0
+    },
+    "score": 0,
+    "complianceScore": 0,
+    "scoreFactor": 7,
+    "category": {
+     "name": "Control plane",
+     "id": "Cat-1"
+    },
+    "severity": "High"
+   },
+   "C-0173": {
+    "statusInfo": {
+     "status": "skipped",
+     "subStatus": "notEvaluated",
+     "info": "missing: hostdata.kubescape.cloud/v1beta0/KubeletInfo"
+    },
+    "controlID": "C-0173",
+    "name": "CIS-4.2.2 Ensure that the --authorization-mode argument is not set to AlwaysAllow",
+    "status": "skipped",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 0,
+     "failedResources": 0,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 0
+    },
+    "score": 0,
+    "complianceScore": 0,
+    "scoreFactor": 6,
+    "category": {
+     "name": "Control plane",
+     "id": "Cat-1"
+    },
+    "severity": "Medium"
+   },
+   "C-0174": {
+    "statusInfo": {
+     "status": "skipped",
+     "subStatus": "notEvaluated",
+     "info": "missing: hostdata.kubescape.cloud/v1beta0/KubeletInfo"
+    },
+    "controlID": "C-0174",
+    "name": "CIS-4.2.3 Ensure that the --client-ca-file argument is set as appropriate",
+    "status": "skipped",
+    "resourceIDs": {},
+    "ResourceCounters": {
+     "passedResources": 0,
+     "failedResources": 0,
+     "skippedResources": 0,
+     "excludedResources": 0
+    },
+    "subStatusCounters": {
+     "ignoredResources": 0,
+     "acknowledgedResources": 0
+    },
+    "score": 0,
+    "complianceScore": 0,
+    "scoreFactor": 6,
+    "category": {
+     "name": "Control plane",
+     "id": "Cat-1"
+    },
+    "severity": "Medium"
+   }
+  },
+  "frameworks": [
+   {
+    "name": "NSA",
+    "complianceScore": 47.939583,
+    "controls": {
+     "C-0002": {
+      "statusInfo": {
+       "status": "failed",
+       "subStatus": "w/exceptions"
+      },
+      "controlID": "C-0002",
+      "name": "Prevent containers from allowing command execution",
+      "status": "failed",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 80,
+       "failedResources": 2,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 1
+      },
+      "score": 2.4390244,
+      "complianceScore": 97.560974,
+      "scoreFactor": 5,
+      "category": {
+       "name": "Access control",
+       "id": "Cat-2"
+      }
+     },
+     "C-0012": {
+      "statusInfo": {
+       "status": "passed"
+      },
+      "controlID": "C-0012",
+      "name": "Applications credentials in configuration files",
+      "status": "passed",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 33,
+       "failedResources": 0,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 0
+      },
+      "score": 0,
+      "complianceScore": 100,
+      "scoreFactor": 8,
+      "category": {
+       "name": "Secrets",
+       "id": "Cat-3"
+      }
+     },
+     "C-0013": {
+      "statusInfo": {
+       "status": "failed",
+       "subStatus": "w/exceptions"
+      },
+      "controlID": "C-0013",
+      "name": "Non-root containers",
+      "status": "failed",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 0,
+       "failedResources": 18,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 6
+      },
+      "score": 100,
+      "complianceScore": 0,
+      "scoreFactor": 6,
+      "category": {
+       "name": "Workload",
+       "id": "Cat-5",
+       "subCategory": {
+        "name": "Node escape",
+        "id": "Cat-9"
+       }
+      }
+     },
+     "C-0016": {
+      "statusInfo": {
+       "status": "failed",
+       "subStatus": "w/exceptions"
+      },
+      "controlID": "C-0016",
+      "name": "Allow privilege escalation",
+      "status": "failed",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 1,
+       "failedResources": 17,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 5
+      },
+      "score": 89.21569,
+      "complianceScore": 5.555556,
+      "scoreFactor": 6,
+      "category": {
+       "name": "Workload",
+       "id": "Cat-5",
+       "subCategory": {
+        "name": "Node escape",
+        "id": "Cat-9"
+       }
+      }
+     },
+     "C-0017": {
+      "statusInfo": {
+       "status": "failed",
+       "subStatus": "w/exceptions"
+      },
+      "controlID": "C-0017",
+      "name": "Immutable container filesystem",
+      "status": "failed",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 1,
+       "failedResources": 17,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 5
+      },
+      "score": 89.21569,
+      "complianceScore": 5.555556,
+      "scoreFactor": 3,
+      "category": {
+       "name": "Workload",
+       "id": "Cat-5",
+       "subCategory": {
+        "name": "Node escape",
+        "id": "Cat-9"
+       }
+      }
+     },
+     "C-0030": {
+      "statusInfo": {
+       "status": "failed",
+       "subStatus": "w/exceptions"
+      },
+      "controlID": "C-0030",
+      "name": "Ingress and Egress blocked",
+      "status": "failed",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 0,
+       "failedResources": 18,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 6
+      },
+      "score": 100,
+      "complianceScore": 0,
+      "scoreFactor": 6,
+      "category": {
+       "name": "Network",
+       "id": "Cat-4"
+      }
+     },
+     "C-0034": {
+      "statusInfo": {
+       "status": "failed",
+       "subStatus": "w/exceptions"
+      },
+      "controlID": "C-0034",
+      "name": "Automatic mapping of service account",
+      "status": "failed",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 50,
+       "failedResources": 18,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 6
+      },
+      "score": 28.977272,
+      "complianceScore": 73.52941,
+      "scoreFactor": 6,
+      "category": {
+       "name": "Secrets",
+       "id": "Cat-3"
+      }
+     },
+     "C-0035": {
+      "statusInfo": {
+       "status": "failed",
+       "subStatus": "w/exceptions"
+      },
+      "controlID": "C-0035",
+      "name": "Administrative Roles",
+      "status": "failed",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 80,
+       "failedResources": 2,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 1
+      },
+      "score": 2.4390244,
+      "complianceScore": 97.560974,
+      "scoreFactor": 6,
+      "category": {
+       "name": "Access control",
+       "id": "Cat-2"
+      }
+     },
+     "C-0038": {
+      "statusInfo": {
+       "status": "passed"
+      },
+      "controlID": "C-0038",
+      "name": "Host PID/IPC privileges",
+      "status": "passed",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 18,
+       "failedResources": 0,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 0
+      },
+      "score": 0,
+      "complianceScore": 100,
+      "scoreFactor": 7,
+      "category": {
+       "name": "Workload",
+       "id": "Cat-5",
+       "subCategory": {
+        "name": "Node escape",
+        "id": "Cat-9"
+       }
+      }
+     },
+     "C-0041": {
+      "statusInfo": {
+       "status": "failed",
+       "subStatus": "w/exceptions"
+      },
+      "controlID": "C-0041",
+      "name": "HostNetwork access",
+      "status": "failed",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 12,
+       "failedResources": 6,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 5
+      },
+      "score": 29.411764,
+      "complianceScore": 66.66667,
+      "scoreFactor": 7,
+      "category": {
+       "name": "Workload",
+       "id": "Cat-5",
+       "subCategory": {
+        "name": "Network",
+        "id": "Cat-4"
+       }
+      }
+     },
+     "C-0044": {
+      "statusInfo": {
+       "status": "failed",
+       "subStatus": "w/exceptions"
+      },
+      "controlID": "C-0044",
+      "name": "Container hostPort",
+      "status": "failed",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 14,
+       "failedResources": 4,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 3
+      },
+      "score": 19.607841,
+      "complianceScore": 77.77778,
+      "scoreFactor": 4,
+      "category": {
+       "name": "Network",
+       "id": "Cat-4"
+      }
+     },
+     "C-0046": {
+      "statusInfo": {
+       "status": "failed"
+      },
+      "controlID": "C-0046",
+      "name": "Insecure capabilities",
+      "status": "failed",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 17,
+       "failedResources": 1,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 0
+      },
+      "score": 4.901961,
+      "complianceScore": 94.44444,
+      "scoreFactor": 7,
+      "category": {
+       "name": "Workload",
+       "id": "Cat-5",
+       "subCategory": {
+        "name": "Node escape",
+        "id": "Cat-9"
+       }
+      }
+     },
+     "C-0055": {
+      "statusInfo": {
+       "status": "failed",
+       "subStatus": "w/exceptions"
+      },
+      "controlID": "C-0055",
+      "name": "Linux hardening",
+      "status": "failed",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 4,
+       "failedResources": 14,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 2
+      },
+      "score": 80.39215,
+      "complianceScore": 22.222223,
+      "scoreFactor": 4,
+      "category": {
+       "name": "Workload",
+       "id": "Cat-5",
+       "subCategory": {
+        "name": "Node escape",
+        "id": "Cat-9"
+       }
+      }
+     },
+     "C-0057": {
+      "statusInfo": {
+       "status": "failed",
+       "subStatus": "w/exceptions"
+      },
+      "controlID": "C-0057",
+      "name": "Privileged container",
+      "status": "failed",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 17,
+       "failedResources": 1,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 1
+      },
+      "score": 4.901961,
+      "complianceScore": 94.44444,
+      "scoreFactor": 8,
+      "category": {
+       "name": "Workload",
+       "id": "Cat-5",
+       "subCategory": {
+        "name": "Node escape",
+        "id": "Cat-9"
+       }
+      }
+     },
+     "C-0069": {
+      "statusInfo": {
+       "status": "skipped",
+       "subStatus": "notEvaluated",
+       "info": "missing: hostdata.kubescape.cloud/v1beta0/KubeletInfo"
+      },
+      "controlID": "C-0069",
+      "name": "Disable anonymous access to Kubelet service",
+      "status": "skipped",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 0,
+       "failedResources": 0,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 0
+      },
+      "score": 0,
+      "complianceScore": 0,
+      "scoreFactor": 10,
+      "category": {
+       "name": "Control plane",
+       "id": "Cat-1"
+      }
+     },
+     "C-0070": {
+      "statusInfo": {
+       "status": "skipped",
+       "subStatus": "notEvaluated",
+       "info": "missing: hostdata.kubescape.cloud/v1beta0/KubeletInfo"
+      },
+      "controlID": "C-0070",
+      "name": "Enforce Kubelet client TLS authentication",
+      "status": "skipped",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 0,
+       "failedResources": 0,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 0
+      },
+      "score": 0,
+      "complianceScore": 0,
+      "scoreFactor": 9,
+      "category": {
+       "name": "Control plane",
+       "id": "Cat-1"
+      }
+     }
+    }
+   },
+   {
+    "name": "MITRE",
+    "complianceScore": 68.92329,
+    "controls": {
+     "C-0002": {
+      "statusInfo": {
+       "status": "failed",
+       "subStatus": "w/exceptions"
+      },
+      "controlID": "C-0002",
+      "name": "Prevent containers from allowing command execution",
+      "status": "failed",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 80,
+       "failedResources": 2,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 1
+      },
+      "score": 2.4390244,
+      "complianceScore": 97.560974,
+      "scoreFactor": 5,
+      "category": {
+       "name": "Access control",
+       "id": "Cat-2"
+      }
+     },
+     "C-0007": {
+      "statusInfo": {
+       "status": "failed",
+       "subStatus": "w/exceptions"
+      },
+      "controlID": "C-0007",
+      "name": "Roles with delete capabilities",
+      "status": "failed",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 61,
+       "failedResources": 21,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 17
+      },
+      "score": 25.609756,
+      "complianceScore": 74.39024,
+      "scoreFactor": 5,
+      "category": {
+       "name": "Access control",
+       "id": "Cat-2"
+      }
+     },
+     "C-0012": {
+      "statusInfo": {
+       "status": "passed"
+      },
+      "controlID": "C-0012",
+      "name": "Applications credentials in configuration files",
+      "status": "passed",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 33,
+       "failedResources": 0,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 0
+      },
+      "score": 0,
+      "complianceScore": 100,
+      "scoreFactor": 8,
+      "category": {
+       "name": "Secrets",
+       "id": "Cat-3"
+      }
+     },
+     "C-0014": {
+      "statusInfo": {
+       "status": "passed"
+      },
+      "controlID": "C-0014",
+      "name": "Access Kubernetes dashboard",
+      "status": "passed",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 100,
+       "failedResources": 0,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 0
+      },
+      "score": 0,
+      "complianceScore": 100,
+      "scoreFactor": 2,
+      "category": {
+       "name": "Access control",
+       "id": "Cat-2"
+      }
+     },
+     "C-0015": {
+      "statusInfo": {
+       "status": "failed",
+       "subStatus": "w/exceptions"
+      },
+      "controlID": "C-0015",
+      "name": "List Kubernetes secrets",
+      "status": "failed",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 73,
+       "failedResources": 9,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 7
+      },
+      "score": 10.97561,
+      "complianceScore": 89.02439,
+      "scoreFactor": 7,
+      "category": {
+       "name": "Access control",
+       "id": "Cat-2"
+      }
+     },
+     "C-0020": {
+      "statusInfo": {
+       "status": "passed"
+      },
+      "controlID": "C-0020",
+      "name": "Mount service principal",
+      "status": "passed",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 18,
+       "failedResources": 0,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 0
+      },
+      "score": 0,
+      "complianceScore": 100,
+      "scoreFactor": 4,
+      "category": {
+       "name": "Workload",
+       "id": "Cat-5"
+      }
+     },
+     "C-0031": {
+      "statusInfo": {
+       "status": "failed",
+       "subStatus": "w/exceptions"
+      },
+      "controlID": "C-0031",
+      "name": "Delete Kubernetes events",
+      "status": "failed",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 78,
+       "failedResources": 4,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 3
+      },
+      "score": 4.878049,
+      "complianceScore": 95.12195,
+      "scoreFactor": 4,
+      "category": {
+       "name": "Access control",
+       "id": "Cat-2"
+      }
+     },
+     "C-0035": {
+      "statusInfo": {
+       "status": "failed",
+       "subStatus": "w/exceptions"
+      },
+      "controlID": "C-0035",
+      "name": "Administrative Roles",
+      "status": "failed",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 80,
+       "failedResources": 2,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 1
+      },
+      "score": 2.4390244,
+      "complianceScore": 97.560974,
+      "scoreFactor": 6,
+      "category": {
+       "name": "Access control",
+       "id": "Cat-2"
+      }
+     },
+     "C-0037": {
+      "statusInfo": {
+       "status": "failed",
+       "subStatus": "w/exceptions"
+      },
+      "controlID": "C-0037",
+      "name": "CoreDNS poisoning",
+      "status": "failed",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 77,
+       "failedResources": 5,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 3
+      },
+      "score": 6.097561,
+      "complianceScore": 93.902435,
+      "scoreFactor": 4,
+      "category": {
+       "name": "Access control",
+       "id": "Cat-2"
+      }
+     },
+     "C-0045": {
+      "statusInfo": {
+       "status": "failed",
+       "subStatus": "w/exceptions"
+      },
+      "controlID": "C-0045",
+      "name": "Writable hostPath mount",
+      "status": "failed",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 15,
+       "failedResources": 3,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 2
+      },
+      "score": 14.705883,
+      "complianceScore": 83.33333,
+      "scoreFactor": 8,
+      "category": {
+       "name": "Workload",
+       "id": "Cat-5",
+       "subCategory": {
+        "name": "Storage",
+        "id": "Cat-8"
+       }
+      }
+     },
+     "C-0048": {
+      "statusInfo": {
+       "status": "failed",
+       "subStatus": "w/exceptions"
+      },
+      "controlID": "C-0048",
+      "name": "HostPath mount",
+      "status": "failed",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 12,
+       "failedResources": 6,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 5
+      },
+      "score": 29.411764,
+      "complianceScore": 66.66667,
+      "scoreFactor": 7,
+      "category": {
+       "name": "Workload",
+       "id": "Cat-5",
+       "subCategory": {
+        "name": "Storage",
+        "id": "Cat-8"
+       }
+      }
+     },
+     "C-0053": {
+      "statusInfo": {
+       "status": "failed",
+       "subStatus": "w/exceptions"
+      },
+      "controlID": "C-0053",
+      "name": "Access container service account",
+      "status": "failed",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 0,
+       "failedResources": 54,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 40
+      },
+      "score": 100,
+      "complianceScore": 0,
+      "scoreFactor": 6,
+      "category": {
+       "name": "Access control",
+       "id": "Cat-2"
+      }
+     },
+     "C-0057": {
+      "statusInfo": {
+       "status": "failed",
+       "subStatus": "w/exceptions"
+      },
+      "controlID": "C-0057",
+      "name": "Privileged container",
+      "status": "failed",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 17,
+       "failedResources": 1,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 1
+      },
+      "score": 4.901961,
+      "complianceScore": 94.44444,
+      "scoreFactor": 8,
+      "category": {
+       "name": "Workload",
+       "id": "Cat-5",
+       "subCategory": {
+        "name": "Node escape",
+        "id": "Cat-9"
+       }
+      }
+     },
+     "C-0069": {
+      "statusInfo": {
+       "status": "skipped",
+       "subStatus": "notEvaluated",
+       "info": "missing: hostdata.kubescape.cloud/v1beta0/KubeletInfo"
+      },
+      "controlID": "C-0069",
+      "name": "Disable anonymous access to Kubelet service",
+      "status": "skipped",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 0,
+       "failedResources": 0,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 0
+      },
+      "score": 0,
+      "complianceScore": 0,
+      "scoreFactor": 10,
+      "category": {
+       "name": "Control plane",
+       "id": "Cat-1"
+      }
+     },
+     "C-0070": {
+      "statusInfo": {
+       "status": "skipped",
+       "subStatus": "notEvaluated",
+       "info": "missing: hostdata.kubescape.cloud/v1beta0/KubeletInfo"
+      },
+      "controlID": "C-0070",
+      "name": "Enforce Kubelet client TLS authentication",
+      "status": "skipped",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 0,
+       "failedResources": 0,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 0
+      },
+      "score": 0,
+      "complianceScore": 0,
+      "scoreFactor": 9,
+      "category": {
+       "name": "Control plane",
+       "id": "Cat-1"
+      }
+     }
+    }
+   },
+   {
+    "name": "cis-v1.12.0",
+    "complianceScore": 34.469196,
+    "controls": {
+     "C-0041": {
+      "statusInfo": {
+       "status": "failed",
+       "subStatus": "w/exceptions"
+      },
+      "controlID": "C-0041",
+      "name": "CIS-5.2.5 Minimize the admission of containers wishing to share the host network namespace",
+      "status": "failed",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 12,
+       "failedResources": 6,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 5
+      },
+      "score": 29.411764,
+      "complianceScore": 66.66667,
+      "scoreFactor": 7,
+      "category": {
+       "name": "Workload",
+       "id": "Cat-5",
+       "subCategory": {
+        "name": "Network",
+        "id": "Cat-4"
+       }
+      }
+     },
+     "C-0092": {
+      "statusInfo": {
+       "status": "skipped",
+       "subStatus": "notEvaluated",
+       "info": "missing: hostdata.kubescape.cloud/v1beta0/ControlPlaneInfo"
+      },
+      "controlID": "C-0092",
+      "name": "CIS-1.1.1 Ensure that the API server pod specification file permissions are set to 600 or more restrictive",
+      "status": "skipped",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 0,
+       "failedResources": 0,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 0
+      },
+      "score": 0,
+      "complianceScore": 0,
+      "scoreFactor": 6,
+      "category": {
+       "name": "Control plane",
+       "id": "Cat-1"
+      }
+     },
+     "C-0093": {
+      "statusInfo": {
+       "status": "skipped",
+       "subStatus": "notEvaluated",
+       "info": "missing: hostdata.kubescape.cloud/v1beta0/ControlPlaneInfo"
+      },
+      "controlID": "C-0093",
+      "name": "CIS-1.1.2 Ensure that the API server pod specification file ownership is set to root:root",
+      "status": "skipped",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 0,
+       "failedResources": 0,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 0
+      },
+      "score": 0,
+      "complianceScore": 0,
+      "scoreFactor": 6,
+      "category": {
+       "name": "Control plane",
+       "id": "Cat-1"
+      }
+     },
+     "C-0094": {
+      "statusInfo": {
+       "status": "skipped",
+       "subStatus": "notEvaluated",
+       "info": "missing: hostdata.kubescape.cloud/v1beta0/ControlPlaneInfo"
+      },
+      "controlID": "C-0094",
+      "name": "CIS-1.1.3 Ensure that the controller manager pod specification file permissions are set to 600 or more restrictive",
+      "status": "skipped",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 0,
+       "failedResources": 0,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 0
+      },
+      "score": 0,
+      "complianceScore": 0,
+      "scoreFactor": 6,
+      "category": {
+       "name": "Control plane",
+       "id": "Cat-1"
+      }
+     },
+     "C-0095": {
+      "statusInfo": {
+       "status": "skipped",
+       "subStatus": "notEvaluated",
+       "info": "missing: hostdata.kubescape.cloud/v1beta0/ControlPlaneInfo"
+      },
+      "controlID": "C-0095",
+      "name": "CIS-1.1.4 Ensure that the controller manager pod specification file ownership is set to root:root",
+      "status": "skipped",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 0,
+       "failedResources": 0,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 0
+      },
+      "score": 0,
+      "complianceScore": 0,
+      "scoreFactor": 6,
+      "category": {
+       "name": "Control plane",
+       "id": "Cat-1"
+      }
+     },
+     "C-0096": {
+      "statusInfo": {
+       "status": "skipped",
+       "subStatus": "notEvaluated",
+       "info": "missing: hostdata.kubescape.cloud/v1beta0/ControlPlaneInfo"
+      },
+      "controlID": "C-0096",
+      "name": "CIS-1.1.5 Ensure that the scheduler pod specification file permissions are set to 600 or more restrictive",
+      "status": "skipped",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 0,
+       "failedResources": 0,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 0
+      },
+      "score": 0,
+      "complianceScore": 0,
+      "scoreFactor": 6,
+      "category": {
+       "name": "Control plane",
+       "id": "Cat-1"
+      }
+     },
+     "C-0097": {
+      "statusInfo": {
+       "status": "skipped",
+       "subStatus": "notEvaluated",
+       "info": "missing: hostdata.kubescape.cloud/v1beta0/ControlPlaneInfo"
+      },
+      "controlID": "C-0097",
+      "name": "CIS-1.1.6 Ensure that the scheduler pod specification file ownership is set to root:root",
+      "status": "skipped",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 0,
+       "failedResources": 0,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 0
+      },
+      "score": 0,
+      "complianceScore": 0,
+      "scoreFactor": 6,
+      "category": {
+       "name": "Control plane",
+       "id": "Cat-1"
+      }
+     },
+     "C-0098": {
+      "statusInfo": {
+       "status": "skipped",
+       "subStatus": "notEvaluated",
+       "info": "missing: hostdata.kubescape.cloud/v1beta0/ControlPlaneInfo"
+      },
+      "controlID": "C-0098",
+      "name": "CIS-1.1.7 Ensure that the etcd pod specification file permissions are set to 600 or more restrictive",
+      "status": "skipped",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 0,
+       "failedResources": 0,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 0
+      },
+      "score": 0,
+      "complianceScore": 0,
+      "scoreFactor": 6,
+      "category": {
+       "name": "Control plane",
+       "id": "Cat-1"
+      }
+     },
+     "C-0099": {
+      "statusInfo": {
+       "status": "skipped",
+       "subStatus": "notEvaluated",
+       "info": "missing: hostdata.kubescape.cloud/v1beta0/ControlPlaneInfo"
+      },
+      "controlID": "C-0099",
+      "name": "CIS-1.1.8 Ensure that the etcd pod specification file ownership is set to root:root",
+      "status": "skipped",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 0,
+       "failedResources": 0,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 0
+      },
+      "score": 0,
+      "complianceScore": 0,
+      "scoreFactor": 6,
+      "category": {
+       "name": "Control plane",
+       "id": "Cat-1"
+      }
+     },
+     "C-0100": {
+      "statusInfo": {
+       "status": "skipped",
+       "subStatus": "notEvaluated",
+       "info": "missing: hostdata.kubescape.cloud/v1beta0/CNIInfo"
+      },
+      "controlID": "C-0100",
+      "name": "CIS-1.1.9 Ensure that the Container Network Interface file permissions are set to 600 or more restrictive",
+      "status": "skipped",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 0,
+       "failedResources": 0,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 0
+      },
+      "score": 0,
+      "complianceScore": 0,
+      "scoreFactor": 6,
+      "category": {
+       "name": "Network",
+       "id": "Cat-4"
+      }
+     },
+     "C-0101": {
+      "statusInfo": {
+       "status": "skipped",
+       "subStatus": "notEvaluated",
+       "info": "missing: hostdata.kubescape.cloud/v1beta0/CNIInfo"
+      },
+      "controlID": "C-0101",
+      "name": "CIS-1.1.10 Ensure that the Container Network Interface file ownership is set to root:root",
+      "status": "skipped",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 0,
+       "failedResources": 0,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 0
+      },
+      "score": 0,
+      "complianceScore": 0,
+      "scoreFactor": 6,
+      "category": {
+       "name": "Network",
+       "id": "Cat-4"
+      }
+     },
+     "C-0102": {
+      "statusInfo": {
+       "status": "skipped",
+       "subStatus": "notEvaluated",
+       "info": "missing: hostdata.kubescape.cloud/v1beta0/ControlPlaneInfo"
+      },
+      "controlID": "C-0102",
+      "name": "CIS-1.1.11 Ensure that the etcd data directory permissions are set to 700 or more restrictive",
+      "status": "skipped",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 0,
+       "failedResources": 0,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 0
+      },
+      "score": 0,
+      "complianceScore": 0,
+      "scoreFactor": 7,
+      "category": {
+       "name": "Control plane",
+       "id": "Cat-1"
+      }
+     },
+     "C-0103": {
+      "statusInfo": {
+       "status": "skipped",
+       "subStatus": "notEvaluated",
+       "info": "missing: hostdata.kubescape.cloud/v1beta0/ControlPlaneInfo"
+      },
+      "controlID": "C-0103",
+      "name": "CIS-1.1.12 Ensure that the etcd data directory ownership is set to etcd:etcd",
+      "status": "skipped",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 0,
+       "failedResources": 0,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 0
+      },
+      "score": 0,
+      "complianceScore": 0,
+      "scoreFactor": 7,
+      "category": {
+       "name": "Control plane",
+       "id": "Cat-1"
+      }
+     },
+     "C-0104": {
+      "statusInfo": {
+       "status": "skipped",
+       "subStatus": "notEvaluated",
+       "info": "missing: hostdata.kubescape.cloud/v1beta0/ControlPlaneInfo"
+      },
+      "controlID": "C-0104",
+      "name": "CIS-1.1.13 Ensure that the default administrative credential file permissions are set to 600",
+      "status": "skipped",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 0,
+       "failedResources": 0,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 0
+      },
+      "score": 0,
+      "complianceScore": 0,
+      "scoreFactor": 7,
+      "category": {
+       "name": "Control plane",
+       "id": "Cat-1"
+      }
+     },
+     "C-0105": {
+      "statusInfo": {
+       "status": "skipped",
+       "subStatus": "notEvaluated",
+       "info": "missing: hostdata.kubescape.cloud/v1beta0/ControlPlaneInfo"
+      },
+      "controlID": "C-0105",
+      "name": "CIS-1.1.14 Ensure that the default administrative credential file ownership is set to root:root",
+      "status": "skipped",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 0,
+       "failedResources": 0,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 0
+      },
+      "score": 0,
+      "complianceScore": 0,
+      "scoreFactor": 7,
+      "category": {
+       "name": "Control plane",
+       "id": "Cat-1"
+      }
+     },
+     "C-0106": {
+      "statusInfo": {
+       "status": "skipped",
+       "subStatus": "notEvaluated",
+       "info": "missing: hostdata.kubescape.cloud/v1beta0/ControlPlaneInfo"
+      },
+      "controlID": "C-0106",
+      "name": "CIS-1.1.15 Ensure that the scheduler.conf file permissions are set to 600 or more restrictive",
+      "status": "skipped",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 0,
+       "failedResources": 0,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 0
+      },
+      "score": 0,
+      "complianceScore": 0,
+      "scoreFactor": 6,
+      "category": {
+       "name": "Control plane",
+       "id": "Cat-1"
+      }
+     },
+     "C-0107": {
+      "statusInfo": {
+       "status": "skipped",
+       "subStatus": "notEvaluated",
+       "info": "missing: hostdata.kubescape.cloud/v1beta0/ControlPlaneInfo"
+      },
+      "controlID": "C-0107",
+      "name": "CIS-1.1.16 Ensure that the scheduler.conf file ownership is set to root:root",
+      "status": "skipped",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 0,
+       "failedResources": 0,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 0
+      },
+      "score": 0,
+      "complianceScore": 0,
+      "scoreFactor": 6,
+      "category": {
+       "name": "Control plane",
+       "id": "Cat-1"
+      }
+     },
+     "C-0108": {
+      "statusInfo": {
+       "status": "skipped",
+       "subStatus": "notEvaluated",
+       "info": "missing: hostdata.kubescape.cloud/v1beta0/ControlPlaneInfo"
+      },
+      "controlID": "C-0108",
+      "name": "CIS-1.1.17 Ensure that the controller-manager.conf file permissions are set to 600 or more restrictive",
+      "status": "skipped",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 0,
+       "failedResources": 0,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 0
+      },
+      "score": 0,
+      "complianceScore": 0,
+      "scoreFactor": 6,
+      "category": {
+       "name": "Control plane",
+       "id": "Cat-1"
+      }
+     },
+     "C-0109": {
+      "statusInfo": {
+       "status": "skipped",
+       "subStatus": "notEvaluated",
+       "info": "missing: hostdata.kubescape.cloud/v1beta0/ControlPlaneInfo"
+      },
+      "controlID": "C-0109",
+      "name": "CIS-1.1.18 Ensure that the controller-manager.conf file ownership is set to root:root",
+      "status": "skipped",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 0,
+       "failedResources": 0,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 0
+      },
+      "score": 0,
+      "complianceScore": 0,
+      "scoreFactor": 6,
+      "category": {
+       "name": "Control plane",
+       "id": "Cat-1"
+      }
+     },
+     "C-0110": {
+      "statusInfo": {
+       "status": "skipped",
+       "subStatus": "notEvaluated",
+       "info": "missing: hostdata.kubescape.cloud/v1beta0/ControlPlaneInfo"
+      },
+      "controlID": "C-0110",
+      "name": "CIS-1.1.19 Ensure that the Kubernetes PKI directory and file ownership is set to root:root",
+      "status": "skipped",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 0,
+       "failedResources": 0,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 0
+      },
+      "score": 0,
+      "complianceScore": 0,
+      "scoreFactor": 8,
+      "category": {
+       "name": "Control plane",
+       "id": "Cat-1"
+      }
+     },
+     "C-0111": {
+      "statusInfo": {
+       "status": "skipped",
+       "subStatus": "notEvaluated",
+       "info": "missing: hostdata.kubescape.cloud/v1beta0/ControlPlaneInfo"
+      },
+      "controlID": "C-0111",
+      "name": "CIS-1.1.20 Ensure that the Kubernetes PKI certificate file permissions are set to 644 or more restrictive",
+      "status": "skipped",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 0,
+       "failedResources": 0,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 0
+      },
+      "score": 0,
+      "complianceScore": 0,
+      "scoreFactor": 8,
+      "category": {
+       "name": "Control plane",
+       "id": "Cat-1"
+      }
+     },
+     "C-0112": {
+      "statusInfo": {
+       "status": "skipped",
+       "subStatus": "notEvaluated",
+       "info": "missing: hostdata.kubescape.cloud/v1beta0/ControlPlaneInfo"
+      },
+      "controlID": "C-0112",
+      "name": "CIS-1.1.21 Ensure that the Kubernetes PKI key file permissions are set to 600",
+      "status": "skipped",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 0,
+       "failedResources": 0,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 0
+      },
+      "score": 0,
+      "complianceScore": 0,
+      "scoreFactor": 8,
+      "category": {
+       "name": "Control plane",
+       "id": "Cat-1"
+      }
+     },
+     "C-0142": {
+      "statusInfo": {
+       "status": "skipped",
+       "subStatus": "notEvaluated",
+       "info": "missing: hostdata.kubescape.cloud/v1beta0/ControlPlaneInfo"
+      },
+      "controlID": "C-0142",
+      "name": "CIS-1.2.28 Ensure that encryption providers are appropriately configured",
+      "status": "skipped",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 0,
+       "failedResources": 0,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 0
+      },
+      "score": 0,
+      "complianceScore": 0,
+      "scoreFactor": 7,
+      "category": {
+       "name": "Control plane",
+       "id": "Cat-1"
+      }
+     },
+     "C-0162": {
+      "statusInfo": {
+       "status": "skipped",
+       "subStatus": "notEvaluated",
+       "info": "missing: hostdata.kubescape.cloud/v1beta0/KubeletInfo"
+      },
+      "controlID": "C-0162",
+      "name": "CIS-4.1.1 Ensure that the kubelet service file permissions are set to 600 or more restrictive",
+      "status": "skipped",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 0,
+       "failedResources": 0,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 0
+      },
+      "score": 0,
+      "complianceScore": 0,
+      "scoreFactor": 6,
+      "category": {
+       "name": "Control plane",
+       "id": "Cat-1"
+      }
+     },
+     "C-0163": {
+      "statusInfo": {
+       "status": "skipped",
+       "subStatus": "notEvaluated",
+       "info": "missing: hostdata.kubescape.cloud/v1beta0/KubeletInfo"
+      },
+      "controlID": "C-0163",
+      "name": "CIS-4.1.2 Ensure that the kubelet service file ownership is set to root:root",
+      "status": "skipped",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 0,
+       "failedResources": 0,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 0
+      },
+      "score": 0,
+      "complianceScore": 0,
+      "scoreFactor": 6,
+      "category": {
+       "name": "Control plane",
+       "id": "Cat-1"
+      }
+     },
+     "C-0164": {
+      "statusInfo": {
+       "status": "skipped",
+       "subStatus": "notEvaluated",
+       "info": "missing: hostdata.kubescape.cloud/v1beta0/KubeProxyInfo"
+      },
+      "controlID": "C-0164",
+      "name": "CIS-4.1.3 If proxy kubeconfig file exists ensure permissions are set to 600 or more restrictive",
+      "status": "skipped",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 0,
+       "failedResources": 0,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 0
+      },
+      "score": 0,
+      "complianceScore": 0,
+      "scoreFactor": 6,
+      "category": {
+       "name": "Control plane",
+       "id": "Cat-1"
+      }
+     },
+     "C-0165": {
+      "statusInfo": {
+       "status": "skipped",
+       "subStatus": "notEvaluated",
+       "info": "missing: hostdata.kubescape.cloud/v1beta0/KubeProxyInfo"
+      },
+      "controlID": "C-0165",
+      "name": "CIS-4.1.4 If proxy kubeconfig file exists ensure ownership is set to root:root",
+      "status": "skipped",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 0,
+       "failedResources": 0,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 0
+      },
+      "score": 0,
+      "complianceScore": 0,
+      "scoreFactor": 6,
+      "category": {
+       "name": "Control plane",
+       "id": "Cat-1"
+      }
+     },
+     "C-0166": {
+      "statusInfo": {
+       "status": "skipped",
+       "subStatus": "notEvaluated",
+       "info": "missing: hostdata.kubescape.cloud/v1beta0/KubeletInfo"
+      },
+      "controlID": "C-0166",
+      "name": "CIS-4.1.5 Ensure that the --kubeconfig kubelet.conf file permissions are set to 600 or more restrictive",
+      "status": "skipped",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 0,
+       "failedResources": 0,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 0
+      },
+      "score": 0,
+      "complianceScore": 0,
+      "scoreFactor": 6,
+      "category": {
+       "name": "Control plane",
+       "id": "Cat-1"
+      }
+     },
+     "C-0167": {
+      "statusInfo": {
+       "status": "skipped",
+       "subStatus": "notEvaluated",
+       "info": "missing: hostdata.kubescape.cloud/v1beta0/KubeletInfo"
+      },
+      "controlID": "C-0167",
+      "name": "CIS-4.1.6 Ensure that the --kubeconfig kubelet.conf file ownership is set to root:root",
+      "status": "skipped",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 0,
+       "failedResources": 0,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 0
+      },
+      "score": 0,
+      "complianceScore": 0,
+      "scoreFactor": 6,
+      "category": {
+       "name": "Control plane",
+       "id": "Cat-1"
+      }
+     },
+     "C-0168": {
+      "statusInfo": {
+       "status": "skipped",
+       "subStatus": "notEvaluated",
+       "info": "missing: hostdata.kubescape.cloud/v1beta0/KubeletInfo"
+      },
+      "controlID": "C-0168",
+      "name": "CIS-4.1.7 Ensure that the certificate authorities file permissions are set to 644 or more restrictive",
+      "status": "skipped",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 0,
+       "failedResources": 0,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 0
+      },
+      "score": 0,
+      "complianceScore": 0,
+      "scoreFactor": 7,
+      "category": {
+       "name": "Control plane",
+       "id": "Cat-1"
+      }
+     },
+     "C-0169": {
+      "statusInfo": {
+       "status": "skipped",
+       "subStatus": "notEvaluated",
+       "info": "missing: hostdata.kubescape.cloud/v1beta0/KubeletInfo"
+      },
+      "controlID": "C-0169",
+      "name": "CIS-4.1.8 Ensure that the client certificate authorities file ownership is set to root:root",
+      "status": "skipped",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 0,
+       "failedResources": 0,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 0
+      },
+      "score": 0,
+      "complianceScore": 0,
+      "scoreFactor": 7,
+      "category": {
+       "name": "Control plane",
+       "id": "Cat-1"
+      }
+     },
+     "C-0170": {
+      "statusInfo": {
+       "status": "skipped",
+       "subStatus": "notEvaluated",
+       "info": "missing: hostdata.kubescape.cloud/v1beta0/KubeletInfo"
+      },
+      "controlID": "C-0170",
+      "name": "CIS-4.1.9 If the kubelet config.yaml configuration file is being used validate permissions set to 600 or more restrictive",
+      "status": "skipped",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 0,
+       "failedResources": 0,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 0
+      },
+      "score": 0,
+      "complianceScore": 0,
+      "scoreFactor": 7,
+      "category": {
+       "name": "Control plane",
+       "id": "Cat-1"
+      }
+     },
+     "C-0171": {
+      "statusInfo": {
+       "status": "skipped",
+       "subStatus": "notEvaluated",
+       "info": "missing: hostdata.kubescape.cloud/v1beta0/KubeletInfo"
+      },
+      "controlID": "C-0171",
+      "name": "CIS-4.1.10 If the kubelet config.yaml configuration file is being used validate file ownership is set to root:root",
+      "status": "skipped",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 0,
+       "failedResources": 0,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 0
+      },
+      "score": 0,
+      "complianceScore": 0,
+      "scoreFactor": 7,
+      "category": {
+       "name": "Control plane",
+       "id": "Cat-1"
+      }
+     },
+     "C-0172": {
+      "statusInfo": {
+       "status": "skipped",
+       "subStatus": "notEvaluated",
+       "info": "missing: hostdata.kubescape.cloud/v1beta0/KubeletInfo"
+      },
+      "controlID": "C-0172",
+      "name": "CIS-4.2.1 Ensure that the --anonymous-auth argument is set to false",
+      "status": "skipped",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 0,
+       "failedResources": 0,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 0
+      },
+      "score": 0,
+      "complianceScore": 0,
+      "scoreFactor": 7,
+      "category": {
+       "name": "Control plane",
+       "id": "Cat-1"
+      }
+     },
+     "C-0173": {
+      "statusInfo": {
+       "status": "skipped",
+       "subStatus": "notEvaluated",
+       "info": "missing: hostdata.kubescape.cloud/v1beta0/KubeletInfo"
+      },
+      "controlID": "C-0173",
+      "name": "CIS-4.2.2 Ensure that the --authorization-mode argument is not set to AlwaysAllow",
+      "status": "skipped",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 0,
+       "failedResources": 0,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 0
+      },
+      "score": 0,
+      "complianceScore": 0,
+      "scoreFactor": 6,
+      "category": {
+       "name": "Control plane",
+       "id": "Cat-1"
+      }
+     },
+     "C-0174": {
+      "statusInfo": {
+       "status": "skipped",
+       "subStatus": "notEvaluated",
+       "info": "missing: hostdata.kubescape.cloud/v1beta0/KubeletInfo"
+      },
+      "controlID": "C-0174",
+      "name": "CIS-4.2.3 Ensure that the --client-ca-file argument is set as appropriate",
+      "status": "skipped",
+      "resourceIDs": {},
+      "ResourceCounters": {
+       "passedResources": 0,
+       "failedResources": 0,
+       "skippedResources": 0,
+       "excludedResources": 0
+      },
+      "subStatusCounters": {
+       "ignoredResources": 0,
+       "acknowledgedResources": 0
+      },
+      "score": 0,
+      "complianceScore": 0,
+      "scoreFactor": 6,
+      "category": {
+       "name": "Control plane",
+       "id": "Cat-1"
+      }
+     }
+    }
+   }
+  ]
+ },
+ "resources": [
+  {
+   "resourceID": "/kube-system/ServiceAccount/coredns/rbac.authorization.k8s.io/v1//ClusterRole/system:coredns/rbac.authorization.k8s.io/v1//ClusterRoleBinding/system:coredns",
+   "object": {
+    "kind": "ServiceAccount",
+    "name": "coredns",
+    "namespace": "kube-system",
+    "metadata": {
+     "name": null,
+     "namespace": null
+    }
+   }
+  },
+  {
+   "resourceID": "apps/v1/kubeiq-demo/Deployment/analytics",
+   "object": {
+    "kind": "Deployment",
+    "name": null,
+    "namespace": null,
+    "metadata": {
+     "name": "analytics",
+     "namespace": "kubeiq-demo"
+    }
+   }
+  },
+  {
+   "resourceID": "apps/v1/kubeiq-demo/Deployment/frontend",
+   "object": {
+    "kind": "Deployment",
+    "name": null,
+    "namespace": null,
+    "metadata": {
+     "name": "frontend",
+     "namespace": "kubeiq-demo"
+    }
+   }
+  }
+ ],
+ "results": [
+  {
+   "resourceID": "/kube-system/ServiceAccount/coredns/rbac.authorization.k8s.io/v1//ClusterRole/system:coredns/rbac.authorization.k8s.io/v1//ClusterRoleBinding/system:coredns",
+   "controls": [
+    {
+     "controlID": "C-0002",
+     "name": "Prevent containers from allowing command execution",
+     "status": {
+      "status": "passed"
+     },
+     "rules": [
+      {
+       "name": "exec-into-container-v1",
+       "status": "passed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "Medium"
+    },
+    {
+     "controlID": "C-0007",
+     "name": "Roles with delete capabilities",
+     "status": {
+      "status": "passed"
+     },
+     "rules": [
+      {
+       "name": "rule-excessive-delete-rights-v1",
+       "status": "passed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "Medium"
+    },
+    {
+     "controlID": "C-0014",
+     "name": "Access Kubernetes dashboard",
+     "status": {
+      "status": "passed"
+     },
+     "rules": [
+      {
+       "name": "rule-access-dashboard-subject-v1",
+       "status": "passed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "Low"
+    },
+    {
+     "controlID": "C-0015",
+     "name": "List Kubernetes secrets",
+     "status": {
+      "status": "passed"
+     },
+     "rules": [
+      {
+       "name": "rule-can-list-get-secrets-v1",
+       "status": "passed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "High"
+    },
+    {
+     "controlID": "C-0031",
+     "name": "Delete Kubernetes events",
+     "status": {
+      "status": "passed"
+     },
+     "rules": [
+      {
+       "name": "rule-can-delete-k8s-events-v1",
+       "status": "passed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "Medium"
+    },
+    {
+     "controlID": "C-0035",
+     "name": "Administrative Roles",
+     "status": {
+      "status": "passed"
+     },
+     "rules": [
+      {
+       "name": "rule-list-all-cluster-admins-v1",
+       "status": "passed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "Medium"
+    },
+    {
+     "controlID": "C-0037",
+     "name": "CoreDNS poisoning",
+     "status": {
+      "status": "passed"
+     },
+     "rules": [
+      {
+       "name": "rule-can-update-configmap-v1",
+       "status": "passed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "Medium"
+    },
+    {
+     "controlID": "C-0053",
+     "name": "Access container service account",
+     "status": {
+      "status": "failed",
+      "subStatus": "w/exceptions"
+     },
+     "rules": [
+      {
+       "name": "access-container-service-account-v1",
+       "status": "failed",
+       "subStatus": "",
+       "exception": [
+        {
+         "name": "system-exception"
+        }
+       ]
+      }
+     ],
+     "severity": "Medium"
+    },
+    {
+     "controlID": "C-0185",
+     "name": "CIS-5.1.1 Ensure that the cluster-admin role is only used where required",
+     "status": {
+      "status": "passed"
+     },
+     "rules": [
+      {
+       "name": "cluster-admin-role",
+       "status": "passed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "High"
+    },
+    {
+     "controlID": "C-0186",
+     "name": "CIS-5.1.2 Minimize access to secrets",
+     "status": {
+      "status": "passed"
+     },
+     "rules": [
+      {
+       "name": "rule-can-list-get-secrets-v1",
+       "status": "passed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "Medium"
+    },
+    {
+     "controlID": "C-0187",
+     "name": "CIS-5.1.3 Minimize wildcard use in Roles and ClusterRoles",
+     "status": {
+      "status": "passed"
+     },
+     "rules": [
+      {
+       "name": "rule-list-all-cluster-admins-v1",
+       "status": "passed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "High"
+    },
+    {
+     "controlID": "C-0188",
+     "name": "CIS-5.1.4 Minimize access to create pods",
+     "status": {
+      "status": "passed"
+     },
+     "rules": [
+      {
+       "name": "rule-can-create-pod",
+       "status": "passed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "Medium"
+    },
+    {
+     "controlID": "C-0191",
+     "name": "CIS-5.1.8 Limit use of the Bind, Impersonate and Escalate permissions in the Kubernetes cluster",
+     "status": {
+      "status": "passed"
+     },
+     "rules": [
+      {
+       "name": "rule-can-bind-escalate",
+       "status": "passed",
+       "subStatus": ""
+      },
+      {
+       "name": "rule-can-impersonate-users-groups-v1",
+       "status": "passed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "Medium"
+    },
+    {
+     "controlID": "C-0278",
+     "name": "CIS-5.1.9 Minimize access to create persistent volumes",
+     "status": {
+      "status": "passed"
+     },
+     "rules": [
+      {
+       "name": "rule-can-create-pv",
+       "status": "passed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "Medium"
+    },
+    {
+     "controlID": "C-0279",
+     "name": "CIS-5.1.10 Minimize access to the proxy sub-resource of nodes",
+     "status": {
+      "status": "passed"
+     },
+     "rules": [
+      {
+       "name": "rule-can-access-proxy-subresource",
+       "status": "passed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "Medium"
+    },
+    {
+     "controlID": "C-0280",
+     "name": "CIS-5.1.11 Minimize access to the approval sub-resource of certificatesigningrequests objects",
+     "status": {
+      "status": "passed"
+     },
+     "rules": [
+      {
+       "name": "rule-can-approve-cert-signing-request",
+       "status": "passed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "Medium"
+    },
+    {
+     "controlID": "C-0281",
+     "name": "CIS-5.1.12 Minimize access to webhook configuration objects",
+     "status": {
+      "status": "passed"
+     },
+     "rules": [
+      {
+       "name": "rule-can-modify-admission-webhooks",
+       "status": "passed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "Medium"
+    },
+    {
+     "controlID": "C-0282",
+     "name": "CIS-5.1.13 Minimize access to the service account token creation",
+     "status": {
+      "status": "passed"
+     },
+     "rules": [
+      {
+       "name": "rule-can-create-service-account-token",
+       "status": "passed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "Medium"
+    }
+   ]
+  },
+  {
+   "resourceID": "apps/v1/kubeiq-demo/Deployment/analytics",
+   "controls": [
+    {
+     "controlID": "C-0012",
+     "name": "Applications credentials in configuration files",
+     "status": {
+      "status": "passed"
+     },
+     "rules": [
+      {
+       "controlConfigurations": {
+        "sensitiveKeyNames": [
+         "aws_secret_access_key",
+         "azure_batchai_storage_key",
+         "azure_batch_key",
+         "secret",
+         "key",
+         "password",
+         "pwd",
+         "token",
+         "jwt",
+         "bearer",
+         "credential"
+        ],
+        "sensitiveKeyNamesAllowed": [],
+        "sensitiveValues": [
+         "BEGIN \\w+ PRIVATE KEY",
+         "PRIVATE KEY",
+         "eyJhbGciO",
+         "JWT",
+         "Bearer",
+         "_key_",
+         "_secret_",
+         "AKIA[0-9A-Z]{16}",
+         "ghp_[0-9A-Za-z]{36}",
+         "AIza[0-9A-Za-z\\-_]{35}",
+         "xox[baprs]-[0-9A-Za-z]{10,48}"
+        ],
+        "sensitiveValuesAllowed": []
+       },
+       "name": "rule-credentials-in-env-var",
+       "status": "passed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "High"
+    },
+    {
+     "controlID": "C-0013",
+     "name": "Non-root containers",
+     "status": {
+      "status": "failed"
+     },
+     "rules": [
+      {
+       "name": "non-root-containers",
+       "status": "failed",
+       "subStatus": "",
+       "paths": [
+        {
+         "resourceID": "apps/v1/kubeiq-demo/Deployment/analytics",
+         "fixPath": {
+          "path": "spec.template.spec.containers[0].securityContext.runAsNonRoot",
+          "value": "true"
+         }
+        },
+        {
+         "resourceID": "apps/v1/kubeiq-demo/Deployment/analytics",
+         "fixPath": {
+          "path": "spec.template.spec.containers[0].securityContext.runAsGroup",
+          "value": "1000"
+         }
+        }
+       ]
+      }
+     ],
+     "severity": "Medium"
+    },
+    {
+     "controlID": "C-0014",
+     "name": "Access Kubernetes dashboard",
+     "status": {
+      "status": "passed"
+     },
+     "rules": [
+      {
+       "name": "rule-access-dashboard-wl-v1",
+       "status": "passed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "Low"
+    },
+    {
+     "controlID": "C-0016",
+     "name": "Allow privilege escalation",
+     "status": {
+      "status": "failed"
+     },
+     "rules": [
+      {
+       "name": "rule-allow-privilege-escalation",
+       "status": "failed",
+       "subStatus": "",
+       "paths": [
+        {
+         "resourceID": "apps/v1/kubeiq-demo/Deployment/analytics",
+         "fixPath": {
+          "path": "spec.template.spec.containers[0].securityContext.allowPrivilegeEscalation",
+          "value": "false"
+         }
+        },
+        {
+         "resourceID": "apps/v1/kubeiq-demo/Deployment/analytics",
+         "fixPath": {
+          "path": "spec.template.spec.containers[0].securityContext.privileged",
+          "value": "false"
+         }
+        }
+       ]
+      }
+     ],
+     "severity": "Medium"
+    },
+    {
+     "controlID": "C-0017",
+     "name": "Immutable container filesystem",
+     "status": {
+      "status": "failed"
+     },
+     "rules": [
+      {
+       "name": "immutable-container-filesystem",
+       "status": "failed",
+       "subStatus": "",
+       "paths": [
+        {
+         "resourceID": "apps/v1/kubeiq-demo/Deployment/analytics",
+         "fixPath": {
+          "path": "spec.template.spec.containers[0].securityContext.readOnlyRootFilesystem",
+          "value": "true"
+         }
+        }
+       ]
+      }
+     ],
+     "severity": "Low"
+    },
+    {
+     "controlID": "C-0020",
+     "name": "Mount service principal",
+     "status": {
+      "status": "passed"
+     },
+     "rules": [
+      {
+       "name": "alert-mount-potential-credentials-paths",
+       "status": "passed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "Medium"
+    },
+    {
+     "controlID": "C-0030",
+     "name": "Ingress and Egress blocked",
+     "status": {
+      "status": "failed"
+     },
+     "rules": [
+      {
+       "name": "ingress-and-egress-blocked",
+       "status": "failed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "Medium"
+    },
+    {
+     "controlID": "C-0034",
+     "name": "Automatic mapping of service account",
+     "status": {
+      "status": "failed"
+     },
+     "rules": [
+      {
+       "name": "automount-service-account",
+       "status": "failed",
+       "subStatus": "",
+       "paths": [
+        {
+         "resourceID": "apps/v1/kubeiq-demo/Deployment/analytics",
+         "fixPath": {
+          "path": "spec.template.spec.automountServiceAccountToken",
+          "value": "false"
+         }
+        }
+       ]
+      }
+     ],
+     "severity": "Medium"
+    },
+    {
+     "controlID": "C-0038",
+     "name": "Host PID/IPC privileges",
+     "status": {
+      "status": "passed"
+     },
+     "rules": [
+      {
+       "name": "host-pid-ipc-privileges",
+       "status": "passed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "High"
+    },
+    {
+     "controlID": "C-0041",
+     "name": "CIS-5.2.5 Minimize the admission of containers wishing to share the host network namespace",
+     "status": {
+      "status": "passed"
+     },
+     "rules": [
+      {
+       "name": "host-network-access",
+       "status": "passed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "High"
+    },
+    {
+     "controlID": "C-0044",
+     "name": "Container hostPort",
+     "status": {
+      "status": "passed"
+     },
+     "rules": [
+      {
+       "name": "container-hostPort",
+       "status": "passed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "Medium"
+    },
+    {
+     "controlID": "C-0045",
+     "name": "Writable hostPath mount",
+     "status": {
+      "status": "passed"
+     },
+     "rules": [
+      {
+       "name": "alert-rw-hostpath",
+       "status": "passed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "High"
+    },
+    {
+     "controlID": "C-0046",
+     "name": "Insecure capabilities",
+     "status": {
+      "status": "passed"
+     },
+     "rules": [
+      {
+       "controlConfigurations": {
+        "insecureCapabilities": [
+         "SETPCAP",
+         "NET_ADMIN",
+         "NET_RAW",
+         "SYS_MODULE",
+         "SYS_RAWIO",
+         "SYS_PTRACE",
+         "SYS_ADMIN",
+         "SYS_BOOT",
+         "MAC_OVERRIDE",
+         "MAC_ADMIN",
+         "PERFMON",
+         "ALL",
+         "BPF"
+        ]
+       },
+       "name": "insecure-capabilities",
+       "status": "passed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "High"
+    },
+    {
+     "controlID": "C-0048",
+     "name": "HostPath mount",
+     "status": {
+      "status": "passed"
+     },
+     "rules": [
+      {
+       "name": "alert-any-hostpath",
+       "status": "passed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "High"
+    },
+    {
+     "controlID": "C-0055",
+     "name": "Linux hardening",
+     "status": {
+      "status": "failed"
+     },
+     "rules": [
+      {
+       "name": "linux-hardening",
+       "status": "failed",
+       "subStatus": "",
+       "paths": [
+        {
+         "resourceID": "apps/v1/kubeiq-demo/Deployment/analytics",
+         "fixPath": {
+          "path": "spec.template.spec.containers[0].securityContext.seccompProfile",
+          "value": "YOUR_VALUE"
+         }
+        }
+       ]
+      }
+     ],
+     "severity": "Medium"
+    },
+    {
+     "controlID": "C-0057",
+     "name": "Privileged container",
+     "status": {
+      "status": "passed"
+     },
+     "rules": [
+      {
+       "name": "rule-privilege-escalation",
+       "status": "passed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "High"
+    },
+    {
+     "controlID": "C-0190",
+     "name": "CIS-5.1.6 Ensure that Service Account Tokens are only mounted where necessary",
+     "status": {
+      "status": "failed"
+     },
+     "rules": [
+      {
+       "name": "automount-service-account",
+       "status": "failed",
+       "subStatus": "",
+       "paths": [
+        {
+         "resourceID": "apps/v1/kubeiq-demo/Deployment/analytics",
+         "fixPath": {
+          "path": "spec.template.spec.automountServiceAccountToken",
+          "value": "false"
+         }
+        }
+       ]
+      }
+     ],
+     "severity": "Medium"
+    },
+    {
+     "controlID": "C-0207",
+     "name": "CIS-5.4.1 Prefer using secrets as files over secrets as environment variables",
+     "status": {
+      "status": "passed"
+     },
+     "rules": [
+      {
+       "name": "rule-secrets-in-env-var",
+       "status": "passed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "Medium"
+    },
+    {
+     "controlID": "C-0210",
+     "name": "CIS-5.6.2 Ensure that the seccomp profile is set to docker/default in your pod definitions",
+     "status": {
+      "status": "failed"
+     },
+     "rules": [
+      {
+       "name": "set-seccomp-profile-RuntimeDefault",
+       "status": "failed",
+       "subStatus": "",
+       "paths": [
+        {
+         "resourceID": "apps/v1/kubeiq-demo/Deployment/analytics",
+         "fixPath": {
+          "path": "spec.template.spec.containers[0].securityContext.seccompProfile.type",
+          "value": "RuntimeDefault"
+         }
+        }
+       ]
+      }
+     ],
+     "severity": "Medium"
+    },
+    {
+     "controlID": "C-0211",
+     "name": "CIS-5.6.3 Apply Security Context to Your Pods and Containers",
+     "status": {
+      "status": "failed"
+     },
+     "rules": [
+      {
+       "name": "rule-privilege-escalation",
+       "status": "passed",
+       "subStatus": "incompleteCoverage"
+      },
+      {
+       "name": "immutable-container-filesystem",
+       "status": "failed",
+       "subStatus": "",
+       "paths": [
+        {
+         "resourceID": "apps/v1/kubeiq-demo/Deployment/analytics",
+         "fixPath": {
+          "path": "spec.template.spec.containers[0].securityContext.readOnlyRootFilesystem",
+          "value": "true"
+         }
+        }
+       ]
+      },
+      {
+       "name": "non-root-containers",
+       "status": "failed",
+       "subStatus": "",
+       "paths": [
+        {
+         "resourceID": "apps/v1/kubeiq-demo/Deployment/analytics",
+         "fixPath": {
+          "path": "spec.template.spec.containers[0].securityContext.runAsNonRoot",
+          "value": "true"
+         }
+        },
+        {
+         "resourceID": "apps/v1/kubeiq-demo/Deployment/analytics",
+         "fixPath": {
+          "path": "spec.template.spec.containers[0].securityContext.runAsGroup",
+          "value": "1000"
+         }
+        }
+       ]
+      },
+      {
+       "name": "drop-capability-netraw",
+       "status": "failed",
+       "subStatus": "",
+       "paths": [
+        {
+         "resourceID": "apps/v1/kubeiq-demo/Deployment/analytics",
+         "fixPath": {
+          "path": "spec.template.spec.containers[0].securityContext.capabilities.drop[0]",
+          "value": "NET_RAW"
+         }
+        }
+       ]
+      },
+      {
+       "name": "set-seLinuxOptions",
+       "status": "failed",
+       "subStatus": "",
+       "paths": [
+        {
+         "resourceID": "apps/v1/kubeiq-demo/Deployment/analytics",
+         "fixPath": {
+          "path": "spec.template.spec.containers[0].securityContext.seLinuxOptions",
+          "value": "YOUR_VALUE"
+         }
+        }
+       ]
+      },
+      {
+       "name": "set-seccomp-profile",
+       "status": "failed",
+       "subStatus": "",
+       "paths": [
+        {
+         "resourceID": "apps/v1/kubeiq-demo/Deployment/analytics",
+         "fixPath": {
+          "path": "spec.template.spec.containers[0].securityContext.seccompProfile",
+          "value": "YOUR_VALUE"
+         }
+        }
+       ]
+      },
+      {
+       "name": "set-procmount-default",
+       "status": "passed",
+       "subStatus": "incompleteCoverage"
+      },
+      {
+       "name": "set-fsgroup-value",
+       "status": "failed",
+       "subStatus": "",
+       "paths": [
+        {
+         "resourceID": "apps/v1/kubeiq-demo/Deployment/analytics",
+         "fixPath": {
+          "path": "spec.template.spec.securityContext.fsGroup",
+          "value": "YOUR_VALUE"
+         }
+        }
+       ]
+      },
+      {
+       "name": "set-fsgroupchangepolicy-value",
+       "status": "failed",
+       "subStatus": "",
+       "paths": [
+        {
+         "resourceID": "apps/v1/kubeiq-demo/Deployment/analytics",
+         "fixPath": {
+          "path": "spec.template.spec.securityContext.fsGroupChangePolicy",
+          "value": "Always"
+         }
+        }
+       ]
+      },
+      {
+       "name": "set-sysctls-params",
+       "status": "passed",
+       "subStatus": "incompleteCoverage"
+      },
+      {
+       "name": "set-supplementalgroups-values",
+       "status": "passed",
+       "subStatus": "incompleteCoverage"
+      },
+      {
+       "name": "rule-allow-privilege-escalation",
+       "status": "failed",
+       "subStatus": "",
+       "paths": [
+        {
+         "resourceID": "apps/v1/kubeiq-demo/Deployment/analytics",
+         "fixPath": {
+          "path": "spec.template.spec.containers[0].securityContext.allowPrivilegeEscalation",
+          "value": "false"
+         }
+        },
+        {
+         "resourceID": "apps/v1/kubeiq-demo/Deployment/analytics",
+         "fixPath": {
+          "path": "spec.template.spec.containers[0].securityContext.privileged",
+          "value": "false"
+         }
+        }
+       ]
+      },
+      {
+       "name": "set-gmsacredentialspecname-value",
+       "status": "passed",
+       "subStatus": "incompleteCoverage"
+      },
+      {
+       "name": "set-hostprocess-true",
+       "status": "passed",
+       "subStatus": "incompleteCoverage"
+      },
+      {
+       "name": "set-runasusername-value",
+       "status": "passed",
+       "subStatus": "incompleteCoverage"
+      }
+     ],
+     "severity": "High"
+    },
+    {
+     "controlID": "C-0212",
+     "name": "CIS-5.6.4 The default namespace should not be used",
+     "status": {
+      "status": "passed"
+     },
+     "rules": [
+      {
+       "name": "pods-in-default-namespace",
+       "status": "passed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "Medium"
+    },
+    {
+     "controlID": "C-0270",
+     "name": "Ensure CPU limits are set",
+     "status": {
+      "status": "failed"
+     },
+     "rules": [
+      {
+       "name": "resources-cpu-limits",
+       "status": "failed",
+       "subStatus": "",
+       "paths": [
+        {
+         "resourceID": "apps/v1/kubeiq-demo/Deployment/analytics",
+         "fixPath": {
+          "path": "spec.template.spec.containers[0].resources.limits.cpu",
+          "value": "YOUR_VALUE"
+         }
+        }
+       ]
+      }
+     ],
+     "severity": "High"
+    },
+    {
+     "controlID": "C-0271",
+     "name": "Ensure memory limits are set",
+     "status": {
+      "status": "failed"
+     },
+     "rules": [
+      {
+       "name": "resources-memory-limits",
+       "status": "failed",
+       "subStatus": "",
+       "paths": [
+        {
+         "resourceID": "apps/v1/kubeiq-demo/Deployment/analytics",
+         "fixPath": {
+          "path": "spec.template.spec.containers[0].resources.limits.memory",
+          "value": "YOUR_VALUE"
+         }
+        }
+       ]
+      }
+     ],
+     "severity": "High"
+    },
+    {
+     "controlID": "C-0275",
+     "name": "CIS-5.2.3 Minimize the admission of containers wishing to share the host process ID namespace",
+     "status": {
+      "status": "passed"
+     },
+     "rules": [
+      {
+       "name": "host-pid-privileges",
+       "status": "passed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "Medium"
+    },
+    {
+     "controlID": "C-0276",
+     "name": "CIS-5.2.4 Minimize the admission of containers wishing to share the host IPC namespace",
+     "status": {
+      "status": "passed"
+     },
+     "rules": [
+      {
+       "name": "host-ipc-privileges",
+       "status": "passed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "Medium"
+    },
+    {
+     "controlID": "C-0292",
+     "name": "Nginx Ingress Controller End of Life",
+     "status": {
+      "status": "passed"
+     },
+     "rules": [
+      {
+       "name": "detect-nginx-ingress-controller-eol",
+       "status": "passed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "Medium"
+    }
+   ]
+  },
+  {
+   "resourceID": "apps/v1/kubeiq-demo/Deployment/frontend",
+   "controls": [
+    {
+     "controlID": "C-0012",
+     "name": "Applications credentials in configuration files",
+     "status": {
+      "status": "passed"
+     },
+     "rules": [
+      {
+       "controlConfigurations": {
+        "sensitiveKeyNames": [
+         "aws_secret_access_key",
+         "azure_batchai_storage_key",
+         "azure_batch_key",
+         "secret",
+         "key",
+         "password",
+         "pwd",
+         "token",
+         "jwt",
+         "bearer",
+         "credential"
+        ],
+        "sensitiveKeyNamesAllowed": [],
+        "sensitiveValues": [
+         "BEGIN \\w+ PRIVATE KEY",
+         "PRIVATE KEY",
+         "eyJhbGciO",
+         "JWT",
+         "Bearer",
+         "_key_",
+         "_secret_",
+         "AKIA[0-9A-Z]{16}",
+         "ghp_[0-9A-Za-z]{36}",
+         "AIza[0-9A-Za-z\\-_]{35}",
+         "xox[baprs]-[0-9A-Za-z]{10,48}"
+        ],
+        "sensitiveValuesAllowed": []
+       },
+       "name": "rule-credentials-in-env-var",
+       "status": "passed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "High"
+    },
+    {
+     "controlID": "C-0013",
+     "name": "Non-root containers",
+     "status": {
+      "status": "failed"
+     },
+     "rules": [
+      {
+       "name": "non-root-containers",
+       "status": "failed",
+       "subStatus": "",
+       "paths": [
+        {
+         "resourceID": "apps/v1/kubeiq-demo/Deployment/frontend",
+         "fixPath": {
+          "path": "spec.template.spec.containers[0].securityContext.runAsNonRoot",
+          "value": "true"
+         }
+        },
+        {
+         "resourceID": "apps/v1/kubeiq-demo/Deployment/frontend",
+         "fixPath": {
+          "path": "spec.template.spec.containers[0].securityContext.runAsGroup",
+          "value": "1000"
+         }
+        }
+       ]
+      }
+     ],
+     "severity": "Medium"
+    },
+    {
+     "controlID": "C-0014",
+     "name": "Access Kubernetes dashboard",
+     "status": {
+      "status": "passed"
+     },
+     "rules": [
+      {
+       "name": "rule-access-dashboard-wl-v1",
+       "status": "passed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "Low"
+    },
+    {
+     "controlID": "C-0016",
+     "name": "Allow privilege escalation",
+     "status": {
+      "status": "failed"
+     },
+     "rules": [
+      {
+       "name": "rule-allow-privilege-escalation",
+       "status": "failed",
+       "subStatus": "",
+       "paths": [
+        {
+         "resourceID": "apps/v1/kubeiq-demo/Deployment/frontend",
+         "fixPath": {
+          "path": "spec.template.spec.containers[0].securityContext.allowPrivilegeEscalation",
+          "value": "false"
+         }
+        },
+        {
+         "resourceID": "apps/v1/kubeiq-demo/Deployment/frontend",
+         "fixPath": {
+          "path": "spec.template.spec.containers[0].securityContext.privileged",
+          "value": "false"
+         }
+        }
+       ]
+      }
+     ],
+     "severity": "Medium"
+    },
+    {
+     "controlID": "C-0017",
+     "name": "Immutable container filesystem",
+     "status": {
+      "status": "failed"
+     },
+     "rules": [
+      {
+       "name": "immutable-container-filesystem",
+       "status": "failed",
+       "subStatus": "",
+       "paths": [
+        {
+         "resourceID": "apps/v1/kubeiq-demo/Deployment/frontend",
+         "fixPath": {
+          "path": "spec.template.spec.containers[0].securityContext.readOnlyRootFilesystem",
+          "value": "true"
+         }
+        }
+       ]
+      }
+     ],
+     "severity": "Low"
+    },
+    {
+     "controlID": "C-0020",
+     "name": "Mount service principal",
+     "status": {
+      "status": "passed"
+     },
+     "rules": [
+      {
+       "name": "alert-mount-potential-credentials-paths",
+       "status": "passed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "Medium"
+    },
+    {
+     "controlID": "C-0030",
+     "name": "Ingress and Egress blocked",
+     "status": {
+      "status": "failed"
+     },
+     "rules": [
+      {
+       "name": "ingress-and-egress-blocked",
+       "status": "failed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "Medium"
+    },
+    {
+     "controlID": "C-0034",
+     "name": "Automatic mapping of service account",
+     "status": {
+      "status": "failed"
+     },
+     "rules": [
+      {
+       "name": "automount-service-account",
+       "status": "failed",
+       "subStatus": "",
+       "paths": [
+        {
+         "resourceID": "apps/v1/kubeiq-demo/Deployment/frontend",
+         "fixPath": {
+          "path": "spec.template.spec.automountServiceAccountToken",
+          "value": "false"
+         }
+        }
+       ]
+      }
+     ],
+     "severity": "Medium"
+    },
+    {
+     "controlID": "C-0038",
+     "name": "Host PID/IPC privileges",
+     "status": {
+      "status": "passed"
+     },
+     "rules": [
+      {
+       "name": "host-pid-ipc-privileges",
+       "status": "passed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "High"
+    },
+    {
+     "controlID": "C-0041",
+     "name": "CIS-5.2.5 Minimize the admission of containers wishing to share the host network namespace",
+     "status": {
+      "status": "passed"
+     },
+     "rules": [
+      {
+       "name": "host-network-access",
+       "status": "passed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "High"
+    },
+    {
+     "controlID": "C-0044",
+     "name": "Container hostPort",
+     "status": {
+      "status": "passed"
+     },
+     "rules": [
+      {
+       "name": "container-hostPort",
+       "status": "passed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "Medium"
+    },
+    {
+     "controlID": "C-0045",
+     "name": "Writable hostPath mount",
+     "status": {
+      "status": "passed"
+     },
+     "rules": [
+      {
+       "name": "alert-rw-hostpath",
+       "status": "passed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "High"
+    },
+    {
+     "controlID": "C-0046",
+     "name": "Insecure capabilities",
+     "status": {
+      "status": "passed"
+     },
+     "rules": [
+      {
+       "controlConfigurations": {
+        "insecureCapabilities": [
+         "SETPCAP",
+         "NET_ADMIN",
+         "NET_RAW",
+         "SYS_MODULE",
+         "SYS_RAWIO",
+         "SYS_PTRACE",
+         "SYS_ADMIN",
+         "SYS_BOOT",
+         "MAC_OVERRIDE",
+         "MAC_ADMIN",
+         "PERFMON",
+         "ALL",
+         "BPF"
+        ]
+       },
+       "name": "insecure-capabilities",
+       "status": "passed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "High"
+    },
+    {
+     "controlID": "C-0048",
+     "name": "HostPath mount",
+     "status": {
+      "status": "passed"
+     },
+     "rules": [
+      {
+       "name": "alert-any-hostpath",
+       "status": "passed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "High"
+    },
+    {
+     "controlID": "C-0055",
+     "name": "Linux hardening",
+     "status": {
+      "status": "failed"
+     },
+     "rules": [
+      {
+       "name": "linux-hardening",
+       "status": "failed",
+       "subStatus": "",
+       "paths": [
+        {
+         "resourceID": "apps/v1/kubeiq-demo/Deployment/frontend",
+         "fixPath": {
+          "path": "spec.template.spec.containers[0].securityContext.seccompProfile",
+          "value": "YOUR_VALUE"
+         }
+        }
+       ]
+      }
+     ],
+     "severity": "Medium"
+    },
+    {
+     "controlID": "C-0057",
+     "name": "Privileged container",
+     "status": {
+      "status": "passed"
+     },
+     "rules": [
+      {
+       "name": "rule-privilege-escalation",
+       "status": "passed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "High"
+    },
+    {
+     "controlID": "C-0190",
+     "name": "CIS-5.1.6 Ensure that Service Account Tokens are only mounted where necessary",
+     "status": {
+      "status": "failed"
+     },
+     "rules": [
+      {
+       "name": "automount-service-account",
+       "status": "failed",
+       "subStatus": "",
+       "paths": [
+        {
+         "resourceID": "apps/v1/kubeiq-demo/Deployment/frontend",
+         "fixPath": {
+          "path": "spec.template.spec.automountServiceAccountToken",
+          "value": "false"
+         }
+        }
+       ]
+      }
+     ],
+     "severity": "Medium"
+    },
+    {
+     "controlID": "C-0207",
+     "name": "CIS-5.4.1 Prefer using secrets as files over secrets as environment variables",
+     "status": {
+      "status": "passed"
+     },
+     "rules": [
+      {
+       "name": "rule-secrets-in-env-var",
+       "status": "passed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "Medium"
+    },
+    {
+     "controlID": "C-0210",
+     "name": "CIS-5.6.2 Ensure that the seccomp profile is set to docker/default in your pod definitions",
+     "status": {
+      "status": "failed"
+     },
+     "rules": [
+      {
+       "name": "set-seccomp-profile-RuntimeDefault",
+       "status": "failed",
+       "subStatus": "",
+       "paths": [
+        {
+         "resourceID": "apps/v1/kubeiq-demo/Deployment/frontend",
+         "fixPath": {
+          "path": "spec.template.spec.containers[0].securityContext.seccompProfile.type",
+          "value": "RuntimeDefault"
+         }
+        }
+       ]
+      }
+     ],
+     "severity": "Medium"
+    },
+    {
+     "controlID": "C-0211",
+     "name": "CIS-5.6.3 Apply Security Context to Your Pods and Containers",
+     "status": {
+      "status": "failed"
+     },
+     "rules": [
+      {
+       "name": "rule-privilege-escalation",
+       "status": "passed",
+       "subStatus": "incompleteCoverage"
+      },
+      {
+       "name": "immutable-container-filesystem",
+       "status": "failed",
+       "subStatus": "",
+       "paths": [
+        {
+         "resourceID": "apps/v1/kubeiq-demo/Deployment/frontend",
+         "fixPath": {
+          "path": "spec.template.spec.containers[0].securityContext.readOnlyRootFilesystem",
+          "value": "true"
+         }
+        }
+       ]
+      },
+      {
+       "name": "non-root-containers",
+       "status": "failed",
+       "subStatus": "",
+       "paths": [
+        {
+         "resourceID": "apps/v1/kubeiq-demo/Deployment/frontend",
+         "fixPath": {
+          "path": "spec.template.spec.containers[0].securityContext.runAsNonRoot",
+          "value": "true"
+         }
+        },
+        {
+         "resourceID": "apps/v1/kubeiq-demo/Deployment/frontend",
+         "fixPath": {
+          "path": "spec.template.spec.containers[0].securityContext.runAsGroup",
+          "value": "1000"
+         }
+        }
+       ]
+      },
+      {
+       "name": "drop-capability-netraw",
+       "status": "failed",
+       "subStatus": "",
+       "paths": [
+        {
+         "resourceID": "apps/v1/kubeiq-demo/Deployment/frontend",
+         "fixPath": {
+          "path": "spec.template.spec.containers[0].securityContext.capabilities.drop[0]",
+          "value": "NET_RAW"
+         }
+        }
+       ]
+      },
+      {
+       "name": "set-seLinuxOptions",
+       "status": "failed",
+       "subStatus": "",
+       "paths": [
+        {
+         "resourceID": "apps/v1/kubeiq-demo/Deployment/frontend",
+         "fixPath": {
+          "path": "spec.template.spec.containers[0].securityContext.seLinuxOptions",
+          "value": "YOUR_VALUE"
+         }
+        }
+       ]
+      },
+      {
+       "name": "set-seccomp-profile",
+       "status": "failed",
+       "subStatus": "",
+       "paths": [
+        {
+         "resourceID": "apps/v1/kubeiq-demo/Deployment/frontend",
+         "fixPath": {
+          "path": "spec.template.spec.containers[0].securityContext.seccompProfile",
+          "value": "YOUR_VALUE"
+         }
+        }
+       ]
+      },
+      {
+       "name": "set-procmount-default",
+       "status": "passed",
+       "subStatus": "incompleteCoverage"
+      },
+      {
+       "name": "set-fsgroup-value",
+       "status": "failed",
+       "subStatus": "",
+       "paths": [
+        {
+         "resourceID": "apps/v1/kubeiq-demo/Deployment/frontend",
+         "fixPath": {
+          "path": "spec.template.spec.securityContext.fsGroup",
+          "value": "YOUR_VALUE"
+         }
+        }
+       ]
+      },
+      {
+       "name": "set-fsgroupchangepolicy-value",
+       "status": "failed",
+       "subStatus": "",
+       "paths": [
+        {
+         "resourceID": "apps/v1/kubeiq-demo/Deployment/frontend",
+         "fixPath": {
+          "path": "spec.template.spec.securityContext.fsGroupChangePolicy",
+          "value": "Always"
+         }
+        }
+       ]
+      },
+      {
+       "name": "set-sysctls-params",
+       "status": "passed",
+       "subStatus": "incompleteCoverage"
+      },
+      {
+       "name": "set-supplementalgroups-values",
+       "status": "passed",
+       "subStatus": "incompleteCoverage"
+      },
+      {
+       "name": "rule-allow-privilege-escalation",
+       "status": "failed",
+       "subStatus": "",
+       "paths": [
+        {
+         "resourceID": "apps/v1/kubeiq-demo/Deployment/frontend",
+         "fixPath": {
+          "path": "spec.template.spec.containers[0].securityContext.allowPrivilegeEscalation",
+          "value": "false"
+         }
+        },
+        {
+         "resourceID": "apps/v1/kubeiq-demo/Deployment/frontend",
+         "fixPath": {
+          "path": "spec.template.spec.containers[0].securityContext.privileged",
+          "value": "false"
+         }
+        }
+       ]
+      },
+      {
+       "name": "set-gmsacredentialspecname-value",
+       "status": "passed",
+       "subStatus": "incompleteCoverage"
+      },
+      {
+       "name": "set-hostprocess-true",
+       "status": "passed",
+       "subStatus": "incompleteCoverage"
+      },
+      {
+       "name": "set-runasusername-value",
+       "status": "passed",
+       "subStatus": "incompleteCoverage"
+      }
+     ],
+     "severity": "High"
+    },
+    {
+     "controlID": "C-0212",
+     "name": "CIS-5.6.4 The default namespace should not be used",
+     "status": {
+      "status": "passed"
+     },
+     "rules": [
+      {
+       "name": "pods-in-default-namespace",
+       "status": "passed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "Medium"
+    },
+    {
+     "controlID": "C-0270",
+     "name": "Ensure CPU limits are set",
+     "status": {
+      "status": "failed"
+     },
+     "rules": [
+      {
+       "name": "resources-cpu-limits",
+       "status": "failed",
+       "subStatus": "",
+       "paths": [
+        {
+         "resourceID": "apps/v1/kubeiq-demo/Deployment/frontend",
+         "fixPath": {
+          "path": "spec.template.spec.containers[0].resources.limits.cpu",
+          "value": "YOUR_VALUE"
+         }
+        }
+       ]
+      }
+     ],
+     "severity": "High"
+    },
+    {
+     "controlID": "C-0271",
+     "name": "Ensure memory limits are set",
+     "status": {
+      "status": "failed"
+     },
+     "rules": [
+      {
+       "name": "resources-memory-limits",
+       "status": "failed",
+       "subStatus": "",
+       "paths": [
+        {
+         "resourceID": "apps/v1/kubeiq-demo/Deployment/frontend",
+         "fixPath": {
+          "path": "spec.template.spec.containers[0].resources.limits.memory",
+          "value": "YOUR_VALUE"
+         }
+        }
+       ]
+      }
+     ],
+     "severity": "High"
+    },
+    {
+     "controlID": "C-0275",
+     "name": "CIS-5.2.3 Minimize the admission of containers wishing to share the host process ID namespace",
+     "status": {
+      "status": "passed"
+     },
+     "rules": [
+      {
+       "name": "host-pid-privileges",
+       "status": "passed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "Medium"
+    },
+    {
+     "controlID": "C-0276",
+     "name": "CIS-5.2.4 Minimize the admission of containers wishing to share the host IPC namespace",
+     "status": {
+      "status": "passed"
+     },
+     "rules": [
+      {
+       "name": "host-ipc-privileges",
+       "status": "passed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "Medium"
+    },
+    {
+     "controlID": "C-0292",
+     "name": "Nginx Ingress Controller End of Life",
+     "status": {
+      "status": "passed"
+     },
+     "rules": [
+      {
+       "name": "detect-nginx-ingress-controller-eol",
+       "status": "passed",
+       "subStatus": ""
+      }
+     ],
+     "severity": "Medium"
+    }
+   ]
+  }
+ ]
+}

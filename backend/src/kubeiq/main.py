@@ -20,6 +20,7 @@ from kubeiq.db.session import get_sessionmaker
 from kubeiq.investigations import repository
 from kubeiq.investigations.runner import get_runner
 from kubeiq.notifications import engine as alerts
+from kubeiq.products.security import service as security
 from kubeiq.settings.service import (
     refresh_gke_forever,
     sync_gke,
@@ -40,6 +41,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         master_key()  # created and announced on first start
         async with get_sessionmaker()() as session:
             interrupted = await repository.fail_interrupted(session)
+            await security.fail_interrupted(session)
             await sync_uploaded_clusters(session)
             await sync_gke(session)
             await sync_token_clusters(session)
