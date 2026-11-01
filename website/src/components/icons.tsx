@@ -82,6 +82,13 @@ export const MapIcon = (props: IconProps) => (
   </Icon>
 );
 
+export const ShieldIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M12 3 4.5 6v5.5c0 4.6 3.1 8.3 7.5 9.5 4.4-1.2 7.5-4.9 7.5-9.5V6L12 3Z" />
+    <path d="m9 12 2 2 4-4" />
+  </Icon>
+);
+
 export const ManagerIcon = (props: IconProps) => (
   <Icon {...props}>
     <rect x="3" y="4" width="18" height="16" rx="2" />

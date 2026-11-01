@@ -2,7 +2,7 @@ import { Action, rise, TextLink } from "@/components/ui";
 import { GITHUB_URL } from "@/lib/site";
 
 export const FREE_FEATURES = [
-  "Cluster Doctor, Cluster Map and Cluster Manager",
+  "Cluster Doctor, Cluster Map, Cluster Manager and Cluster Security",
   "Up to 3 users, 1 project and 3 clusters",
   "Sign in with Google",
   "Read-only by default, opt-in changes with an activity log",

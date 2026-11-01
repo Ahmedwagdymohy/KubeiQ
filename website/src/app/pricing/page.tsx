@@ -21,7 +21,7 @@ const FACTS = [
   },
   {
     title: "The Core Stays Open",
-    text: "Cluster Doctor, Cluster Map and Cluster Manager are Apache-2.0. Paid plans add teams and scale, never the tools themselves",
+    text: "Cluster Doctor, Cluster Map, Cluster Manager and Cluster Security are Apache-2.0. Paid plans add teams and scale, never the tools themselves",
     picture: "/screens/fact-open.jpg",
     alt: "The KubeiQ Overview with the cluster ledger and the failing workloads",
   },
