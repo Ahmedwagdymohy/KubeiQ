@@ -528,6 +528,89 @@ export class ApiError extends Error {
   }
 }
 
+export type SecuritySeverity = "critical" | "high" | "medium" | "low";
+export type SecurityTarget = { kind: string; name: string; namespace: string | null };
+export type SecurityCheck = { tool: "trivy" | "kubescape"; id: string; name: string; frameworks: string[] };
+export type SecurityFinding = {
+  key: string;
+  title: string;
+  severity: SecuritySeverity;
+  category: "workload" | "access" | "network" | "cluster" | "image";
+  target: SecurityTarget;
+  checks: SecurityCheck[];
+  description: string;
+  remediation: string;
+  fixes: { path: string; value: string }[];
+  risk: number;
+  reasons: string[];
+};
+export type SecurityVulnerability = {
+  image: string;
+  id: string;
+  package: string;
+  installed: string;
+  fixed: string | null;
+  severity: SecuritySeverity;
+  title: string;
+  url: string | null;
+  workloads: SecurityTarget[];
+};
+export type SecurityControl = {
+  framework: string;
+  id: string;
+  name: string;
+  severity: SecuritySeverity;
+  status: "passed" | "failed" | "skipped";
+  passed: number;
+  failed: number;
+  note: string | null;
+};
+export type SecurityFramework = { name: string; score: number; passed: number; failed: number; skipped: number };
+export type SecurityToolRun = { tool: string; version: string; ok: boolean; seconds: number; error: string | null };
+export type SecurityScan = {
+  id: string;
+  status: "running" | "completed" | "failed";
+  step: string | null;
+  started_by: string;
+  started_at: string;
+  finished_at: string | null;
+  score: number | null;
+  error: string | null;
+};
+export type SecurityStatus = {
+  latest: SecurityScan | null;
+  last_completed: SecurityScan | null;
+  tools: { name: string; version: string; installed: boolean; custom: boolean }[];
+  can_scan: boolean;
+};
+export type PostureSummary = {
+  headline: string;
+  summary: string;
+  priorities: { title: string; why: string; target: string | null }[];
+  quick_wins: string[];
+};
+export type SecurityOverview = {
+  scan: SecurityScan;
+  cluster_wide: boolean;
+  findings: Record<SecuritySeverity, number>;
+  vulnerabilities: Record<SecuritySeverity, number>;
+  fixable: number;
+  images: number;
+  frameworks: SecurityFramework[];
+  tools: SecurityToolRun[];
+  refused: Record<string, number>;
+  top: SecurityFinding[];
+  history: { at: string; score: number | null }[];
+  ai_summary: PostureSummary | null;
+};
+export type FindingFix = {
+  summary: string;
+  patch: Record<string, unknown> | null;
+  command: string | null;
+  steps: string[];
+  caution: string | null;
+};
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   let response: Response;
   try {
@@ -625,6 +708,15 @@ export const api = {
   suggestions: (clusterId: string) => request<string[]>(`/api/v1/ai/suggestions?${query({ cluster_id: clusterId })}`),
   timeline: (clusterId: string, namespace: string | null) =>
     request<TimelineItem[]>(`/api/v1/insights/timeline?${query({ cluster_id: clusterId, namespace })}`),
+  securityStatus: (clusterId: string) => request<SecurityStatus>(`/api/v1/security/status?${query({ cluster_id: clusterId })}`),
+  startSecurityScan: (clusterId: string) => request<SecurityScan>("/api/v1/security/scans", json("POST", { cluster_id: clusterId })),
+  securityOverview: (clusterId: string) => request<SecurityOverview>(`/api/v1/security/overview?${query({ cluster_id: clusterId })}`),
+  securityFindings: (clusterId: string) => request<SecurityFinding[]>(`/api/v1/security/findings?${query({ cluster_id: clusterId })}`),
+  securityVulnerabilities: (clusterId: string) =>
+    request<SecurityVulnerability[]>(`/api/v1/security/vulnerabilities?${query({ cluster_id: clusterId })}`),
+  securityControls: (clusterId: string) => request<SecurityControl[]>(`/api/v1/security/controls?${query({ cluster_id: clusterId })}`),
+  securitySummary: (clusterId: string) => request<PostureSummary>("/api/v1/security/summary", json("POST", { cluster_id: clusterId })),
+  securityFix: (clusterId: string, key: string) => request<FindingFix>("/api/v1/security/fix", json("POST", { cluster_id: clusterId, key })),
   distribution: (clusterId: string, namespace: string | null) =>
     request<Distribution>(`/api/v1/insights/distribution?${query({ cluster_id: clusterId, namespace })}`),
   workspace: () => request<WorkspaceSettings>("/api/v1/me/workspace"),

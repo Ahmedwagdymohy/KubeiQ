@@ -1,6 +1,6 @@
 import type { ComponentType } from "react";
 
-import { DistributionIcon, ManagerIcon, MapIcon, StethoscopeIcon, TimelineIcon } from "@/components/icons";
+import { DistributionIcon, ManagerIcon, MapIcon, ShieldIcon, StethoscopeIcon, TimelineIcon } from "@/components/icons";
 
 export const GITHUB_URL = "https://github.com/Ahmedwagdymohy/KubeiQ";
 
@@ -30,6 +30,12 @@ export const PRODUCTS: Product[] = [
     name: "Cluster Manager",
     description: "Browse every resource, read YAML, events and logs",
     icon: ManagerIcon,
+  },
+  {
+    href: "/security",
+    name: "Cluster Security",
+    description: "Misconfigurations, vulnerable images and compliance, with fixes",
+    icon: ShieldIcon,
   },
 ];
 

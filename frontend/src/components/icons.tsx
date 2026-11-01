@@ -170,6 +170,13 @@ export const PlusIcon = (props: IconProps) => (
   </Icon>
 );
 
+export const ShieldIcon = (props: IconProps) => (
+  <Icon {...props}>
+    <path d="M12 3 4.5 6v5.5c0 4.6 3.1 8.3 7.5 9.5 4.4-1.2 7.5-4.9 7.5-9.5V6L12 3Z" />
+    <path d="m9 12 2 2 4-4" />
+  </Icon>
+);
+
 export const TimelineIcon = (props: IconProps) => (
   <Icon {...props}>
     <path d="M3.5 12h3.5l2.5-6.5 5 13 2.5-6.5h3.5" />
